@@ -101,10 +101,10 @@ This data is based off of `r model_bc` `r model_bc_rcp` to display projections f
 # -------------
 
 
-future_month_1 <- read_csv(here::here("raw_data",
-                                    "future_monthly",
-                                    site,
+future_month_1 <- read_csv(here::here(site,
+                                    "raw_data",
                                     paste("lat",lat,"lon",lon, sep = "_"),
+                                    "future_monthly",
                                     paste(site, model, "monthly_future.csv", sep = "_")),
                     na = c("-3276.7")) 
 
@@ -125,10 +125,10 @@ future_month <- future_month_1 %>%
 # monthly past
 # -------------
 
-past_month_1 <- read_csv(here::here("raw_data",
-                                  "historical_monthly",
-                                  site,
+past_month_1 <- read_csv(here::here( site,
+                                  "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
+                                  "historical_monthly",
                                   paste(site,"_monthly_",past_data,".csv", sep = "")),
                              na = c("-3276.7")) %>%
   mutate(date = lubridate::ymd(paste(year,
@@ -163,10 +163,10 @@ past_month <- past_month_1 %>%
 # daily future data
 # ------------
 
-future_day_1 <- read_csv(here::here("raw_data",
-                                  "future_daily",
-                                  site,
+future_day_1 <- read_csv(here::here( site,
+                                  "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
+                                  "future_daily",
                                   paste(site, model,"daily_future.csv", sep = "_")),
                     na = c("-3276.7"))
 
@@ -201,11 +201,11 @@ future_day <- future_day_1 %>%
 # daily past
 # ------------
 
-past_day_1 <- read_csv(here::here("raw_data",
-                                "historical_daily",
-                                site,
-                                paste("lat",lat,"lon",lon, sep = "_"),
-                                paste(site,"_daily_",past_data,".csv", sep = "")),
+past_day_1 <- read_csv(here::here(site,
+                                  "raw_data",
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  "historical_daily",
+                                  paste(site,"_daily_",past_data,".csv", sep = "")),
                            na = c("-3276.7")) 
 
 date_pd <- past_day_1$date# this is a work around
@@ -795,8 +795,8 @@ plot_decades_smooth = function(.y) { #start function
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
-  ggsave(here::here("figures", #top folder
-                    site, # site subfolder
+  ggsave(here::here(site, # site subfolder
+                    "figures", #sub folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
                     paste(.y, "40_yr_rcp45", ".png", sep = "_"))) #file name
@@ -844,8 +844,8 @@ plot_decades_smooth = function(.y) { #start function
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
-  ggsave(here::here("figures", #top folder
-                    site, #site subfolder
+  ggsave(here::here(site, #site subfolder
+                    "figures", #top folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
                     paste(.y, "40_yr_rcp85", ".png", sep = "_"))) #file name
@@ -895,8 +895,8 @@ plot_decades_line = function(.y) { #start function
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
-  ggsave(here::here("figures", #top folder
-                    site, # site subfolder
+  ggsave(here::here(site, # site subfolder
+                    "figures", #sub folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
                     paste(.y, "40_yr_rcp45_line", ".png", sep = "_"))) #file name
@@ -937,8 +937,8 @@ plot_decades_line = function(.y) { #start function
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
-  ggsave(here::here("figures", #top folder
-                    site, #site subfolder
+  ggsave(here::here(site, #site subfolder
+                    "figures", #top folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
                     paste(.y, "40_yr_rcp85_line", ".png", sep = "_"))) #file name
@@ -988,8 +988,8 @@ ggplot() +
   labs(color = "Annual Averages")
   
 
-ggsave(here::here("figures", #subfolder
-                  site, #site subfolder
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
                   paste("lat",lat,"lon",lon, sep = "_"),
                   "annual_facet.png")) #file name
 
@@ -1064,8 +1064,8 @@ plot_annual = function(.y, .x, .z, .l) {
     scale_color_manual(values = colors) # colors is a named vector, see top of function
  
   
-  ggsave(here::here("figures", #subfolder
-                    site, #site subfolder
+  ggsave(here::here(site, #site subfolder
+                    "figures", #subfolder
                     paste("lat",lat,"lon",lon,sep = "_"),
                     paste(.y, "annual_graph_45.png", sep = "_"))) #file name
   
@@ -1112,8 +1112,8 @@ plot_annual = function(.y, .x, .z, .l) {
     scale_color_manual(values = colors) # colors is a named vector, see top of function
   
   
-  ggsave(here::here("figures", #subfolder
-                    site, #site subfolder
+  ggsave(here::here(site, #site subfolder
+                    "figures", #subfolder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     paste(.y, "annual_graph_85.png", sep = "_"))) #filename
   
@@ -1171,8 +1171,8 @@ ggplot(data =  %>%
   labs(y = "Water(mm)") +
   facet_wrap(~variable, scales = "free")
 
-ggsave(here::here("figures", #subfolder
-                  site, #site subfolder
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
                   paste("lat",lat,"lon",lon, sep = "_"),
                   paste("jitter_water_all.png", sep = "_"))) # file name
 
@@ -1209,8 +1209,8 @@ ggplot(data = day_join_45_m %>%
   labs(y = "Water(mm)") +
   facet_wrap(~variable, scales = "free")
 
-ggsave(here::here("figures", #subfolder
-                  site, #site subfolder
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
                   paste("lat",lat,"lon",lon, sep = "_"),
                   paste("jitter_water_all.png", sep = "_"))) # file name
 

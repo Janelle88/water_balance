@@ -114,40 +114,39 @@ Run the following code to create all folders in your project folder that will be
 ```{r}
 # create subfolders
 
-here::here(dir.create("raw_data"))
+here::here(dir.create(site))
 
-here::here(dir.create("figures"))
-
-here::here(dir.create(paste("figures",
-                            site, 
+here::here(dir.create(paste(site,
+                            "figures",
                             sep = "/")))
 
-here::here(dir.create(paste("figures",
-                            site,
+here::here(dir.create(paste(site,
+                            "figures",
                             paste("lat",lat,"lon",lon,sep = "_"), 
                             sep = "/")))
 
-here::here(dir.create(paste("figures",
-                            site,
+here::here(dir.create(paste(site,
+                            "figures",
                             paste("lat",lat,"lon",lon,sep = "_"),
                             "40_yr_graphs",
                             sep = "/")))
 
+here::here(dir.create(paste(site, 
+                            "raw_data",
+                            sep = "/")))
+
+here::here(dir.create(paste(site,
+                            "raw_data", 
+                            paste("lat",lat,"lon",lon,sep = "_"), 
+                            sep = "/")))
+
 for (i in c("historical_daily", "historical_monthly", "future_daily", "future_monthly")){
 
-here::here(dir.create(paste("raw_data", 
-                            i, 
-                            sep = "/")))
 
-here::here(dir.create(paste("raw_data",
-                            i, 
-                            site, 
-                            sep = "/")))
-
-here::here(dir.create(paste("raw_data",
-                            i, 
-                            site, 
-                            paste("lat",lat,"lon",lon,sep = "_"), 
+here::here(dir.create(paste(site, 
+                            "raw_data",
+                            paste("lat",lat,"lon",lon,sep = "_"),
+                            i,
                             sep = "/")))
 
 }
