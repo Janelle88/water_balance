@@ -1,0 +1,1220 @@
+---
+title: "Watershed Balance"
+author: "Janelle Christensen"
+date: "8/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+# -------------
+# attach packages
+# -------------
+
+library(data.table) 
+library(here)
+#library(plyr) 
+# be careful with this, it causes issues for dplyr::group_by
+# I didn't try, but the internet says if you load it before tidyverse, that issue goes away
+library(tidyverse)
+library(beepr)
+library(lubridate)
+library(directlabels)
+library(data.table)
+library(ggbeeswarm)
+library(gghalves)
+library(directlabels)
+library(ggrepel)
+library(splines)
+library(magrittr)
+
+# -----------
+# set global options
+# -----------
+
+#set theme for all graphs
+theme_set(theme_classic() + #has the L shape around the graph
+            theme(panel.grid = element_blank(), #removes grid lines
+                  plot.title = element_text(size = 25), #title of plot text size
+                  legend.text = element_text(size = 15), #legend inside text size
+                  legend.title = element_text(size = 18), #legend title text size
+                  axis.title.y = element_text(size = 15), #changes y axis lable text size
+                  axis.text.x = element_text(size = 15), #changes x-axis text size
+                  axis.text.y = element_text(size = 15), #changes y-axis text size
+                  legend.position = "top"))
+
+# ------------
+# set variables for the data and code
+# all of this should be changed before the code is run for a new site
+# ------------
+
+site = "little_saddle_mtn" 
+
+lat = 44.702
+
+lon = -110.018
+
+model_bc = "inmcm4" # "best case"
+
+# model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
+
+model_bc_rcp = "RCP 4.5"
+
+#options "RCP 4.5", "RCP 8.5" 
+# IMPORTANT: this is written differently than the data code (in the data code it was rcp45, rcp85)
+
+model_wc = "HadGEM2-CC365" # "worst case"
+
+# model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
+
+model_wc_rcp = "RCP 8.5"
+
+#options "RCP 4.5", "RCP 8.5" 
+# IMPORTANT: this is written differently than the data code (in the data code it was rcp45, rcp85)
+
+past_data = "daymet"
+
+# past_data options: "gridmet", "daymet"
+
+# ----------
+# inmcm4, NorESM1-M downloaded wrong, don't use until updated (noted this 8-5-20)
+# ----------
+
+```
+This data is based off of `r model_bc` `r model_bc_rcp` to display projections for the best case scenario, and `r model_wc``r model_wc_rcp` to display projections for the worst case scenario.
+```{r}
+# -------------
+# MONTHLY DATA
+# clean data for graphing
+# if monthly data wasn't downloaded, change {r} to {r, eval = FALSE } or else this will stop your code from running
+# -------------
+
+# I added a line of code that removes variables from the data set that sum to 2
+# change this if needed
+
+# -------------
+# monthly future data
+# -------------
+
+
+future_month_1 <- read_csv(here::here("raw_data",
+                                    "future_monthly",
+                                    site,
+                                    paste("lat",lat,"lon",lon, sep = "_"),
+                                    paste(site, model, "monthly_future.csv", sep = "_")),
+                    na = c("-3276.7")) 
+
+date_fm <- future_month_1$date # this is a work around
+# want to remove data that has all zeroes conditionally based on lat and lon
+# couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
+
+future_month <- future_month_1 %>% 
+  select(-lat, -long, -date) %>% #change this
+  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
+  mutate(date = date_fm,
+         year = lubridate::year(date),
+         month = lubridate::month(date,
+                                  label = TRUE,
+                                  abbr = TRUE))
+
+# -------------
+# monthly past
+# -------------
+
+past_month_1 <- read_csv(here::here("raw_data",
+                                  "historical_monthly",
+                                  site,
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  paste(site,"_monthly_",past_data,".csv", sep = "")),
+                             na = c("-3276.7")) %>%
+  mutate(date = lubridate::ymd(paste(year,
+                                     month,
+                                     sep = "-"),
+                               truncated = 1)) #fix this when dates are fixed on site
+# when/if dates download correctly for monthly historical, this line can be removed
+# truncated needs to be here, can't say why it's 1
+
+date_pm <- past_month_1$date # this is a work around
+# want to remove data that has all zeroes conditionally based on lat and lon
+# couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
+
+past_month <- past_month_1 %>%
+  select(-lat, -lon, -month, - year, -date) %>%
+  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
+  mutate(date = date_pm, #adds date back into the df
+         year = lubridate::year(date),
+         month = lubridate::month(date,
+                                  label = TRUE,
+                                  abbr = TRUE))
+
+```
+
+```{r}
+# ------------
+# DAILY DATA
+# clean data for graphing
+# ------------
+
+# ------------
+# daily future data
+# ------------
+
+future_day_1 <- read_csv(here::here("raw_data",
+                                  "future_daily",
+                                  site,
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  paste(site, model,"daily_future.csv", sep = "_")),
+                    na = c("-3276.7"))
+
+# ---------
+# this is only for now
+# won't mess up the code if not removed
+# named coded wrong when downloading (coded as monthly)
+# for some reason there is an extra longitude column, need to fix this
+# ---------
+
+#colnames(future_day_1)[]<-c("date", "lat","lon","soil_water_daily_85", "runoff_daily_85", "rain_daily_85", "agdd_daily_85", "accumswe_daily_85", "pet_daily_85", "deficit_daily_85", "aet_daily_85", "soil_water_daily_45", "runoff_daily_45", "rain_daily_45", "agdd_daily_45", "accumswe_daily_45", "pet_daily_45", "deficit_daily_45", "aet_daily_45")
+
+date_fd <- future_day_1$date
+# this is a work around
+# want to remove data that has all zeroes conditionally based on site
+# couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
+
+
+future_day <- future_day_1 %>% 
+  select(-lat, -lon, -date)  %>%
+  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
+  mutate(date = date_fd,
+    year = lubridate::year(date), 
+    month = lubridate::month(date,
+                             label = TRUE,
+                             abbr = TRUE),
+    day = lubridate::day(date),
+    doy = yday(date))
+
+
+# ------------
+# daily past
+# ------------
+
+past_day_1 <- read_csv(here::here("raw_data",
+                                "historical_daily",
+                                site,
+                                paste("lat",lat,"lon",lon, sep = "_"),
+                                paste(site,"_daily_",past_data,".csv", sep = "")),
+                           na = c("-3276.7")) 
+
+date_pd <- past_day_1$date# this is a work around
+# want to remove data that has all zeroes conditionally based on lat and lon
+# couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
+
+past_day <- past_day_1 %>% 
+  select(-lat, -lon, -date)  %>%
+  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variables that sum to 2 (i.e. accumswe in a hot climate)
+  mutate(date = date_pd,
+         year = lubridate::year(date),
+         month = lubridate::month(date,
+                                  label = TRUE,
+                                  abbr = TRUE),
+         day = lubridate::day(date),
+         doy = yday(date)) 
+
+
+```
+
+```{r}
+# -------------
+# Make site data into long format
+# -------------
+
+# -------------
+# long format past data daily
+# -------------
+
+site_long_past <- past_day %>% 
+  pivot_longer(`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>% # new column name to store values
+  mutate(variable = case_when(
+    .$variable == "runoff_daily" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_daily" ~ "AGDD",
+    .$variable == "soil_water_daily" ~ "Soil Water",
+    .$variable == "rain_daily" ~ "Rain",
+    .$variable == "accumswe_daily" ~ "Accumulated SWE",
+    .$variable == "pet_daily" ~ "PET",
+    .$variable == "deficit_daily" ~ "Deficit",
+    TRUE ~ "AET" # last ifelse is just labeled as TRUE
+  )) %>% 
+  mutate(decade = case_when(
+    .$year %in% c(1980:1989) ~ "1980s",
+    .$year %in% c(1990:1999) ~ "1990s",
+    .$year %in% c(2000:2009) ~ "2000s",
+    TRUE ~ "2010s"
+  )) 
+
+annual_past <- site_long_past %>% 
+  group_by(variable, year) %>% 
+  mutate(annual_avg = mean(value, na.rm = TRUE))
+
+# -------------
+# long format future data daily
+# -------------
+
+site_long_85 <- future_day %>%
+  select(soil_water_daily_85:aet_daily_85, date:doy) %>% # selecting for variables for 8.5 only
+  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "rcp_85") %>%  
+  filter(!year == 2100) %>%
+  mutate(variable = case_when(
+    .$variable == "runoff_daily_85" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_daily_85" ~ "AGDD",
+    .$variable == "soil_water_daily_85" ~ "Soil Water",
+    .$variable == "rain_daily_85" ~ "Rain",
+    .$variable == "accumswe_daily_85" ~ "Accumulated SWE",
+    .$variable == "pet_daily_85" ~ "PET",
+    .$variable == "deficit_daily_85" ~ "Deficit",
+    TRUE ~ "AET")) %>% 
+  mutate(decade = case_when(
+    .$year %in% c(2020:2029) ~ "2020s",
+    .$year %in% c(2030:2039) ~ "2030s",
+    .$year %in% c(2040:2049) ~ "2040s",
+    .$year %in% c(2050:2059) ~ "2050s",
+    .$year %in% c(2060:2069) ~ "2060s",
+    .$year %in% c(2070:2079) ~ "2070s",
+    .$year %in% c(2080:2089) ~ "2080s",
+    TRUE ~ "2090s"
+  ))
+
+annual_future_85 <- site_long_85 %>% 
+  group_by(variable, year) %>% 
+  mutate(annual_avg_85 = mean(rcp_85, na.rm = TRUE)) %>%
+  ungroup(year, variable) 
+
+  
+  
+site_long_45 <- future_day %>% 
+  select(soil_water_daily_45:aet_daily_45, date:doy) %>% #selecting for 4.5 only
+  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "rcp_45") %>% 
+  filter(!year == 2100) %>% 
+  mutate(variable = case_when(
+    .$variable == "runoff_daily_45" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_daily_45" ~ "AGDD",
+    .$variable == "soil_water_daily_45" ~ "Soil Water",
+    .$variable == "rain_daily_45" ~ "Rain",
+    .$variable == "accumswe_daily_45" ~ "Accumulated SWE",
+    .$variable == "pet_daily_45" ~ "PET",
+    .$variable == "deficit_daily_45" ~ "Deficit",
+    TRUE ~ "AET" # last ifelse is just labeled as TRUE
+  )) %>% 
+  mutate(decade = case_when(
+    .$year %in% c(2020:2029) ~ "2020s",
+    .$year %in% c(2030:2039) ~ "2030s",
+    .$year %in% c(2040:2049) ~ "2040s",
+    .$year %in% c(2050:2059) ~ "2050s",
+    .$year %in% c(2060:2069) ~ "2060s",
+    .$year %in% c(2070:2079) ~ "2070s",
+    .$year %in% c(2080:2089) ~ "2080s",
+    TRUE ~ "2090s"
+  ))
+
+annual_future_45 <- site_long_45 %>% 
+   group_by(variable, year) %>% 
+  mutate(annual_avg_45 = mean(rcp_45, na.rm = TRUE)) %>%
+  ungroup(year, variable) 
+
+
+annual_future <- annual_future_45 %>%
+  full_join(annual_future_85)
+
+```
+
+# Histograms and qq plots to look at data spread
+
+```{r, include = FALSE, eval = FALSE}
+
+# ------------
+# histogram for future data
+# ------------
+
+
+plot_histogram_future = function(.y) {
+  
+  site_long_.y <- annual_future %>%
+    filter(decade %in% (.y))
+  
+.y_hist_45 <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_45), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, "RCP 4.5"))
+
+.y_hist_85 <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_85), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, "RCP 8.5"))
+  
+  print(.y_hist_45)
+  print(.y_hist_85)
+}
+
+# ------------
+# histogram for past data
+# ------------
+
+plot_histogram_past = function(.y) {
+  
+  site_long_.y <- annual_past %>%
+    filter(decade %in% (.y))
+  
+.y_hist_past <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = value), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = .y)
+  
+  print(.y_hist_past)
+}
+
+plot_histogram_past("1980s")
+plot_histogram_past("1990s")
+plot_histogram_past("2000s")
+plot_histogram_past("2010s")
+plot_histogram_future("2020s")
+plot_histogram_future("2030s")
+plot_histogram_future("2040s")
+plot_histogram_future("2050s")
+plot_histogram_future("2060s")
+plot_histogram_future("2070s")
+plot_histogram_future("2080s")
+plot_histogram_future("2090s")
+
+
+#-------------
+# look at data removing months that aren't rainy
+# ------------
+
+# ------------
+# histogram for future data rainy months
+# ------------
+
+plot_rainy_hist_future = function(.y) {
+  
+  site_long_.y <- annual_future %>%
+    filter(decade %in% (.y),
+           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
+  
+.y_hist_45 <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_45), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, "May - Sep RCP 4.5"))
+
+.y_hist_85 <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_85), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, "May - Sep RCP 8.5"))
+  
+  print(.y_hist_45)
+  print(.y_hist_85)
+}
+
+# ------------
+# histogram for past data rainy months
+# ------------
+
+plot_rainy_hist_past = function(.y) {
+  
+  site_long_.y <- annual_past %>%
+    filter(decade %in% (.y),
+           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
+  
+.y_hist_past <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = value), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, "May - Sep"))
+  
+  print(.y_hist_past)
+}
+
+plot_rainy_hist_past("1980s")
+plot_rainy_hist_past("1990s")
+plot_rainy_hist_past("2000s")
+plot_rainy_hist_past("2010s")
+plot_rainy_hist_future("2020s")
+plot_rainy_hist_future("2030s")
+plot_rainy_hist_future("2040s")
+plot_rainy_hist_future("2050s")
+plot_rainy_hist_future("2060s")
+plot_rainy_hist_future("2070s")
+plot_rainy_hist_future("2080s")
+plot_rainy_hist_future("2090s")
+
+# ---------
+# qq plots of the data to look at data normalcy
+# does it follow expected values?
+# ---------
+
+# ---------
+# qq plots of future data
+# ---------
+
+plot_qq_future = function(.y) {
+  
+  site_long_.y <- annual_future %>%
+    filter(decade %in% (.y))
+  
+.y_qq_45 <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_45)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = paste(.y, "RCP 4.5"))
+
+.y_qq_85 <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_85)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = paste(.y, "RCP 8.5"))
+  
+  print(.y_qq_45)
+  print(.y_qq_85)
+}
+
+# ----------
+# qq plots of past data
+# ----------
+
+plot_qq_past = function(.y) {
+  
+  site_long_.y <- annual_past %>%
+    filter(decade %in% (.y))
+  
+.y_qq_past <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = value)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = .y)
+
+  print(.y_qq_past)
+}
+
+plot_qq_past("1980s")
+plot_qq_past("1990s")
+plot_qq_past("2000s")
+plot_qq_past("2010s")
+plot_qq_future("2020s")
+plot_qq_future("2030s")
+plot_qq_future("2040s")
+plot_qq_future("2050s")
+plot_qq_future("2060s")
+plot_qq_future("2070s")
+plot_qq_future("2080s")
+plot_qq_future("2090s")
+
+# ----------
+# qq plots of future rainy month data
+# ----------
+
+plot_rainy_qq_future = function(.y) {
+  
+  site_long_.y <- annual_future %>%
+    filter(decade %in% (.y),
+           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
+  
+.y_qq_45 <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_45)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = paste(.y, "May - Sep RCP 4.5"))
+
+.y_qq_85 <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_85)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = paste(.y, "May - Sep RCP 8.5"))
+  
+  print(.y_qq_45)
+  print(.y_qq_85)
+}
+
+# ----------
+# qq for past rainy month data
+# ----------
+
+plot_rainy_qq_past = function(.y) {
+  
+  site_long_.y <- annual_past %>%
+    filter(decade %in% (.y),
+           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
+  
+.y_qq_past <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = value)) +
+    facet_wrap(~variable, scales = "free")+
+    labs(title = paste(.y, "May - Sep"))
+  
+  print(.y_qq_past)
+}
+
+plot_rainy_qq_past("1980s")
+plot_rainy_qq_past("1990s")
+plot_rainy_qq_past("2000s")
+plot_rainy_qq_past("2010s")
+plot_rainy_qq_future("2020s")
+plot_rainy_qq_future("2030s")
+plot_rainy_qq_future("2040s")
+plot_rainy_qq_future("2050s")
+plot_rainy_qq_future("2060s")
+plot_rainy_qq_future("2070s")
+plot_rainy_qq_future("2080s")
+plot_rainy_qq_future("2090s")
+
+
+```
+
+## Graphs for 40 yr. period, shifts in timing of events
+```{r}
+
+# --------
+# clean data for 40 yr graphs
+# --------
+
+day_join_1980_2019 <-  past_day %>% 
+  filter(year %in% c(1980:2019)) %>%
+  pivot_longer(`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") # new column name to store values) 
+
+day_join_1980_2019_d <- day_join_1980_2019 %>% #for grouping by doy
+  group_by(doy, variable) %>% 
+  summarize(`1980-2019` = mean(value, na.rm = TRUE))
+
+site_long_past <- past_day %>% 
+  pivot_longer(`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>% # new column name to store values
+  mutate(variable = case_when(
+    .$variable == "runoff_daily" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_daily" ~ "AGDD",
+    .$variable == "soil_water_daily" ~ "Soil Water",
+    .$variable == "rain_daily" ~ "Rain",
+    .$variable == "accumswe_daily" ~ "Accumulated SWE",
+    .$variable == "pet_daily" ~ "PET",
+    .$variable == "deficit_daily" ~ "Deficit",
+    TRUE ~ "AET" # last ifelse is just labeled as TRUE
+  )) %>% 
+  mutate(decade = case_when(
+    .$year %in% c(1980:1989) ~ "1980s",
+    .$year %in% c(1990:1999) ~ "1990s",
+    .$year %in% c(2000:2009) ~ "2000s",
+    TRUE ~ "2010s"
+  )) 
+
+# --------
+# RCP 4.5 means
+# --------
+
+# 2020 - 2059 RCP 4.5
+# first, rename variables to be able to combine them later
+
+day_join_2020_2059_45 <- future_day %>% 
+  filter(year %in% c(2020:2059)) %>%
+  select(soil_water_daily_45:doy) %>% 
+  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>% # new column name to store values)
+  mutate(variable = case_when(.$variable == "aet_daily_45" ~ "aet_daily",
+    .$variable == "rain_daily_45" ~ "rain_daily",
+    .$variable == "runoff_daily_45" ~ "runoff_daily",
+    .$variable == "pet_daily_45" ~ "pet_daily",
+    .$variable == "accumswe_daily_45" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_45" ~ "soil_water_daily",
+    .$variable == "agdd_daily_45" ~ "agdd_daily",
+    TRUE ~ "deficit_daily")) 
+
+#for grouping by doy
+
+day_join_2020_2059_45_d <- day_join_2020_2059_45 %>% 
+  group_by(doy, variable) %>% 
+  summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
+
+
+# 2060 - 2099 RCP 4.5 df
+# first, rename variables to be able to combine them later
+
+day_join_2060_2099_45 <-  future_day %>% 
+  filter(year %in% c(2060:2099)) %>%
+  select(soil_water_daily_45:doy) %>%
+  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>%  # new column name to store values) 
+  mutate(variable = case_when(.$variable == "aet_daily_45" ~ "aet_daily",
+    .$variable == "rain_daily_45" ~ "rain_daily",
+    .$variable == "runoff_daily_45" ~ "runoff_daily",
+    .$variable == "pet_daily_45" ~ "pet_daily",
+    .$variable == "accumswe_daily_45" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_45" ~ "soil_water_daily",
+    .$variable == "agdd_daily_45" ~ "agdd_daily",
+    TRUE ~ "deficit_daily"))
+
+#for grouping by doy
+
+day_join_2060_2099_45_d <- day_join_2060_2099_45 %>% #for grouping by doy
+  group_by(doy, variable) %>% 
+  summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
+
+#full doy dataframe RCP 4.5
+
+day_join_45_d <- day_join_1980_2019_d %>% 
+  full_join(day_join_2020_2059_45_d) %>% 
+  full_join(day_join_2060_2099_45_d) %>% 
+  pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
+               names_to = "decades", # new column name for existing names
+               values_to = "value") %>% # new column name to store values 
+  na.omit(day_join_45_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  pivot_wider(names_from = variable,
+              values_from = value) 
+
+
+# --------
+# RCP 8.5 means
+# --------
+
+# 2020 - 2059 RCP 8.5 df
+# first, rename variables to be able to combine them later
+
+day_join_2020_2059_85 <- future_day %>% 
+  filter(year %in% c(2020:2059)) %>%
+  select(soil_water_daily_85:doy) %>% 
+  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>% # new column name to store values)
+  mutate(variable = case_when(.$variable == "aet_daily_85" ~ "aet_daily",
+    .$variable == "rain_daily_85" ~ "rain_daily",
+    .$variable == "runoff_daily_85" ~ "runoff_daily",
+    .$variable == "pet_daily_85" ~ "pet_daily",
+    .$variable == "accumswe_daily_85" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_85" ~ "soil_water_daily",
+    .$variable == "agdd_daily_85" ~ "agdd_daily",
+    TRUE ~ "deficit_daily"))   
+  
+#for grouping by doy
+  
+day_join_2020_2059_85_d <- day_join_2020_2059_85 %>% 
+  group_by(doy, variable) %>% 
+  summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
+
+
+# 2060 - 2099 RCP 8.5 df
+# first, rename variables to be able to combine them later
+
+day_join_2060_2099_85 <-  future_day %>% 
+  filter(year %in% c(2060:2099)) %>%
+  select(soil_water_daily_85:doy) %>%
+  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "value") %>%  # new column name to store values) 
+  mutate(variable = case_when(.$variable == "aet_daily_85" ~ "aet_daily",
+    .$variable == "rain_daily_85" ~ "rain_daily",
+    .$variable == "runoff_daily_85" ~ "runoff_daily",
+    .$variable == "pet_daily_85" ~ "pet_daily",
+    .$variable == "accumswe_daily_85" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_85" ~ "soil_water_daily",
+    .$variable == "agdd_daily_85" ~ "agdd_daily",
+    TRUE ~ "deficit_daily"))
+
+#for grouping by doy
+
+day_join_2060_2099_85_d <- day_join_2060_2099_85 %>% 
+  group_by(doy, variable) %>% 
+  summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
+
+
+#full day dataset RCP 8.5
+
+day_join_85_d <- day_join_1980_2019_d %>% 
+  full_join(day_join_2020_2059_85_d) %>% 
+  full_join(day_join_2060_2099_85_d) %>% 
+  pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
+               names_to = "decades", # new column name for existing names
+               values_to = "value") %>% # new column name to store values 
+  na.omit(day_join_85_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  pivot_wider(names_from = variable,
+              values_from = value) 
+
+
+```
+
+
+```{r}
+# -------
+# Function for 40 yr chunks - line graph by doy
+# -------
+
+  
+plot_decades_smooth = function(.y) { #start function
+  
+  exists_.y <- exists(.y, where = day_join_45_d) #check to see if the variable exists
+  
+  if(exists_.y == TRUE){ #start if statement RCP 4.5
+  
+  .y_plot_45 <- ggplot(day_join_45_d) + 
+    geom_smooth(size = 1.5,
+                se = FALSE,
+                aes(x = doy,
+                    y = .data[[.y]],
+                    # calling my variable, which I'll name later in the command
+                    group = decades,
+                    color = decades),
+                method = glm,
+                family = quasipoisson,
+                formula = y ~ ns(x, 15)) +
+    #internet said to do this
+    #quasipoisson is some type of statistical analysis type
+    #forumula has something to do with the degrees of freedom
+    #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
+    # geom_vline(data = day_join_45_d,
+    #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
+    labs(x = "Month",
+         color = "Year",
+         y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
+         # R needs the "" here
+         # the ifelse goes after the command you want to change
+         #.y is useful because it prevents R from confusing it with something else
+         # purrr is much more useful than a for loop here
+         # if {} else{} and if_else() both didn't work, but I don't know why
+         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 4.5", #title based on variable
+                           .y == "runoff_daily" ~ "Runoff RCP 4.5",
+                           .y == "rain_daily" ~ "Rain RCP 4.5",
+                           .y == "agdd_daily" ~ "AGDD RCP 4.5",
+                           .y == "accumswe_daily"~ "Accumulated SWE RCP 4.5",
+                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
+                           .y == "deficit_daily" ~ "Deficit RCP 4.5",
+                           TRUE ~ "Actual Evapotranspiration RCP 4.5")) + 
+    scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+  
+  ggsave(here::here("figures", #top folder
+                    site, # site subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_rcp45", ".png", sep = "_"))) #file name
+  
+  print(.y_plot_45)
+  
+  } #end if statement for rcp 4.5
+  
+  exists_.y <- exists(.y, where = day_join_85_d) #check to see if the variable exists
+  
+  if(exists_.y == TRUE){ #start if statement RCP 8.5
+  
+  .y_plot_85 <- ggplot(day_join_85_d) +
+    stat_smooth(size = 1.5,
+                se = FALSE,
+                aes(x = doy,
+                    y = .data[[.y]],
+                    # calling my variable, which I'll name later in the command
+                    group = decades,
+                    color = decades),
+                method = glm,
+                family = quasipoisson,
+                formula = y ~ ns(x, 15)) +
+    #internet said to do this
+    #quasipoisson is some type of statistical analysis type
+    #forumula has something to do with the degrees of freedom
+    #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
+    #geom_vline(xintercept = doy[.data[[.y]] == max(.data[[.y]])],color='red') +
+    labs(x = "Month",
+         color = "Year",
+         y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
+         # R needs the "" here
+         # the ifelse goes after the command you want to change
+         #.y is useful because it prevents R from confusing it with something else
+         # purrr is much more useful than a for loop here
+         # if {} else{} and if_else() both didn't work, but I don't know why
+         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 8.5", #title based on variable
+                           .y == "runoff_daily" ~ "Runoff RCP 8.5",
+                           .y == "rain_daily" ~ "Rain RCP 8.5",
+                           .y == "agdd_daily" ~ "AGDD RCP 8.5",
+                           .y == "accumswe_daily"~ "Accumulated SWE RCP 8.5",
+                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
+                           .y == "deficit_daily" ~ "Deficit RCP 8.5",
+                           TRUE ~ "Actual Evapotranspiration RCP 8.5")) +
+    scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+  
+  ggsave(here::here("figures", #top folder
+                    site, #site subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_rcp85", ".png", sep = "_"))) #file name
+  
+  print(.y_plot_85)
+  
+  } #end if statement RCP 8.5
+
+  
+} #end function decades_smooth
+
+plot_decades_line = function(.y) { #start function
+  
+  exists_.y <- exists(.y, where = day_join_45_d) #check to see if the variable exists
+  
+  if(exists_.y == TRUE){ #start if statement RCP 4.5
+
+.y_plot_45 <- ggplot(day_join_45_d) + 
+    geom_line(size = 1.5,
+                aes(x = doy,
+                    y = .data[[.y]],
+                    # calling my variable, which I'll name later in the command
+                    group = decades,
+                    color = decades)) +
+    #internet said to do this
+    #quasipoisson is some type of statistical analysis type
+    #forumula has something to do with the degrees of freedom
+    #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
+    # geom_vline(data = day_join_45_d,
+    #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
+    labs(x = "Month",
+         color = "Year",
+         y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
+         # R needs the "" here
+         # the ifelse goes after the command you want to change
+         #.y is useful because it prevents R from confusing it with something else
+         # purrr is much more useful than a for loop here
+         # if {} else{} and if_else() both didn't work, but I don't know why
+         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 4.5", #title based on variable
+                           .y == "runoff_daily" ~ "Runoff RCP 4.5",
+                           .y == "rain_daily" ~ "Rain RCP 4.5",
+                           .y == "agdd_daily" ~ "AGDD RCP 4.5",
+                           .y == "accumswe_daily"~ "Accumulated SWE RCP 4.5",
+                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
+                           .y == "deficit_daily" ~ "Deficit RCP 4.5",
+                           TRUE ~ "Actual Evapotranspiration RCP 4.5")) +
+    scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+  
+  ggsave(here::here("figures", #top folder
+                    site, # site subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_rcp45_line", ".png", sep = "_"))) #file name
+  print(.y_plot_45)
+  
+  } # end if statement RCP 4.5
+  
+  exists_.y <- exists(.y, where = day_join_85_d) #check to see if the variable exists
+  
+  if(exists_.y == TRUE){ #start if statement RCP 8.5
+  
+  .y_plot_85 <- ggplot(day_join_85_d) +
+    geom_line(size = 1.5,
+                aes(x = doy,
+                    y = .data[[.y]],
+                    # calling my variable, which I'll name later in the command
+                    group = decades,
+                    color = decades)) +
+    #internet said to do this
+    #quasipoisson is some type of statistical analysis type
+    #forumula has something to do with the degrees of freedom
+    #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
+    #geom_vline(xintercept = doy[.data[[.y]] == max(.data[[.y]])],color='red') +
+    labs(x = "Month",
+         color = "Year",
+         y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
+         # R needs the "" here
+         # the ifelse or case_when goes after the command you want to change
+         #.y is useful because it prevents R from confusing it with something else
+         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 8.5", #title based on variable
+                           .y == "runoff_daily" ~ "Runoff RCP 8.5",
+                           .y == "rain_daily" ~ "Rain RCP 8.5",
+                           .y == "agdd_daily" ~ "AGDD RCP 8.5",
+                           .y == "accumswe_daily"~ "Accumulated SWE RCP 8.5",
+                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
+                           .y == "deficit_daily" ~ "Deficit RCP 8.5",
+                           TRUE ~ "Actual Evapotranspiration RCP 8.5")) +
+    scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+  
+  ggsave(here::here("figures", #top folder
+                    site, #site subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_rcp85_line", ".png", sep = "_"))) #file name
+  
+  print(.y_plot_85)
+  
+  } #end if statement RCP 8.5
+  
+  
+  
+} #end function decades_line
+
+```
+
+
+```{r, out.width="50%"}
+
+plot_decades_smooth("soil_water_daily")
+plot_decades_smooth("runoff_daily")
+plot_decades_smooth("rain_daily")
+plot_decades_smooth("accumswe_daily")
+plot_decades_smooth("pet_daily")
+plot_decades_smooth("deficit_daily")
+plot_decades_smooth("aet_daily")
+# plot_decades_line("agdd_daily") - fix later, this data is bad - shouldn't plot 8-20-20
+
+```
+
+
+
+## Annual Average over time
+
+```{r, fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents RCP 4.5 and the yellow line represents RCP 8.5"}
+
+colors <- c("Historical" = "gray60", "RCP 4.5" = "turquoise4", "RCP 8.5" = "darkgoldenrod3")
+  # manually create a legend because of the multiple data frames used for the graph
+
+ggplot() +
+  geom_line(data = annual_past, aes(x = year, y = annual_avg, color ="Historical"),
+            size = .6) + 
+  geom_line(data = annual_future, aes(x = year, y = annual_avg_85, color = "RCP 8.5"),
+            size = .6) +
+  geom_line(data = annual_future, aes(x = year, y = annual_avg_45, color = "RCP 4.5"),
+            size = .6) +
+  facet_wrap(~variable, scales = "free") +
+  scale_color_manual(values = colors) +
+  labs(color = "Annual Averages")
+  
+
+ggsave(here::here("figures", #subfolder
+                  site, #site subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  "annual_facet.png")) #file name
+
+```
+## Individual Graphs of change over time
+
+```{r, out.width="50%"}
+
+
+plot_annual = function(.y, .x, .z, .l) { 
+  #.y = historical
+  #.x = future 4.5
+  #.z = future 8.5
+  #.l = highlighted drought year
+  
+  colors <- c("Historical" = "gray60", "RCP 4.5" = "turquoise4", "RCP 8.5" = "darkgoldenrod3")
+  # manually create a legend because of the multiple data frames used for the graph
+  
+  past_annual <- past_day %>% 
+    group_by(year) %>% 
+    summarize(annual_avg = mean(.data[[.y]], na.rm = TRUE)) #.data[[.y]] essentially removes the quotations from around the function argument, won't work without it
+  
+   future_annual <- future_day %>% 
+    group_by(year) %>% 
+    summarize(annual_avg_45 = mean(.data[[.x]], na.rm = TRUE),
+              annual_avg_85 = mean(.data[[.z]], na.rm = TRUE))
+   
+   point_low <- past_annual %>% 
+     filter(year %in% c(.l))
+   
+   line_low <- point_low$annual_avg
+  
+  annual_graph_45 <- ggplot() +
+    geom_line(data = past_annual, # historical line
+              aes(x = year, 
+                  y = annual_avg, 
+                  color = "Historical"),
+              size = .75) +
+    geom_line(data = future_annual, # rcp 4.5 line
+              aes(x = year, 
+                  y = annual_avg_45, 
+                  color = "RCP 4.5"),
+              size = .75) +
+    geom_hline(data = point_low, 
+               yintercept = line_low, 
+               linetype = "dashed",
+               color = "firebrick3") +
+    geom_point(data = point_low, # highlights a dry year point
+               aes(x = year, y = annual_avg),
+               color = "firebrick3",
+               alpha =  0.25,
+               size = 4) +
+  labs(color = "Annual Averages", #legend titel name
+       title = case_when(
+           .y == "runoff_daily" ~ "Runoff RCP 4.5",
+            #.Svariable calls the variable, then it can be renamed
+           .y == "agdd_daily" ~ "Accumulated Growing Degree Days RCP 4.5",
+           .y == "soil_water_daily" ~ "Soil WaterRCP 4.5",
+           .y == "rain_daily" ~ "Rain RCP 4.5",
+           .y == "accumswe_daily" ~ "Accumulated SWE RCP 4.5",
+           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
+           .y == "deficit_daily" ~ "Deficit RCP 4.5",
+           TRUE ~ "Actual Evapotranspiration RCP 4.5"),
+       y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
+                    "Water (mm)")) +
+      geom_text(data = point_low, # labels the line
+              aes(x = 1973, 
+                  y = annual_avg,
+                  label = year, 
+                  vjust = -0.35), # -0.x moves the text up above the line
+              color = "firebrick3") +
+    scale_color_manual(values = colors) # colors is a named vector, see top of function
+ 
+  
+  ggsave(here::here("figures", #subfolder
+                    site, #site subfolder
+                    paste("lat",lat,"lon",lon,sep = "_"),
+                    paste(.y, "annual_graph_45.png", sep = "_"))) #file name
+  
+  
+  annual_graph_85 <- ggplot() +
+    geom_line(data = past_annual, # historical line
+              aes(x = year, 
+                  y = annual_avg, 
+                  color = "Historical"),
+              size = .75) +
+    geom_line(data = future_annual, # rcp 8.5 line
+              aes(x = year, 
+                  y = annual_avg_85,
+                  color = "RCP 8.5"),
+              size = .75) +
+    geom_hline(data = point_low, 
+               yintercept = line_low, 
+               linetype = "dashed",
+               color = "firebrick3") +
+    geom_point(data = point_low, # highlights a dry year point
+               aes(x = year, y = annual_avg),
+               color = "firebrick3",
+               alpha =  0.25,
+               size = 4) +
+  labs(color = "Annual Averages", #legend titel name
+       title = case_when(
+           .y == "runoff_daily" ~ "Runoff RCP 8.5",
+            #.Svariable calls the variable, then it can be renamed
+           .y == "agdd_daily" ~ "Accumulated Growing Degree Days RCP 8.5",
+           .y == "soil_water_daily" ~ "Soil Water RCP 8.5",
+           .y == "rain_daily" ~ "Rain RCP 8.5",
+           .y == "accumswe_daily" ~ "Accumulated SWE RCP 8.5",
+           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
+           .y == "deficit_daily" ~ "Deficit RCP 8.5",
+           TRUE ~ "Actual Evapotranspiration RCP 8.5"),
+       y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
+                    "Water (mm)")) +
+    geom_text(data = point_low,
+              aes(x = 1973, 
+                  y = annual_avg,
+                  label = year, 
+                  vjust = -0.35),
+              color = "firebrick3") +
+    scale_color_manual(values = colors) # colors is a named vector, see top of function
+  
+  
+  ggsave(here::here("figures", #subfolder
+                    site, #site subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste(.y, "annual_graph_85.png", sep = "_"))) #filename
+  
+  # return(annual_graph_45)
+  # return(annual_graph_85) with these two it only prints the 4.5 graph
+  
+  print(annual_graph_45)
+  print(annual_graph_85)
+  
+  }
+
+plot_annual("runoff_daily", "runoff_daily_45", "runoff_daily_85", "2002")
+#plot_annual("agdd_daily", "agdd_daily_45", "agdd_daily_85", "2002")
+plot_annual("accumswe_daily", "accumswe_daily_45", "accumswe_daily_85", "2002")
+plot_annual("pet_daily", "pet_daily_45", "pet_daily_85", "2002")
+plot_annual("aet_daily", "aet_daily_45", "aet_daily_85", "2002")
+plot_annual("deficit_daily", "deficit_daily_45", "deficit_daily_85", "2002")
+plot_annual("rain_daily", "rain_daily_45", "rain_daily_85", "2002")
+plot_annual("soil_water_daily", "soil_water_daily_45", "soil_water_daily_85", "2002")
+
+
+```
+
+```{r}
+
+# ---------
+# half jitter plot half box plot (displays medians)
+# ---------
+  
+
+dodge <- position_dodge(width = 1)
+
+ggplot(data =  %>% 
+         filter(!variable %in% c("agdd_daily", "pet_daily")), 
+       aes(x = decades, 
+           y = value, 
+           shape = NULL)) + #originally had "group = decade" here
+                            # this caused the facet_wrap to include all variables on all facets
+  geom_half_point(aes(colour = decades),
+             size = .9,
+             alpha = 0.25,
+             position = dodge) + # dodge is a written code (see above)
+  geom_half_boxplot(aes(x = variable, # internet had "mapping =" in front of
+                   # aes, removed and nothing changed
+                   y = value,
+                   fill = decades),
+               alpha = 0.8,
+               nudge = 0.025,
+               outlier.shape = NA,#hides outliers
+               position = dodge) + # has to match the other half
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+  labs(y = "Water(mm)") +
+  facet_wrap(~variable, scales = "free")
+
+ggsave(here::here("figures", #subfolder
+                  site, #site subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_water_all.png", sep = "_"))) # file name
+
+
+```
+```{r}
+# --------
+# jitter under boxplot
+# --------
+
+dodge <- position_dodge(width = 1)
+
+ggplot(data = day_join_45_m %>%
+         filter(!variable %in% c("agdd_daily", "pet_daily")),
+       aes(x = decades, 
+           y = value, 
+           shape = NULL)) + #originally had "group = decade" here
+                            # this caused the facet_wrap to include all variables on all facets
+  geom_jitter(aes(colour = decades),
+             size = .9,
+             alpha = 0.25) + # dodge is a written code (see above)
+  geom_boxplot(aes(x = decades, # internet had "mapping =" in front of
+                   # aes, removed and nothing changed
+                   y = value),
+               alpha = 0.3,
+               nudge = 0.025,
+               outlier.shape = NA,#hides outliers
+               #position = dodge, # has to match the other half
+               fill = "grey60") +
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+  labs(y = "Water(mm)") +
+  facet_wrap(~variable, scales = "free")
+
+ggsave(here::here("figures", #subfolder
+                  site, #site subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_water_all.png", sep = "_"))) # file name
+
+
+
+```
+

@@ -1,0 +1,844 @@
+---
+title: "Data Mining Thredds"
+author: "Janelle Christensen"
+date: "8/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# ----------
+# purpose: data mining the thredds website
+# what will happen: download data from the thredds website
+# historical daily, historical monthly, future daily (all models), future monthly (all models)
+# adjust as needed
+# ----------
+
+library(data.table) 
+library(here)
+#library(plyr) 
+# be careful with this, it causes issues for dplyr::group_by
+# I didn't try, but the internet says if you load it before tidyverse, that issue goes away
+library(tidyverse)
+library(beepr)
+library(lubridate)
+library(directlabels)
+library(data.table)
+library(ggbeeswarm)
+library(gghalves)
+library(directlabels)
+library(ggrepel)
+
+```
+
+Quick note: this code runs off the most recent version of R. Additionally, this code requires use of project directories. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
+
+
+### To update R:
+
+#### Enter the following code for windows:
+
+1. install.packages("installr")
+2. library(installr)
+3. updateR()
+
+
+[More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
+
+
+#### Enter the following code for mac
+
+1. install.packages('devtools') assuming it is not already installed
+2. library(devtools)
+3. install_github('andreacirilloac/updateR')
+4. library(updateR)
+5. updateR(admin_password = 'Admin user password')
+
+[More information here] (http://www.andreacirillo.com/2018/03/10/updater-package-update-r-version-with-a-function-on-mac-osx/)
+
+
+R may tell you to open RGui
+
+[More information about RGui here] (https://www.dummies.com/programming/r/how-to-navigate-rgui/)
+
+# Set up for the site
+
+Make sure to run this code chunk before running any other code chunks.
+
+```{r}
+#initialize with time range of inerest and location, these don't get overwritten in loops 
+# set up for the site, dates, models, and past data type
+
+site = "little_saddle_mtn" 
+
+lat = 44.702
+
+lon = -110.018
+
+start_past = 1980
+
+end_past = 2019
+
+start_future = 2020
+
+end_future = 2099
+
+model_bc = "inmcm4" #model for "best case" scenario
+
+#options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
+
+model_bc_rcp = "rcp45" #this will be subbed in the HTML
+#options are "rcp85", "rcp45"
+
+model_wc = "HadGEM2-CC365" #model for "worst case" scenario
+
+#options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
+
+model_wc_rcp = "rcp85" #this will be subbed in the HTML
+#options are "rcp85", "rcp45"
+
+past_data = "gridmet"
+
+#options: "gidmet", "daymet"
+# if you want to use data that will work with the future models, gridmet is a better choice. It doesn't require adjusting for any biases
+```
+
+
+# BEFORE RUNNING THE FUNCTIONS
+
+Make sure you have created the folders as necessary in your wd. If you don't want to save the figures, then just comment out ggsave inside of the functions.
+
+Run the following code to create all folders in your project folder that will be needed to run this code:
+
+```{r}
+# create subfolders
+
+here::here(dir.create("raw_data"))
+
+here::here(dir.create("figures"))
+
+here::here(dir.create(paste("figures",
+                            site, 
+                            sep = "/")))
+
+here::here(dir.create(paste("figures",
+                            site,
+                            paste("lat",lat,"lon",lon,sep = "_"), 
+                            sep = "/")))
+
+here::here(dir.create(paste("figures",
+                            site,
+                            paste("lat",lat,"lon",lon,sep = "_"),
+                            "40_yr_graphs",
+                            sep = "/")))
+
+for (i in c("historical_daily", "historical_monthly", "future_daily", "future_monthly")){
+
+here::here(dir.create(paste("raw_data", 
+                            i, 
+                            sep = "/")))
+
+here::here(dir.create(paste("raw_data",
+                            i, 
+                            site, 
+                            sep = "/")))
+
+here::here(dir.create(paste("raw_data",
+                            i, 
+                            site, 
+                            paste("lat",lat,"lon",lon,sep = "_"), 
+                            sep = "/")))
+
+}
+                             
+```
+
+
+# Historical Data
+
+Be sure of what the intended use is for your historical data. If comparing it to future data, then you'll want to use the gridmet data.
+
+
+### Daily Historical Data
+
+```{r}
+
+# ----------
+# DAILY HISTORICAL LOOP
+# ----------
+
+# set time variables for historical data 
+
+start = start_past
+
+end = end_past
+
+#initialize some variables to hold data 
+
+holder<-NULL 
+
+mydat<-NULL 
+
+mydat2<-NULL 
+
+mydat3<-NULL 
+
+
+
+#This is the loop that runs across all the climate variables you want to download 
+
+# "agdd", fix this - return when AGDD is fixed on the website
+## make sure the order in colnames at end of loop matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET")){ 
+  
+  
+  
+  print(paste("downloading",climvar, "daily historical", past_data))#this is a progress update as the loop runs 
+  
+  
+  for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+    
+    #Specify URL where are stored on cloud 
+    
+    #access daily data
+    
+    # 1980 has only 30 days in December, all other years have 31
+    
+    
+   if(past_data == "gridmet"){  #if statement for gridmet data url
+     
+     leap <- lubridate::leap_year(yr) 
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+          
+          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+
+   } #end if statement for gridmet data url
+    
+    if(past_data == "daymet"){ #if statement for daymet url
+          
+          if(yr == 1980){
+      day <- 30
+    } else {
+      day <- 31
+    }
+          
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/daily/v2_",yr,"_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",yr,"-12-",day,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+    
+    } #end if statement for dayment data url
+    
+    holder <-data.frame(fread(data_url, verbose=FALSE, showProgress = FALSE))#temporary holder for subsets downloaded from cloud 
+    
+    mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+    
+  }#end loop across years 
+  
+  beep(4)
+  
+  mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk
+  
+  date <- mydat$time
+  
+  mydat<-NULL#reset this variable so it can accodomate a new column name given the new water balance variable it's extracting at each loop cycle
+  
+  
+}#end loop across climate variables 
+
+beep(4)
+
+
+mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
+
+# "agdd_daily", fix this - return when agdd is back on the website
+## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+colnames(mydat3)[]<-c("date", "lat","lon","soil_water_daily", "runoff_daily", "rain_daily", "accumswe_daily", "pet_daily", "deficit_daily", "aet_daily") 
+
+
+
+head(mydat3)
+
+write_csv(mydat3, here::here("raw_data",
+                             "historical_daily",
+                             site, 
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             paste(site,"_daily_", past_data,".csv", sep = ""))) #default is a space, sep = "" removes space
+
+
+```
+
+### Monthly Historical Data
+
+```{r}
+
+# ------------
+# MONTHLY HISTORICAL LOOP
+# ------------
+
+# set time variables for historical data 
+
+start = start_past
+
+end = end_past
+
+#initialize some variables to hold data 
+
+holder <- NULL 
+
+mydat <- NULL 
+
+mydat2 <- NULL 
+
+mydat3 <- NULL 
+
+
+
+#This is the loop that runs across all the climate variables you want to download 
+
+#"agdd_monthly", fix this - return when agdd is back on the website
+## make sure the order in colnames at the end of the loop matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
+  
+  print(paste("downloading",climvar, "historical"))#this is a progress update as the loop runs 
+  
+  
+  #the url uses two variable names for same variable in monthly download string like "PET_monthly" for long name and "pet" for short name 
+  
+  #the short name is sometimes a different case than the long variable name, so make it lowercase so that 
+  
+  #url string will work with the format of data stored on the cloud 
+  
+  varshort<-unlist(strsplit(climvar,"_m"));varshort 
+  
+  vshort<-varshort[[1]];vshort 
+  
+  if(vshort=="PET"){ 
+    
+    vshort<-"pet" 
+    
+  };vshort 
+  
+  
+  
+  if(vshort=="Deficit"){#change case of short name from upper to lower case 
+    
+    vshort<-"deficit" 
+    
+  };vshort 
+  
+  
+  if(vshort=="AET"){ 
+    
+    vshort<-"aet" 
+    
+  };vshort 
+  
+  
+  
+  for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+    
+    #Specify URL where are stored on cloud 
+    
+    #single variable single year monthly time series with variable and year specified by user 
+    
+    if(past_data == "gridmet"){  #if statement for gridmet data url
+    
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=1980-01-16T05%3A14%3A31.916Z&time_end=1980-12-16T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    } #end if statement for gridmet data url
+    
+    if(past_data == "daymet"){  #if statement for daymet data url
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/monthly/v2_",yr,"_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=1980-01-16T05%3A14%3A31.916Z&time_end=1980-12-16T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    } #end if statement for daymet data url
+    
+    
+    holder <-data.frame(fread(data_url, 
+                              verbose=FALSE, 
+                              showProgress = FALSE,
+    ))#temporary holder for subsets downloaded from cloud 
+    
+    mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+    
+  }#end loop across years 
+  
+  mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk 
+  
+  date <- mydat$time # date will download wrong
+  
+  mydat<-NULL#reset this variable so it can accodomate a new column name given the new water balance variable it's extracting at each loop cycle
+  
+  
+}#end loop across climate variables 
+
+
+beep(4)
+
+
+mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with meta data including date, lat, long 
+
+# "agdd_monthly", fix this - return when agdd is back on the website
+## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+colnames(mydat3)[]<-c("date", "lat","lon","soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "pet_monthly", "deficit_monthly", "aet_monthly") 
+
+
+if(past_data == "gridmet"){
+  write_csv(mydat3, here::here("raw_data",
+                             "historical_monthly",
+                             site, 
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             paste(site,"monthly", past_data, ".csv", sep = "_")))
+}
+
+
+if(past_data == "daymet" {#dates for daymet data are wrong, they are all 1980
+
+span<-end-start;span#of years downloaded 
+
+year<-rep(start:end,each=12);year 
+
+month<-rep(1:12,span+1);month 
+
+length(year); length(month); nrow(mydat3) 
+
+names(mydat3) 
+
+mydat4<-cbind(year,month,mydat3[,c(2:10)]);head(mydat4)#drop bogus dates and add year and month
+#fix this - with agdd back in it should be [,c(2:11)]
+
+
+write_csv(mydat4, here::here("raw_data",
+                             "historical_monthly",
+                             site, 
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             paste(site,"monthly", past_data, ".csv", sep = "_")))
+} #end if statement for daymet date data
+#default is a space, sep = "" removes space
+
+# here::here allows you to choose a folder in your working directory to save to
+# here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a commma)", "last thing in the list is the name of the object I'm saving")
+
+```
+
+# Future Data
+
+## Future Data mixed models
+
+### Daily future mixed models
+
+This data will download the futures of specified RCPs and models into a single csv. It will mix the model types as specified (i.e. inmcm4 4.5 and CCSM4 8.5 future scenarios) and label the data as bc (best case) and wc (worst case)
+
+```{r}
+
+
+start = start_future
+
+end = end_future 
+
+  
+  holder <- NULL 
+  
+  mydat <- NULL 
+  
+  mydat2 <- NULL 
+  
+  mydat3 <- NULL 
+  
+  #This is the loop that runs across all the climate variables you want to download for worst case scenario
+  
+  #"agdd", fix this not a part of the website 8-20-20
+  
+  
+  for(climvar in c("soil_water", "runoff", "rain","accumswe", "PET", "Deficit", "AET")){ #start loop for 8.5
+    
+    
+    
+    print(paste("downloading",climvar, "daily", model_wc, model_wc_rcp))#this is a progress update as the loop runs 
+    
+    
+    for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+      
+      
+      #Specify URL where are stored on cloud 
+      # leap years have end date set at yr + 1 01-01
+      # set if else for future data
+      
+      leap <- lubridate::leap_year(yr) 
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+      
+      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_wc_rcp,"/",model_wc,"/V_1_5_",yr,"_",model_wc,"_",model_wc_rcp,"_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="") 
+      
+      # http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/rcp85/inmcm4/V_1_5_2099_inmcm4_rcp85_soil_water_monthly.nc4?var=soil_water&latitude=45&longitude=-111&time_start=2099-01-16T05%3A14%3A31.916Z&time_end=2099-12-17T00%3A34%3A14.059Z&accept=csv_file
+      
+      holder <-data.frame(fread(data_url, 
+                                verbose=FALSE, 
+                                showProgress = FALSE,
+      ))#temporary holder for subsets downloaded from cloud 
+      
+      mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+      
+      date <- mydat$time # dates don't download correctly without this
+      
+    }#end loop across years for rcp 8.5
+    
+    mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk 
+    
+    mydat<-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it's extracting at each loop cycle 
+    
+  }#end loop across climate variables for 8.5
+  
+  
+  
+  mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadata including date, lat, long 
+  
+  head(mydat3) 
+
+  # ----------
+  # Create loop for downloading the data rcp 4.5
+  # ----------
+
+  #initialize some variables to hold data
+
+  holder <- NULL
+
+  mydat <- NULL
+
+  mydat2 <- NULL
+
+  mydat4 <- NULL
+  
+  
+  
+  #This is the loop that runs across all the climate variables you want to download 
+  
+  #"agdd", fix this - return when agdd is back on the website
+
+  for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET")){ #start loop for RCP 4.5
+
+
+
+    print(paste("downloading",climvar, "daily", model_bc, model_bc_rcp))#this is a progress update as the loop runs
+
+
+    for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data
+
+
+      #Specify URL where are stored on cloud
+      #leap years are written differently in the future data
+      #ifelse for future data
+
+      leap <- lubridate::leap_year(yr)
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+
+      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_bc_rcp,"/",model_bc,"/V_1_5_",yr,"_",model_bc,"_",model_bc_rcp,"_", climvar, ".nc4?var=", climvar, "&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+
+      holder <-data.frame(fread(data_url,
+                                verbose=FALSE,
+                                showProgress = FALSE,
+      )) #temporary holder for subsets downloaded from cloud
+
+      mydat<-rbind(mydat, holder) #file that grows by adding each chunk downloaded from cloud
+
+
+      date <- mydat$time
+
+    }#end loop across years for 4.5
+
+    mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk
+
+    mydat<-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it's extracting at each loop cycle
+
+  }#end loop across climate variables for 4.5
+
+  mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
+  
+  # "agdd_daily_wc", "agdd_daily_bc", - fix this, return when agdd is back on the website
+  # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+  # 
+  colnames(mydat4)[]<-c("date", "lat","lon","soil_water_daily_wc", "runoff_daily_wc", "rain_daily_wc",  "accumswe_daily_wc", "pet_daily_wc", "deficit_daily_wc", "aet_daily_wc", "soil_water_daily_bc", "runoff_daily_bc", "rain_daily_bc",  "accumswe_daily_bc", "pet_daily_bc", "deficit_daily_bc", "aet_daily_bc")
+
+  
+  # "agdd_daily_wc", fix this - not a part of the website 8-20-20
+  ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+  
+  
+# columns are multiplied by 10, need to fix this before writing csv
+  
+  divide.by.10 <- function(x, na.rm = FALSE) {
+    x/10
+  }
+  
+  mydat4 <- mydat3 %>% # fix this change back to mydat5 <- mydat 4
+    mutate(lat = as.character(lat),
+           lon = as.character(lon)) %>% 
+    mutate_if(is.numeric, divide.by.10)
+  
+  write_csv(mydat4, here::here("raw_data",
+                               "future_daily", # fix this change back to mydat5
+                               site, 
+                               paste("lat",lat,"lon",lon, sep = "_"),
+                               paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, "daily_future.csv", sep = "_"))) #default is a space, sep = "" removes space
+
+beep(1)
+
+# here::here allows you to choose a folder in your working directory to save to
+# here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a comma)", "last thing in the list is the name of the object I'm saving")
+```
+
+
+### Monthly Future mixed models
+
+```{r}
+
+# download best case/worst case climate models, into one csv specified rcps only
+
+start = start_future 
+
+end = end_future
+
+#initialize some variables to hold data 
+
+holder <- NULL 
+
+mydat <- NULL 
+
+mydat2 <- NULL 
+
+mydat3 <- NULL 
+
+
+
+#This is the loop that runs across all the climate variables you want to download 
+
+ # "agdd_monthly", fix this - return once agdd is back on the website
+# make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+  for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly","accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
+  
+  
+  
+  print(paste("downloading",climvar, model_wc, model_wc_rcp))#this is a progress update as the loop runs 
+  
+  
+  
+  #the url uses two variable names for same variable in monthly download string like "PET_monthly" for long name and "pet" for short name 
+  
+  #the short name is sometimes a different case than the long variable name, so make it lowercase so that 
+  
+  #url string will work with the format of data stored on the cloud 
+  
+  varshort<-unlist(strsplit(climvar,"_m"));varshort 
+  
+  vshort<-varshort[[1]];vshort 
+  
+  if(vshort=="PET"){ 
+    
+    vshort<-"pet" 
+    
+  };vshort 
+  
+  
+  if(vshort=="Deficit"){#change case of short name from upper to lower case 
+    
+    vshort<-"deficit" 
+    
+  };vshort 
+  
+  
+  if(vshort=="AET"){ 
+    
+    vshort<-"aet" 
+    
+  };vshort 
+  
+  
+  for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+    
+    
+    #Specify URL where are stored on cloud 
+    
+leap <- lubridate::leap_year(yr) 
+#leap years act differently with this monthly future data
+#need to correct for that
+    if(leap == TRUE){
+      day <- 16
+    } else {
+      day <- 17
+    }
+    
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_wc_rcp,"/",model_wc,"/V_1_5_",yr,"_",model_wc,"_",model_wc_rcp,"_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    
+    
+    
+    holder <-data.frame(fread(data_url, 
+                              verbose=FALSE, 
+                              showProgress = FALSE,
+    ))#temporary holder for subsets downloaded from cloud 
+    
+    mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+    
+    date <- mydat$time
+    
+    }#end loop across years for rcp 8.5
+  
+  mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk 
+  
+  mydat<-NULL#reset this variable so it can accodomate a new column name given the new water balance variable it's extracting at each loop cycle 
+  
+}#end loop across climate variables for rcp 8.5
+  
+
+
+mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
+
+head(mydat3) 
+
+
+# ----------
+# Create loop for downloading the data rcp 4.5
+# ----------
+
+#initialize some variables to hold data 
+
+holder <- NULL 
+
+mydat <- NULL 
+
+mydat2 <- NULL 
+
+mydat4 <- NULL 
+
+
+
+#This is the loop that runs across all the climate variables you want to download 
+# "agdd_monthly", fix this - removed because it was removed from website
+# make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
+  
+  
+  
+  print(paste("downloading",climvar, "4.5", m))#this is a progress update as the loop runs 
+  
+  
+  
+  #the url uses two variable names for same variable in monthly download string like "PET_monthly" for long name and "pet" for short name 
+  
+  #the short name is sometimes a different case than the long variable name, so make it lowercase so that 
+  
+  #url string will work with the format of data stored on the cloud 
+  
+  varshort<-unlist(strsplit(climvar,"_m"));varshort 
+  
+  vshort<-varshort[[1]];vshort 
+  
+  if(vshort=="PET"){ 
+    
+    vshort<-"pet" 
+    
+  };vshort 
+  
+  
+  
+  if(vshort=="Deficit"){#change case of short name from upper to lower case 
+    
+    vshort<-"deficit" 
+    
+  };vshort 
+  
+  
+  
+  
+  
+  if(vshort=="AET"){ 
+    
+    vshort<-"aet" 
+    
+  };vshort 
+  
+  
+  
+  for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+    
+    
+    #Specify URL where are stored on cloud 
+    
+    leap <- lubridate::leap_year(yr) 
+    if(leap == TRUE){
+      day <- 16
+    } else {
+      day <- 17
+    }
+    
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_bc_rcp,"/",model_bc,"/V_1_5_",yr,"_",model_bc,"_",model_bc_rcp,"_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    
+    
+    
+    holder <-data.frame(fread(data_url, 
+                              verbose=FALSE, 
+                              showProgress = FALSE,
+    ))#temporary holder for subsets downloaded from cloud 
+    
+    mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+    
+    date <- mydat$time
+    
+  }#end loop across years 
+  
+  mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk 
+  
+  mydat<-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it's extracting at each loop cycle 
+  
+
+
+mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
+# "agdd_monthly_85", fix this - was removed because agdd was removed from website
+## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+colnames(mydat4)[]<-c("date", "lat","lon","soil_water_monthly_85", "runoff_monthly_85", "rain_monthly_85",  "accumswe_monthly_85", "pet_monthly_85", "deficit_monthly_85", "aet_monthly_85", "soil_water_monthly_45", "runoff_monthly_45", "rain_monthly_45",  "accumswe_monthly_45", "pet_monthly_45", "deficit_monthly_45", "aet_monthly_45") 
+
+divide.by.10 <- function(x, na.rm = FALSE) {
+  x/10
+}
+
+mydat5 <- mydat4 %>% 
+  mutate(lat = as.character(lat),
+         lon = as.character(lon)) %>% 
+  mutate_if(is.numeric, divide.by.10)
+
+
+
+#at this point if we want another loop for downloading more sites with different coordinates 
+
+#we need to save mydat4 to the hard drive. 
+
+# setwd("C:\\David\\Water Balance CONUS\\downloads\\")#note R requires either "\\" or "/" 
+
+# JC fixed for this by creating a project folder, no need to setwd() when you have a project folder
+
+write_csv(mydat5, here::here("raw_data",
+                             "future_monthly",
+                             site,
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             paste(site,"lat", lat, "lon", lon, m,"monthly_future.csv", sep = "_"))) #default is a space, sep = "" removes space
+
+}# end loop across different climate projections
+
+beep(1)
+
+# here::here allows you to choose a folder in your working directory to save to
+# here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a commma)", "last thing in the list is the name of the object I'm saving")
+
+
+```
+
