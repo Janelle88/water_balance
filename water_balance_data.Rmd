@@ -34,7 +34,6 @@ library(ggrepel)
 
 Quick note: this code runs off the most recent version of R. Additionally, this code requires use of project directories. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
-test
 
 ### To update R:
 
