@@ -105,31 +105,16 @@ past_data = "gridmet"
 ```
 
 
-# BEFORE RUNNING THE FUNCTIONS
+# Before running the code
 
 Make sure you have created the folders as necessary in your wd. If you don't want to save the figures, then just comment out ggsave inside of the functions.
 
 Run the following code to create all folders in your project folder that will be needed to run this code:
 
 ```{r}
-# create subfolders
+# create subfolders for data 
 
 here::here(dir.create(site))
-
-here::here(dir.create(paste(site,
-                            "figures",
-                            sep = "/")))
-
-here::here(dir.create(paste(site,
-                            "figures",
-                            paste("lat",lat,"lon",lon,sep = "_"), 
-                            sep = "/")))
-
-here::here(dir.create(paste(site,
-                            "figures",
-                            paste("lat",lat,"lon",lon,sep = "_"),
-                            "40_yr_graphs",
-                            sep = "/")))
 
 here::here(dir.create(paste(site, 
                             "raw_data",
@@ -208,7 +193,7 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
     
    if(past_data == "gridmet"){  #if statement for gridmet data url
      
-     leap <- lubridate::leap_year(yr) 
+     leap <- lubridate::leap_year(yr) #gridmet data treats leap years differently
       if(leap == TRUE){
         enddate <- paste(yr,"12-31", sep = "-")
       } else {
@@ -221,7 +206,7 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
     
     if(past_data == "daymet"){ #if statement for daymet url
           
-          if(yr == 1980){
+          if(yr == 1980){#daymet data has every year ending in 31 other than 1980
       day <- 30
     } else {
       day <- 31
@@ -237,7 +222,6 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
     
   }#end loop across years 
   
-  beep(4)
   
   mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk
   
@@ -248,7 +232,7 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
   
 }#end loop across climate variables 
 
-beep(4)
+beep(10)
 
 
 mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
@@ -258,15 +242,34 @@ mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including dat
 
 colnames(mydat3)[]<-c("date", "lat","lon","soil_water_daily", "runoff_daily", "rain_daily", "accumswe_daily", "pet_daily", "deficit_daily", "aet_daily") 
 
-
-
-head(mydat3)
-
-write_csv(mydat3, here::here("raw_data",
-                             "historical_daily",
-                             site, 
+if(past_data == "gridmet"){
+  
+   divide.by.10 <- function(x, na.rm = FALSE) {
+    x/10
+  }
+  
+  mydat4 <- mydat3 %>% 
+    mutate(lat = as.character(lat),
+           lon = as.character(lon)) %>% 
+    mutate_if(is.numeric, divide.by.10)
+  
+  write_csv(mydat4, here::here(site,
+                             "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
+                             "historical_daily",
                              paste(site,"_daily_", past_data,".csv", sep = ""))) #default is a space, sep = "" removes space
+  
+}
+
+if(past_data == "daymet"){
+
+write_csv(mydat3, here::here(site,
+                             "raw_data",
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             "historical_daily",
+                             paste(site,"_daily_", past_data,".csv", sep = ""))) #default is a space, sep = "" removes space
+  
+}
 
 
 ```
@@ -304,7 +307,7 @@ mydat3 <- NULL
 
 for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
   
-  print(paste("downloading",climvar, "historical"))#this is a progress update as the loop runs 
+  print(paste("downloading",climvar, past_data, "historical"))#this is a progress update as the loop runs 
   
   
   #the url uses two variable names for same variable in monthly download string like "PET_monthly" for long name and "pet" for short name 
@@ -347,8 +350,18 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
     #single variable single year monthly time series with variable and year specified by user 
     
     if(past_data == "gridmet"){  #if statement for gridmet data url
+      
+      leap <- lubridate::leap_year(yr) 
+#leap years act differently with this monthly future data
+#need to correct for that
+    if(leap == TRUE){
+      day <- 16
+    } else {
+      day <- 17
+    }
     
-    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=1980-01-16T05%3A14%3A31.916Z&time_end=1980-12-16T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    
     } #end if statement for gridmet data url
     
     if(past_data == "daymet"){  #if statement for daymet data url
@@ -375,7 +388,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
 }#end loop across climate variables 
 
 
-beep(4)
+beep(10)
 
 
 mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with meta data including date, lat, long 
@@ -387,15 +400,25 @@ colnames(mydat3)[]<-c("date", "lat","lon","soil_water_monthly", "runoff_monthly"
 
 
 if(past_data == "gridmet"){
-  write_csv(mydat3, here::here("raw_data",
-                             "historical_monthly",
-                             site, 
-                             paste("lat",lat,"lon",lon, sep = "_"),
-                             paste(site,"monthly", past_data, ".csv", sep = "_")))
+  
+   divide.by.10 <- function(x, na.rm = FALSE) {
+    x/10
+  }
+  
+  mydat4 <- mydat3 %>% 
+    mutate(lat = as.character(lat),
+           lon = as.character(lon)) %>% 
+    mutate_if(is.numeric, divide.by.10)
+  
+  write_csv(mydat4, here::here(site,
+                               "raw_data",
+                               paste("lat",lat,"lon",lon, sep = "_"),
+                               "historical_monthly",
+                               paste(site,"_monthly_", past_data, ".csv", sep = "")))
 }
 
 
-if(past_data == "daymet" {#dates for daymet data are wrong, they are all 1980
+if(past_data == "daymet") {#dates for daymet data are wrong, they are all 1980
 
 span<-end-start;span#of years downloaded 
 
@@ -411,11 +434,11 @@ mydat4<-cbind(year,month,mydat3[,c(2:10)]);head(mydat4)#drop bogus dates and add
 #fix this - with agdd back in it should be [,c(2:11)]
 
 
-write_csv(mydat4, here::here("raw_data",
-                             "historical_monthly",
-                             site, 
+write_csv(mydat4, here::here(site,
+                             "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
-                             paste(site,"monthly", past_data, ".csv", sep = "_")))
+                             "historical_monthly",
+                             paste(site,"_monthly_", past_data, ".csv", sep = "")))
 } #end if statement for daymet date data
 #default is a space, sep = "" removes space
 
@@ -580,18 +603,18 @@ end = end_future
     x/10
   }
   
-  mydat4 <- mydat3 %>% # fix this change back to mydat5 <- mydat 4
+  mydat5 <- mydat4 %>% 
     mutate(lat = as.character(lat),
            lon = as.character(lon)) %>% 
     mutate_if(is.numeric, divide.by.10)
   
-  write_csv(mydat4, here::here("raw_data",
-                               "future_daily", # fix this change back to mydat5
-                               site, 
+  write_csv(mydat5, here::here(site,
+                               "raw_data",
                                paste("lat",lat,"lon",lon, sep = "_"),
+                               "future_daily", 
                                paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, "daily_future.csv", sep = "_"))) #default is a space, sep = "" removes space
 
-beep(1)
+beep(10)
 
 # here::here allows you to choose a folder in your working directory to save to
 # here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a comma)", "last thing in the list is the name of the object I'm saving")
@@ -804,7 +827,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
 mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
 # "agdd_monthly_85", fix this - was removed because agdd was removed from website
 ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
-colnames(mydat4)[]<-c("date", "lat","lon","soil_water_monthly_85", "runoff_monthly_85", "rain_monthly_85",  "accumswe_monthly_85", "pet_monthly_85", "deficit_monthly_85", "aet_monthly_85", "soil_water_monthly_45", "runoff_monthly_45", "rain_monthly_45",  "accumswe_monthly_45", "pet_monthly_45", "deficit_monthly_45", "aet_monthly_45") 
+colnames(mydat4)[]<-c("date", "lat","lon","soil_water_monthly_wc", "runoff_monthly_wc", "rain_monthly_wc",  "accumswe_monthly_wc", "pet_monthly_wc", "deficit_monthly_wc", "aet_monthly_wc", "soil_water_monthly_bc", "runoff_monthly_bc", "rain_monthly_bc",  "accumswe_monthly_bc", "pet_monthly_bc", "deficit_monthly_bc", "aet_monthly_bc") 
 
 divide.by.10 <- function(x, na.rm = FALSE) {
   x/10
@@ -816,27 +839,18 @@ mydat5 <- mydat4 %>%
   mutate_if(is.numeric, divide.by.10)
 
 
-
-#at this point if we want another loop for downloading more sites with different coordinates 
-
-#we need to save mydat4 to the hard drive. 
-
-# setwd("C:\\David\\Water Balance CONUS\\downloads\\")#note R requires either "\\" or "/" 
-
-# JC fixed for this by creating a project folder, no need to setwd() when you have a project folder
-
-write_csv(mydat5, here::here("raw_data",
-                             "future_monthly",
-                             site,
+write_csv(mydat5, here::here(site, #requires project folder
+                             "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
-                             paste(site,"lat", lat, "lon", lon, m,"monthly_future.csv", sep = "_"))) #default is a space, sep = "" removes space
+                             "future_monthly",
+                             paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "monthly_future.csv", sep = "_"))) #default is a space, sep = "" removes space
 
 }# end loop across different climate projections
 
-beep(1)
+beep(10)
 
 # here::here allows you to choose a folder in your working directory to save to
-# here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a commma)", "last thing in the list is the name of the object I'm saving")
+# here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder (subfolders can be as numerous you want them to be, always separated by a commma)", "last thing in the list is the name of the object I'm saving")
 
 
 ```
