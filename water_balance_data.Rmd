@@ -43,8 +43,6 @@ Quick note: this code runs off the most recent version of R. Additionally, this 
 2. library(installr)
 3. updateR()
 
-test
-
 [More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
 
 
