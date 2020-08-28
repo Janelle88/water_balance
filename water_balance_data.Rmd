@@ -66,7 +66,7 @@ R may tell you to open RGui
 Make sure to run this code chunk before running any other code chunks.
 
 ```{r}
-#initialize with time range of inerest and location, these don't get overwritten in loops 
+#initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
 site = "little_saddle_mtn" 
@@ -176,8 +176,6 @@ mydat3<-NULL
 
 for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET")){ 
   
-  
-  
   print(paste("downloading",climvar, "daily historical", past_data))#this is a progress update as the loop runs 
   
   
@@ -199,7 +197,7 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
         enddate <- paste(yr + 1, "01-01", sep = "-")
       }
           
-          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv",sep ="")
 
    } #end if statement for gridmet data url
     
@@ -211,18 +209,18 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
       day <- 31
     }
           
-    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/daily/v2_",yr,"_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",yr,"-12-",day,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/daily/v2_",yr,"_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",yr,"-12-",day,"T12%3A00%3A00Z&accept=csv",sep ="")
     
     } #end if statement for dayment data url
     
-    holder <-data.frame(fread(data_url, verbose=FALSE, showProgress = FALSE))#temporary holder for subsets downloaded from cloud 
+    holder <-data.frame(fread(data_url, verbose = FALSE, showProgress = FALSE))#temporary holder for subsets downloaded from cloud 
     
     mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
     
   }#end loop across years 
   
   
-  mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk
+  mydat2<-cbind(mydat2, mydat[,4])#append just the water balance data from each downloaded chunk
   
   date <- mydat$time
   
@@ -750,7 +748,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
   
   
   
-  print(paste("downloading",climvar, "4.5", m))#this is a progress update as the loop runs 
+  print(paste("downloading",climvar, model_bc, model_bc_rcp))#this is a progress update as the loop runs 
   
   
   

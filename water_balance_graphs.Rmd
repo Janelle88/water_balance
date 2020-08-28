@@ -64,19 +64,29 @@ model_bc = "inmcm4" # "best case"
 
 # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 
-model_bc_rcp = "RCP 4.5"
+model_bc_rcp_name = "RCP 4.5"
+
+
 
 #options "RCP 4.5", "RCP 8.5" 
-# IMPORTANT: this is written differently than the data code (in the data code it was rcp45, rcp85)
+# IMPORTANT: this is written differently than the data code, it is essentially written into the code to substitute this more "readable" version into the code (in the data code it was rcp45, rcp85)
+
+model_bc_rcp = "rcp45"
+
+# options: "rcp45", "rcp85" this is the SAME RCP as is in the file, just written in the "less readable" way for the file name
 
 model_wc = "HadGEM2-CC365" # "worst case"
 
 # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 
-model_wc_rcp = "RCP 8.5"
+model_wc_rcp_name = "RCP 8.5"
 
 #options "RCP 4.5", "RCP 8.5" 
-# IMPORTANT: this is written differently than the data code (in the data code it was rcp45, rcp85)
+# IMPORTANT: this is written differently than the data code, it is essentially written into the code to substitute this more "readable" version into the code (in the data code it was rcp45, rcpwc)
+
+model_wc_rcp = "rcp85"
+
+# options: "rcp45", "rcp85" this is the SAME RCP as is in the file, just written in the "less readable" way for the file name
 
 past_data = "daymet"
 
@@ -113,7 +123,7 @@ here::here(dir.create(paste(site,
                             sep = "/")))
 ```
 
-This data is based off of `r model_bc` `r model_bc_rcp` to display projections for the best case scenario, and `r model_wc``r model_wc_rcp` to display projections for the worst case scenario.
+This data is based off of `r model_bc` `r model_bc_rcp_name` to display projections for the best case scenario, and `r model_wc``r model_wc_rcp_name` to display projections for the worst case scenario.
 ```{r}
 # -------------
 # MONTHLY DATA
@@ -133,7 +143,7 @@ future_month_1 <- read_csv(here::here(site,
                                     "raw_data",
                                     paste("lat",lat,"lon",lon, sep = "_"),
                                     "future_monthly",
-                                    paste(site, model, "monthly_future.csv", sep = "_")),
+                                    paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "monthly_future.csv", sep = "_")),
                     na = c("-3276.7")) 
 
 date_fm <- future_month_1$date # this is a work around
@@ -141,7 +151,7 @@ date_fm <- future_month_1$date # this is a work around
 # couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
 
 future_month <- future_month_1 %>% 
-  select(-lat, -long, -date) %>% #change this
+  select(-lat, -lon, -date) %>% #change this
   select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
   mutate(date = date_fm,
          year = lubridate::year(date),
@@ -195,7 +205,7 @@ future_day_1 <- read_csv(here::here( site,
                                   "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
                                   "future_daily",
-                                  paste(site, model,"daily_future.csv", sep = "_")),
+                                  paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "daily_future.csv", sep = "_")),
                     na = c("-3276.7"))
 
 # ---------
@@ -205,7 +215,7 @@ future_day_1 <- read_csv(here::here( site,
 # for some reason there is an extra longitude column, need to fix this
 # ---------
 
-#colnames(future_day_1)[]<-c("date", "lat","lon","soil_water_daily_85", "runoff_daily_85", "rain_daily_85", "agdd_daily_85", "accumswe_daily_85", "pet_daily_85", "deficit_daily_85", "aet_daily_85", "soil_water_daily_45", "runoff_daily_45", "rain_daily_45", "agdd_daily_45", "accumswe_daily_45", "pet_daily_45", "deficit_daily_45", "aet_daily_45")
+#colnames(future_day_1)[]<-c("date", "lat","lon","soil_water_daily_wc", "runoff_daily_wc", "rain_daily_wc", "agdd_daily_wc", "accumswe_daily_wc", "pet_daily_wc", "deficit_daily_wc", "aet_daily_wc", "soil_water_daily_bc", "runoff_daily_bc", "rain_daily_bc", "agdd_daily_bc", "accumswe_daily_bc", "pet_daily_bc", "deficit_daily_bc", "aet_daily_bc")
 
 date_fd <- future_day_1$date
 # this is a work around
@@ -293,21 +303,21 @@ annual_past <- site_long_past %>%
 # long format future data daily
 # -------------
 
-site_long_85 <- future_day %>%
-  select(soil_water_daily_85:aet_daily_85, date:doy) %>% # selecting for variables for 8.5 only
-  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+site_long_wc <- future_day %>%
+  select(soil_water_daily_wc:aet_daily_wc, date:doy) %>% # selecting for variables for 8.5 only
+  pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
-               values_to = "rcp_85") %>%  
+               values_to = "rcp_wc") %>%  
   filter(!year == 2100) %>%
   mutate(variable = case_when(
-    .$variable == "runoff_daily_85" ~ "Runoff",
+    .$variable == "runoff_daily_wc" ~ "Runoff",
     #.Svariable calls the variable, then it can be renamed
-    .$variable == "agdd_daily_85" ~ "AGDD",
-    .$variable == "soil_water_daily_85" ~ "Soil Water",
-    .$variable == "rain_daily_85" ~ "Rain",
-    .$variable == "accumswe_daily_85" ~ "Accumulated SWE",
-    .$variable == "pet_daily_85" ~ "PET",
-    .$variable == "deficit_daily_85" ~ "Deficit",
+    .$variable == "agdd_daily_wc" ~ "AGDD",
+    .$variable == "soil_water_daily_wc" ~ "Soil Water",
+    .$variable == "rain_daily_wc" ~ "Rain",
+    .$variable == "accumswe_daily_wc" ~ "Accumulated SWE",
+    .$variable == "pet_daily_wc" ~ "PET",
+    .$variable == "deficit_daily_wc" ~ "Deficit",
     TRUE ~ "AET")) %>% 
   mutate(decade = case_when(
     .$year %in% c(2020:2029) ~ "2020s",
@@ -320,28 +330,28 @@ site_long_85 <- future_day %>%
     TRUE ~ "2090s"
   ))
 
-annual_future_85 <- site_long_85 %>% 
+annual_future_wc <- site_long_wc %>% 
   group_by(variable, year) %>% 
-  mutate(annual_avg_85 = mean(rcp_85, na.rm = TRUE)) %>%
+  mutate(annual_avg_wc = mean(rcp_wc, na.rm = TRUE)) %>%
   ungroup(year, variable) 
 
   
   
-site_long_45 <- future_day %>% 
-  select(soil_water_daily_45:aet_daily_45, date:doy) %>% #selecting for 4.5 only
-  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+site_long_bc <- future_day %>% 
+  select(soil_water_daily_bc:aet_daily_bc, date:doy) %>% #selecting for 4.5 only
+  pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
-               values_to = "rcp_45") %>% 
+               values_to = "rcp_bc") %>% 
   filter(!year == 2100) %>% 
   mutate(variable = case_when(
-    .$variable == "runoff_daily_45" ~ "Runoff",
+    .$variable == "runoff_daily_bc" ~ "Runoff",
     #.Svariable calls the variable, then it can be renamed
-    .$variable == "agdd_daily_45" ~ "AGDD",
-    .$variable == "soil_water_daily_45" ~ "Soil Water",
-    .$variable == "rain_daily_45" ~ "Rain",
-    .$variable == "accumswe_daily_45" ~ "Accumulated SWE",
-    .$variable == "pet_daily_45" ~ "PET",
-    .$variable == "deficit_daily_45" ~ "Deficit",
+    .$variable == "agdd_daily_bc" ~ "AGDD",
+    .$variable == "soil_water_daily_bc" ~ "Soil Water",
+    .$variable == "rain_daily_bc" ~ "Rain",
+    .$variable == "accumswe_daily_bc" ~ "Accumulated SWE",
+    .$variable == "pet_daily_bc" ~ "PET",
+    .$variable == "deficit_daily_bc" ~ "Deficit",
     TRUE ~ "AET" # last ifelse is just labeled as TRUE
   )) %>% 
   mutate(decade = case_when(
@@ -355,14 +365,14 @@ site_long_45 <- future_day %>%
     TRUE ~ "2090s"
   ))
 
-annual_future_45 <- site_long_45 %>% 
+annual_future_bc <- site_long_bc %>% 
    group_by(variable, year) %>% 
-  mutate(annual_avg_45 = mean(rcp_45, na.rm = TRUE)) %>%
+  mutate(annual_avg_bc = mean(rcp_bc, na.rm = TRUE)) %>%
   ungroup(year, variable) 
 
 
-annual_future <- annual_future_45 %>%
-  full_join(annual_future_85)
+annual_future <- annual_future_bc %>%
+  full_join(annual_future_wc)
 
 ```
 
@@ -380,18 +390,18 @@ plot_histogram_future = function(.y) {
   site_long_.y <- annual_future %>%
     filter(decade %in% (.y))
   
-.y_hist_45 <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_45), binwidth = 10) +
+.y_hist_bc <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_bc), binwidth = 10) +
     facet_wrap(~variable)+
-    labs(title = paste(.y, "RCP 4.5"))
+    labs(title = paste(.y, model_bc_rcp_name))
 
-.y_hist_85 <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_85), binwidth = 10) +
+.y_hist_wc <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_wc), binwidth = 10) +
     facet_wrap(~variable)+
-    labs(title = paste(.y, "RCP 8.5"))
+    labs(title = paste(.y, model_wc_rcp_name))
   
-  print(.y_hist_45)
-  print(.y_hist_85)
+  print(.y_hist_bc)
+  print(.y_hist_wc)
 }
 
 # ------------
@@ -439,18 +449,18 @@ plot_rainy_hist_future = function(.y) {
     filter(decade %in% (.y),
            month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
   
-.y_hist_45 <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_45), binwidth = 10) +
+.y_hist_bc <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_bc), binwidth = 10) +
     facet_wrap(~variable)+
-    labs(title = paste(.y, "May - Sep RCP 4.5"))
+    labs(title = paste(.y, "May - Sep", model_bc_rcp_name))
 
-.y_hist_85 <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_85), binwidth = 10) +
+.y_hist_wc <- ggplot(data = site_long_.y) +
+    geom_histogram(aes(x = rcp_wc), binwidth = 10) +
     facet_wrap(~variable)+
-    labs(title = paste(.y, "May - Sep RCP 8.5"))
+    labs(title = paste(.y, "May - Sep" model_wc_rcp_name))
   
-  print(.y_hist_45)
-  print(.y_hist_85)
+  print(.y_hist_bc)
+  print(.y_hist_wc)
 }
 
 # ------------
@@ -498,18 +508,18 @@ plot_qq_future = function(.y) {
   site_long_.y <- annual_future %>%
     filter(decade %in% (.y))
   
-.y_qq_45 <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_45)) +
+.y_qq_bc <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_bc)) +
     facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "RCP 4.5"))
+    labs(title = paste(.y, model_bc_rcp_name))
 
-.y_qq_85 <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_85)) +
+.y_qq_wc <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_wc)) +
     facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "RCP 8.5"))
+    labs(title = paste(.y, model_wc_rcp_name))
   
-  print(.y_qq_45)
-  print(.y_qq_85)
+  print(.y_qq_bc)
+  print(.y_qq_wc)
 }
 
 # ----------
@@ -552,18 +562,18 @@ plot_rainy_qq_future = function(.y) {
     filter(decade %in% (.y),
            month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
   
-.y_qq_45 <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_45)) +
+.y_qq_bc <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_bc)) +
     facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "May - Sep RCP 4.5"))
+    labs(title = paste(.y, "May - Sep", model_bc_rcp_name))
 
-.y_qq_85 <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_85)) +
+.y_qq_wc <- ggplot(data = site_long_.y) +
+    geom_qq(aes(sample = rcp_wc)) +
     facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "May - Sep RCP 8.5"))
+    labs(title = paste(.y, "May - Sep", model_wc_rcp_name))
   
-  print(.y_qq_45)
-  print(.y_qq_85)
+  print(.y_qq_bc)
+  print(.y_qq_wc)
 }
 
 # ----------
@@ -640,67 +650,67 @@ site_long_past <- past_day %>%
   )) 
 
 # --------
-# RCP 4.5 means
+# Best case means
 # --------
 
-# 2020 - 2059 RCP 4.5
+# 2020 - 2059 Best case
 # first, rename variables to be able to combine them later
 
-day_join_2020_2059_45 <- future_day %>% 
+day_join_2020_2059_bc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
-  select(soil_water_daily_45:doy) %>% 
-  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+  select(soil_water_daily_bc:doy) %>% 
+  pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>% # new column name to store values)
-  mutate(variable = case_when(.$variable == "aet_daily_45" ~ "aet_daily",
-    .$variable == "rain_daily_45" ~ "rain_daily",
-    .$variable == "runoff_daily_45" ~ "runoff_daily",
-    .$variable == "pet_daily_45" ~ "pet_daily",
-    .$variable == "accumswe_daily_45" ~ "accumswe_daily",
-    .$variable == "soil_water_daily_45" ~ "soil_water_daily",
-    .$variable == "agdd_daily_45" ~ "agdd_daily",
+  mutate(variable = case_when(.$variable == "aet_daily_bc" ~ "aet_daily",
+    .$variable == "rain_daily_bc" ~ "rain_daily",
+    .$variable == "runoff_daily_bc" ~ "runoff_daily",
+    .$variable == "pet_daily_bc" ~ "pet_daily",
+    .$variable == "accumswe_daily_bc" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_bc" ~ "soil_water_daily",
+    .$variable == "agdd_daily_bc" ~ "agdd_daily",
     TRUE ~ "deficit_daily")) 
 
 #for grouping by doy
 
-day_join_2020_2059_45_d <- day_join_2020_2059_45 %>% 
+day_join_2020_2059_bc_d <- day_join_2020_2059_bc %>% 
   group_by(doy, variable) %>% 
   summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
 
 
-# 2060 - 2099 RCP 4.5 df
+# 2060 - 2099 Best case df
 # first, rename variables to be able to combine them later
 
-day_join_2060_2099_45 <-  future_day %>% 
+day_join_2060_2099_bc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
-  select(soil_water_daily_45:doy) %>%
-  pivot_longer(`soil_water_daily_45`:`aet_daily_45`, # The columns I'm gathering together
+  select(soil_water_daily_bc:doy) %>%
+  pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>%  # new column name to store values) 
-  mutate(variable = case_when(.$variable == "aet_daily_45" ~ "aet_daily",
-    .$variable == "rain_daily_45" ~ "rain_daily",
-    .$variable == "runoff_daily_45" ~ "runoff_daily",
-    .$variable == "pet_daily_45" ~ "pet_daily",
-    .$variable == "accumswe_daily_45" ~ "accumswe_daily",
-    .$variable == "soil_water_daily_45" ~ "soil_water_daily",
-    .$variable == "agdd_daily_45" ~ "agdd_daily",
+  mutate(variable = case_when(.$variable == "aet_daily_bc" ~ "aet_daily",
+    .$variable == "rain_daily_bc" ~ "rain_daily",
+    .$variable == "runoff_daily_bc" ~ "runoff_daily",
+    .$variable == "pet_daily_bc" ~ "pet_daily",
+    .$variable == "accumswe_daily_bc" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_bc" ~ "soil_water_daily",
+    .$variable == "agdd_daily_bc" ~ "agdd_daily",
     TRUE ~ "deficit_daily"))
 
 #for grouping by doy
 
-day_join_2060_2099_45_d <- day_join_2060_2099_45 %>% #for grouping by doy
+day_join_2060_2099_bc_d <- day_join_2060_2099_bc %>% #for grouping by doy
   group_by(doy, variable) %>% 
   summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
 
-#full doy dataframe RCP 4.5
+#full doy dataframe Best case
 
-day_join_45_d <- day_join_1980_2019_d %>% 
-  full_join(day_join_2020_2059_45_d) %>% 
-  full_join(day_join_2060_2099_45_d) %>% 
+day_join_bc_d <- day_join_1980_2019_d %>% 
+  full_join(day_join_2020_2059_bc_d) %>% 
+  full_join(day_join_2060_2099_bc_d) %>% 
   pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
-  na.omit(day_join_45_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  na.omit(day_join_bc_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
   pivot_wider(names_from = variable,
               values_from = value) 
 
@@ -712,24 +722,24 @@ day_join_45_d <- day_join_1980_2019_d %>%
 # 2020 - 2059 RCP 8.5 df
 # first, rename variables to be able to combine them later
 
-day_join_2020_2059_85 <- future_day %>% 
+day_join_2020_2059_wc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
-  select(soil_water_daily_85:doy) %>% 
-  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+  select(soil_water_daily_wc:doy) %>% 
+  pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>% # new column name to store values)
-  mutate(variable = case_when(.$variable == "aet_daily_85" ~ "aet_daily",
-    .$variable == "rain_daily_85" ~ "rain_daily",
-    .$variable == "runoff_daily_85" ~ "runoff_daily",
-    .$variable == "pet_daily_85" ~ "pet_daily",
-    .$variable == "accumswe_daily_85" ~ "accumswe_daily",
-    .$variable == "soil_water_daily_85" ~ "soil_water_daily",
-    .$variable == "agdd_daily_85" ~ "agdd_daily",
+  mutate(variable = case_when(.$variable == "aet_daily_wc" ~ "aet_daily",
+    .$variable == "rain_daily_wc" ~ "rain_daily",
+    .$variable == "runoff_daily_wc" ~ "runoff_daily",
+    .$variable == "pet_daily_wc" ~ "pet_daily",
+    .$variable == "accumswe_daily_wc" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_wc" ~ "soil_water_daily",
+    .$variable == "agdd_daily_wc" ~ "agdd_daily",
     TRUE ~ "deficit_daily"))   
   
 #for grouping by doy
   
-day_join_2020_2059_85_d <- day_join_2020_2059_85 %>% 
+day_join_2020_2059_wc_d <- day_join_2020_2059_wc %>% 
   group_by(doy, variable) %>% 
   summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
 
@@ -737,37 +747,37 @@ day_join_2020_2059_85_d <- day_join_2020_2059_85 %>%
 # 2060 - 2099 RCP 8.5 df
 # first, rename variables to be able to combine them later
 
-day_join_2060_2099_85 <-  future_day %>% 
+day_join_2060_2099_wc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
-  select(soil_water_daily_85:doy) %>%
-  pivot_longer(`soil_water_daily_85`:`aet_daily_85`, # The columns I'm gathering together
+  select(soil_water_daily_wc:doy) %>%
+  pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>%  # new column name to store values) 
-  mutate(variable = case_when(.$variable == "aet_daily_85" ~ "aet_daily",
-    .$variable == "rain_daily_85" ~ "rain_daily",
-    .$variable == "runoff_daily_85" ~ "runoff_daily",
-    .$variable == "pet_daily_85" ~ "pet_daily",
-    .$variable == "accumswe_daily_85" ~ "accumswe_daily",
-    .$variable == "soil_water_daily_85" ~ "soil_water_daily",
-    .$variable == "agdd_daily_85" ~ "agdd_daily",
+  mutate(variable = case_when(.$variable == "aet_daily_wc" ~ "aet_daily",
+    .$variable == "rain_daily_wc" ~ "rain_daily",
+    .$variable == "runoff_daily_wc" ~ "runoff_daily",
+    .$variable == "pet_daily_wc" ~ "pet_daily",
+    .$variable == "accumswe_daily_wc" ~ "accumswe_daily",
+    .$variable == "soil_water_daily_wc" ~ "soil_water_daily",
+    .$variable == "agdd_daily_wc" ~ "agdd_daily",
     TRUE ~ "deficit_daily"))
 
 #for grouping by doy
 
-day_join_2060_2099_85_d <- day_join_2060_2099_85 %>% 
+day_join_2060_2099_wc_d <- day_join_2060_2099_wc %>% 
   group_by(doy, variable) %>% 
   summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
 
 
 #full day dataset RCP 8.5
 
-day_join_85_d <- day_join_1980_2019_d %>% 
-  full_join(day_join_2020_2059_85_d) %>% 
-  full_join(day_join_2060_2099_85_d) %>% 
+day_join_wc_d <- day_join_1980_2019_d %>% 
+  full_join(day_join_2020_2059_wc_d) %>% 
+  full_join(day_join_2060_2099_wc_d) %>% 
   pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
-  na.omit(day_join_85_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  na.omit(day_join_wc_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
   pivot_wider(names_from = variable,
               values_from = value) 
 
@@ -782,12 +792,13 @@ day_join_85_d <- day_join_1980_2019_d %>%
 
   
 plot_decades_smooth = function(.y) { #start function
+
   
-  exists_.y <- exists(.y, where = day_join_45_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = day_join_bc_d) #check to see if the variable exists
   
-  if(exists_.y == TRUE){ #start if statement RCP 4.5
+  if(exists_.y == TRUE){ #start if statement Best case
   
-  .y_plot_45 <- ggplot(day_join_45_d) + 
+  .y_plot_bc <- ggplot(day_join_bc_d) + 
     geom_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = doy,
@@ -802,7 +813,7 @@ plot_decades_smooth = function(.y) { #start function
     #quasipoisson is some type of statistical analysis type
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
-    # geom_vline(data = day_join_45_d,
+    # geom_vline(data = day_join_bc_d,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
     labs(x = "Month",
          color = "Year",
@@ -812,14 +823,28 @@ plot_decades_smooth = function(.y) { #start function
          #.y is useful because it prevents R from confusing it with something else
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
-         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 4.5", #title based on variable
-                           .y == "runoff_daily" ~ "Runoff RCP 4.5",
-                           .y == "rain_daily" ~ "Rain RCP 4.5",
-                           .y == "agdd_daily" ~ "AGDD RCP 4.5",
-                           .y == "accumswe_daily"~ "Accumulated SWE RCP 4.5",
-                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
-                           .y == "deficit_daily" ~ "Deficit RCP 4.5",
-                           TRUE ~ "Actual Evapotranspiration RCP 4.5")) + 
+         title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                             model_bc,                                                             model_bc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                        model_bc,
+                                                        model_bc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                       model_bc,
+                                                       model_bc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                      model_bc,
+                                                      model_bc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                     model_bc,
+                                                     model_bc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                        model_bc_rcp_name))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
@@ -827,17 +852,17 @@ plot_decades_smooth = function(.y) { #start function
                     "figures", #sub folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_rcp45", ".png", sep = "_"))) #file name
+                    paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
   
-  print(.y_plot_45)
+  print(.y_plot_bc)
   
-  } #end if statement for rcp 4.5
+  } #end if statement for Best case
   
-  exists_.y <- exists(.y, where = day_join_85_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = day_join_wc_d) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement RCP 8.5
   
-  .y_plot_85 <- ggplot(day_join_85_d) +
+  .y_plot_wc <- ggplot(day_join_wc_d) +
     stat_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = doy,
@@ -847,8 +872,8 @@ plot_decades_smooth = function(.y) { #start function
                     color = decades),
                 method = glm,
                 family = quasipoisson,
-                formula = y ~ ns(x, 15)) +
-    #internet said to do this
+                formula = y ~ ns(x, 35)) +
+        #internet said to do this
     #quasipoisson is some type of statistical analysis type
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
@@ -861,14 +886,29 @@ plot_decades_smooth = function(.y) { #start function
          #.y is useful because it prevents R from confusing it with something else
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
-         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 8.5", #title based on variable
-                           .y == "runoff_daily" ~ "Runoff RCP 8.5",
-                           .y == "rain_daily" ~ "Rain RCP 8.5",
-                           .y == "agdd_daily" ~ "AGDD RCP 8.5",
-                           .y == "accumswe_daily"~ "Accumulated SWE RCP 8.5",
-                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
-                           .y == "deficit_daily" ~ "Deficit RCP 8.5",
-                           TRUE ~ "Actual Evapotranspiration RCP 8.5")) +
+         title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                             model_wc,                                                             model_wc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                        model_wc,
+                                                        model_wc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                       model_wc,
+                                                       model_wc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                      model_wc,
+                                                      model_wc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                         model_wc,
+                                                         model_wc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                     model_wc,
+                                                     model_wc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                         model_wc,
+                                                         model_wc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                        model_wc,
+                                        model_wc_rcp_name))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
@@ -876,9 +916,9 @@ plot_decades_smooth = function(.y) { #start function
                     "figures", #top folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_rcp85", ".png", sep = "_"))) #file name
+                    paste(.y, "40_yr", model_wc_rcp, ".png", sep = "_"))) #file name
   
-  print(.y_plot_85)
+  print(.y_plot_wc)
   
   } #end if statement RCP 8.5
 
@@ -887,11 +927,11 @@ plot_decades_smooth = function(.y) { #start function
 
 plot_decades_line = function(.y) { #start function
   
-  exists_.y <- exists(.y, where = day_join_45_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = day_join_bc_d) #check to see if the variable exists
   
-  if(exists_.y == TRUE){ #start if statement RCP 4.5
+  if(exists_.y == TRUE){ #start if statement Best case
 
-.y_plot_45 <- ggplot(day_join_45_d) + 
+.y_plot_bc <- ggplot(day_join_bc_d) + 
     geom_line(size = 1.5,
                 aes(x = doy,
                     y = .data[[.y]],
@@ -902,7 +942,7 @@ plot_decades_line = function(.y) { #start function
     #quasipoisson is some type of statistical analysis type
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
-    # geom_vline(data = day_join_45_d,
+    # geom_vline(data = day_join_bc_d,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
     labs(x = "Month",
          color = "Year",
@@ -912,14 +952,29 @@ plot_decades_line = function(.y) { #start function
          #.y is useful because it prevents R from confusing it with something else
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
-         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 4.5", #title based on variable
-                           .y == "runoff_daily" ~ "Runoff RCP 4.5",
-                           .y == "rain_daily" ~ "Rain RCP 4.5",
-                           .y == "agdd_daily" ~ "AGDD RCP 4.5",
-                           .y == "accumswe_daily"~ "Accumulated SWE RCP 4.5",
-                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
-                           .y == "deficit_daily" ~ "Deficit RCP 4.5",
-                           TRUE ~ "Actual Evapotranspiration RCP 4.5")) +
+         title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                             model_bc,                                                             model_bc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                        model_bc,
+                                                        model_bc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                       model_bc,
+                                                       model_bc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                      model_bc,
+                                                      model_bc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                     model_bc,
+                                                     model_bc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                        model_bc,
+                                        model_bc_rcp_name))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
@@ -927,16 +982,16 @@ plot_decades_line = function(.y) { #start function
                     "figures", #sub folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_rcp45_line", ".png", sep = "_"))) #file name
-  print(.y_plot_45)
+                    paste(.y, "40_yr_line",model_bc_rcp, ".png", sep = "_"))) #file name
+  print(.y_plot_bc)
   
-  } # end if statement RCP 4.5
+  } # end if statement rcp bc
   
-  exists_.y <- exists(.y, where = day_join_85_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = day_join_wc_d) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement RCP 8.5
   
-  .y_plot_85 <- ggplot(day_join_85_d) +
+  .y_plot_wc <- ggplot(day_join_wc_d) +
     geom_line(size = 1.5,
                 aes(x = doy,
                     y = .data[[.y]],
@@ -954,14 +1009,29 @@ plot_decades_line = function(.y) { #start function
          # R needs the "" here
          # the ifelse or case_when goes after the command you want to change
          #.y is useful because it prevents R from confusing it with something else
-         title = case_when(.y ==  "soil_water_daily" ~ "Soil Water RCP 8.5", #title based on variable
-                           .y == "runoff_daily" ~ "Runoff RCP 8.5",
-                           .y == "rain_daily" ~ "Rain RCP 8.5",
-                           .y == "agdd_daily" ~ "AGDD RCP 8.5",
-                           .y == "accumswe_daily"~ "Accumulated SWE RCP 8.5",
-                           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
-                           .y == "deficit_daily" ~ "Deficit RCP 8.5",
-                           TRUE ~ "Actual Evapotranspiration RCP 8.5")) +
+         title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                             model_wc,                                                             model_wc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                        model_wc,
+                                                        model_wc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                       model_wc,
+                                                       model_wc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                      model_wc,
+                                                      model_wc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                         model_wc,
+                                                         model_wc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                     model_wc,
+                                                     model_wc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                         model_wc,
+                                                         model_wc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                        model_wc,
+                                        model_wc_rcp_name))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
   
@@ -969,9 +1039,9 @@ plot_decades_line = function(.y) { #start function
                     "figures", #top folder
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_rcp85_line", ".png", sep = "_"))) #file name
+                    paste(.y, "40_yr_line",model_wc_rcp, ".png", sep = "_"))) #file name
   
-  print(.y_plot_85)
+  print(.y_plot_wc)
   
   } #end if statement RCP 8.5
   
@@ -993,6 +1063,14 @@ plot_decades_smooth("deficit_daily")
 plot_decades_smooth("aet_daily")
 # plot_decades_line("agdd_daily") - fix later, this data is bad - shouldn't plot 8-20-20
 
+plot_decades_line("soil_water_daily")
+plot_decades_line("runoff_daily")
+plot_decades_line("rain_daily")
+plot_decades_line("accumswe_daily")
+plot_decades_line("pet_daily")
+plot_decades_line("deficit_daily")
+plot_decades_line("aet_daily")
+
 ```
 
 
@@ -1001,18 +1079,21 @@ plot_decades_smooth("aet_daily")
 
 ```{r, fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents RCP 4.5 and the yellow line represents RCP 8.5"}
 
-colors <- c("Historical" = "gray60", "RCP 4.5" = "turquoise4", "RCP 8.5" = "darkgoldenrod3")
+
+
+colors <- c("Historical" = "gray60", "Best Case" = "turquoise4", "Worst Case" = "darkgoldenrod3")
   # manually create a legend because of the multiple data frames used for the graph
 
 ggplot() +
   geom_line(data = annual_past, aes(x = year, y = annual_avg, color ="Historical"),
             size = .6) + 
-  geom_line(data = annual_future, aes(x = year, y = annual_avg_85, color = "RCP 8.5"),
+  geom_line(data = annual_future, aes(x = year, y = annual_avg_wc, color = "Worst Case"),
             size = .6) +
-  geom_line(data = annual_future, aes(x = year, y = annual_avg_45, color = "RCP 4.5"),
+  geom_line(data = annual_future, aes(x = year, y = annual_avg_bc, color = "Best Case"),
             size = .6) +
   facet_wrap(~variable, scales = "free") +
-  scale_color_manual(values = colors) +
+  scale_color_manual(values = colors,
+                     labels = "Historical", paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)) +
   labs(color = "Annual Averages")
   
 
@@ -1042,23 +1123,23 @@ plot_annual = function(.y, .x, .z, .l) {
   
    future_annual <- future_day %>% 
     group_by(year) %>% 
-    summarize(annual_avg_45 = mean(.data[[.x]], na.rm = TRUE),
-              annual_avg_85 = mean(.data[[.z]], na.rm = TRUE))
+    summarize(annual_avg_bc = mean(.data[[.x]], na.rm = TRUE),
+              annual_avg_wc = mean(.data[[.z]], na.rm = TRUE))
    
    point_low <- past_annual %>% 
      filter(year %in% c(.l))
    
    line_low <- point_low$annual_avg
   
-  annual_graph_45 <- ggplot() +
+  annual_graph_bc <- ggplot() +
     geom_line(data = past_annual, # historical line
               aes(x = year, 
                   y = annual_avg, 
                   color = "Historical"),
               size = .75) +
-    geom_line(data = future_annual, # rcp 4.5 line
+    geom_line(data = future_annual, # Best case line
               aes(x = year, 
-                  y = annual_avg_45, 
+                  y = annual_avg_bc, 
                   color = "RCP 4.5"),
               size = .75) +
     geom_hline(data = point_low, 
@@ -1071,16 +1152,29 @@ plot_annual = function(.y, .x, .z, .l) {
                alpha =  0.25,
                size = 4) +
   labs(color = "Annual Averages", #legend titel name
-       title = case_when(
-           .y == "runoff_daily" ~ "Runoff RCP 4.5",
-            #.Svariable calls the variable, then it can be renamed
-           .y == "agdd_daily" ~ "Accumulated Growing Degree Days RCP 4.5",
-           .y == "soil_water_daily" ~ "Soil WaterRCP 4.5",
-           .y == "rain_daily" ~ "Rain RCP 4.5",
-           .y == "accumswe_daily" ~ "Accumulated SWE RCP 4.5",
-           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 4.5",
-           .y == "deficit_daily" ~ "Deficit RCP 4.5",
-           TRUE ~ "Actual Evapotranspiration RCP 4.5"),
+       title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                           model_bc,                                                             model_bc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                         model_bc,
+                                                        model_bc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                       model_bc,
+                                                       model_bc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                      model_bc,
+                                                      model_bc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                     model_bc,
+                                                     model_bc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                         model_bc,
+                                                         model_bc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                        model_bc,
+                                        model_bc_rcp_name)),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
@@ -1095,10 +1189,10 @@ plot_annual = function(.y, .x, .z, .l) {
   ggsave(here::here(site, #site subfolder
                     "figures", #subfolder
                     paste("lat",lat,"lon",lon,sep = "_"),
-                    paste(.y, "annual_graph_45.png", sep = "_"))) #file name
+                    paste(.y, "annual_graph_bc.png", sep = "_"))) #file name
   
   
-  annual_graph_85 <- ggplot() +
+  annual_graph_wc <- ggplot() +
     geom_line(data = past_annual, # historical line
               aes(x = year, 
                   y = annual_avg, 
@@ -1106,7 +1200,7 @@ plot_annual = function(.y, .x, .z, .l) {
               size = .75) +
     geom_line(data = future_annual, # rcp 8.5 line
               aes(x = year, 
-                  y = annual_avg_85,
+                  y = annual_avg_wc,
                   color = "RCP 8.5"),
               size = .75) +
     geom_hline(data = point_low, 
@@ -1119,16 +1213,30 @@ plot_annual = function(.y, .x, .z, .l) {
                alpha =  0.25,
                size = 4) +
   labs(color = "Annual Averages", #legend titel name
-       title = case_when(
-           .y == "runoff_daily" ~ "Runoff RCP 8.5",
-            #.Svariable calls the variable, then it can be renamed
-           .y == "agdd_daily" ~ "Accumulated Growing Degree Days RCP 8.5",
-           .y == "soil_water_daily" ~ "Soil Water RCP 8.5",
-           .y == "rain_daily" ~ "Rain RCP 8.5",
-           .y == "accumswe_daily" ~ "Accumulated SWE RCP 8.5",
-           .y == "pet_daily" ~ "Potential Evapotranspiration RCP 8.5",
-           .y == "deficit_daily" ~ "Deficit RCP 8.5",
-           TRUE ~ "Actual Evapotranspiration RCP 8.5"),
+       title = case_when(.y ==  "soil_water_daily" ~ paste("Soil Water",
+                                                            model_wc,
+                                                          model_wc_rcp_name), #title based on variable
+                           .y == "runoff_daily" ~ paste("Runoff",
+                                                        model_wc,
+                                                        model_wc_rcp_name),
+                           .y == "rain_daily" ~  paste("Rain",
+                                                        model_wc,
+                                                       model_wc_rcp_name),
+                           .y == "agdd_daily" ~ paste("AGDD",
+                                                       model_wc,
+                                                      model_wc_rcp_name),
+                           .y == "accumswe_daily"~ paste("Accumulated SWE",
+                                                          model_wc,
+                                                         model_wc_rcp_name),
+                           .y == "pet_daily" ~ paste("Potential Evapotranspiration", 
+                                                      model_wc,
+                                                     model_wc_rcp_name),
+                           .y == "deficit_daily" ~ paste("Deficit",
+                                                          model_wc,
+                                                         model_wc_rcp_name),
+                           TRUE ~ paste("Actual Evapotranspiration",
+                                         model_wc,
+                                        model_wc_rcp_name)),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
     geom_text(data = point_low,
@@ -1143,24 +1251,24 @@ plot_annual = function(.y, .x, .z, .l) {
   ggsave(here::here(site, #site subfolder
                     "figures", #subfolder
                     paste("lat",lat,"lon",lon, sep = "_"),
-                    paste(.y, "annual_graph_85.png", sep = "_"))) #filename
+                    paste(.y, "annual_graph_wc.png", sep = "_"))) #filename
   
-  # return(annual_graph_45)
-  # return(annual_graph_85) with these two it only prints the 4.5 graph
+  # return(annual_graph_bc)
+  # return(annual_graph_wc) with these two it only prints the 4.5 graph
   
-  print(annual_graph_45)
-  print(annual_graph_85)
+  print(annual_graph_bc)
+  print(annual_graph_wc)
   
   }
 
-plot_annual("runoff_daily", "runoff_daily_45", "runoff_daily_85", "2002")
-#plot_annual("agdd_daily", "agdd_daily_45", "agdd_daily_85", "2002")
-plot_annual("accumswe_daily", "accumswe_daily_45", "accumswe_daily_85", "2002")
-plot_annual("pet_daily", "pet_daily_45", "pet_daily_85", "2002")
-plot_annual("aet_daily", "aet_daily_45", "aet_daily_85", "2002")
-plot_annual("deficit_daily", "deficit_daily_45", "deficit_daily_85", "2002")
-plot_annual("rain_daily", "rain_daily_45", "rain_daily_85", "2002")
-plot_annual("soil_water_daily", "soil_water_daily_45", "soil_water_daily_85", "2002")
+plot_annual("runoff_daily", "runoff_daily_bc", "runoff_daily_wc", "2002")
+#plot_annual("agdd_daily", "agdd_daily_bc", "agdd_daily_wc", "2002")
+plot_annual("accumswe_daily", "accumswe_daily_bc", "accumswe_daily_wc", "2002")
+plot_annual("pet_daily", "pet_daily_bc", "pet_daily_wc", "2002")
+plot_annual("aet_daily", "aet_daily_bc", "aet_daily_wc", "2002")
+plot_annual("deficit_daily", "deficit_daily_bc", "deficit_daily_wc", "2002")
+plot_annual("rain_daily", "rain_daily_bc", "rain_daily_wc", "2002")
+plot_annual("soil_water_daily", "soil_water_daily_bc", "soil_water_daily_wc", "2002")
 
 
 ```
@@ -1213,7 +1321,7 @@ ggsave(here::here(site, #site subfolder
 
 dodge <- position_dodge(width = 1)
 
-ggplot(data = day_join_45_m %>%
+ggplot(data = day_join_bc_m %>%
          filter(!variable %in% c("agdd_daily", "pet_daily")),
        aes(x = decades, 
            y = value, 
