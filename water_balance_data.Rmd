@@ -174,6 +174,8 @@ mydat3<-NULL
 # "agdd", fix this - return when AGDD is fixed on the website
 ## make sure the order in colnames at end of loop matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
 
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+
 for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET")){ 
   
   print(paste("downloading",climvar, "daily historical", past_data))#this is a progress update as the loop runs 
@@ -236,6 +238,8 @@ mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including dat
 
 # "agdd_daily", fix this - return when agdd is back on the website
 ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
 
 colnames(mydat3)[]<-c("date", "lat","lon","soil_water_daily", "runoff_daily", "rain_daily", "accumswe_daily", "pet_daily", "deficit_daily", "aet_daily") 
 
@@ -393,6 +397,8 @@ mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with meta data including d
 # "agdd_monthly", fix this - return when agdd is back on the website
 ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
 
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+
 colnames(mydat3)[]<-c("date", "lat","lon","soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "pet_monthly", "deficit_monthly", "aet_monthly") 
 
 
@@ -540,6 +546,8 @@ end = end_future
   #This is the loop that runs across all the climate variables you want to download 
   
   #"agdd", fix this - return when agdd is back on the website
+  
+  ### make sure to put agdd BEFORE AET - will mess up code if agdd is last
 
   for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET")){ #start loop for RCP 4.5
 
@@ -586,7 +594,8 @@ end = end_future
   
   # "agdd_daily_wc", "agdd_daily_bc", - fix this, return when agdd is back on the website
   # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
-  # 
+  
+  # ### make sure to put agdd BEFORE AET - will mess up code if agdd is last
   colnames(mydat4)[]<-c("date", "lat","lon","soil_water_daily_wc", "runoff_daily_wc", "rain_daily_wc",  "accumswe_daily_wc", "pet_daily_wc", "deficit_daily_wc", "aet_daily_wc", "soil_water_daily_bc", "runoff_daily_bc", "rain_daily_bc",  "accumswe_daily_bc", "pet_daily_bc", "deficit_daily_bc", "aet_daily_bc")
 
   
@@ -644,6 +653,8 @@ mydat3 <- NULL
 
  # "agdd_monthly", fix this - return once agdd is back on the website
 # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
   for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly","accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
   
   
@@ -744,6 +755,8 @@ mydat4 <- NULL
 #This is the loop that runs across all the climate variables you want to download 
 # "agdd_monthly", fix this - removed because it was removed from website
 # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
 for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "PET_monthly", "Deficit_monthly", "AET_monthly")){ 
   
   
@@ -824,6 +837,8 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
 mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
 # "agdd_monthly_85", fix this - was removed because agdd was removed from website
 ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
 colnames(mydat4)[]<-c("date", "lat","lon","soil_water_monthly_wc", "runoff_monthly_wc", "rain_monthly_wc",  "accumswe_monthly_wc", "pet_monthly_wc", "deficit_monthly_wc", "aet_monthly_wc", "soil_water_monthly_bc", "runoff_monthly_bc", "rain_monthly_bc",  "accumswe_monthly_bc", "pet_monthly_bc", "deficit_monthly_bc", "aet_monthly_bc") 
 
 divide.by.10 <- function(x, na.rm = FALSE) {

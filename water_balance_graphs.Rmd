@@ -1,6 +1,6 @@
 ---
 title: "Watershed Balance"
-author: "Janelle Christensen"
+author: "Janelle Christensen & Mike Tercek"
 date: "8/3/2020"
 output: html_document
 ---
@@ -28,6 +28,7 @@ library(directlabels)
 library(ggrepel)
 library(splines)
 library(magrittr)
+library(janitor)
 
 ```
 
@@ -68,8 +69,6 @@ model_bc = "inmcm4" # "best case"
 
 model_bc_rcp_name = "RCP 4.5"
 
-
-
 #options "RCP 4.5", "RCP 8.5" 
 # IMPORTANT: this is written differently than the data code, it is essentially written into the code to substitute this more "readable" version into the code (in the data code it was rcp45, rcp85)
 
@@ -90,10 +89,13 @@ model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" this is the SAME RCP as is in the file, just written in the "less readable" way for the file name
 
-past_data = "daymet"
+past_data = "gridmet"
 
 # past_data options: "gridmet", "daymet"
 # if you want to use data that will work with the future models, gridmet is a better choice. It doesn't require adjusting for any biases
+
+hot_year = 2012 # a particularly hot year, maybe with lots of fire activity? something for people to reference
+
 
 # ----------
 # inmcm4, NorESM1-M downloaded wrong, don't use until updated (noted this 8-5-20)
@@ -101,8 +103,8 @@ past_data = "daymet"
 
 ```
 
-```{r}
-# Before running the code, create subfolders as needed to save figures
+```{r, include=FALSE, eval=FALSE}
+# Before running the code, create subfolders as needed to save figures, only needs to be run once
 
 #If you don't want to save the figures, then just comment out ggsave inside of the functions.
 
@@ -166,7 +168,15 @@ future_month <- future_month_1 %>%
 # monthly past
 # -------------
 
-if(past_data == "daymet"){
+# -------------
+# daymet cleaning
+# -------------
+
+
+# daymet downloads date data wrong(all download as 1980), needing the code to be adjusted in the download
+# this makes the dates formatted differently, so the data needs to be cleaned differently than gridmet
+
+if(past_data == "daymet"){ 
   past_month_1 <- read_csv(here::here(site,
                                   "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
@@ -180,18 +190,8 @@ if(past_data == "daymet"){
                                truncated = 1))#fix this when dates are fixed on site
 # when/if dates download correctly for monthly historical, this line can be removed
 # truncated needs to be here, can't say why it's 1
-    } 
-
-if(past_data == "gridmet"){ 
-  past_month_1 <- read_csv(here::here( site,
-                                  "raw_data",
-                                  paste("lat",lat,"lon",lon, sep = "_"),
-                                  "historical_monthly",
-                                  paste(site,"_monthly_",past_data,".csv", sep = "")),
-                             na = c("-3276.7"))
-}
-
-date_pm <- past_month_1$date # this is a work around
+  
+  date_pm <- past_month_1$date # this is a work around
 # want to remove data that has all zeroes conditionally based on lat and lon
 # couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
 
@@ -203,6 +203,34 @@ past_month <- past_month_1 %>%
          month = lubridate::month(date,
                                   label = TRUE,
                                   abbr = TRUE))
+} 
+
+# ------------
+# gridmet cleaning
+# ------------
+
+if(past_data == "gridmet"){ 
+  past_month_1 <- read_csv(here::here( site,
+                                  "raw_data",
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  "historical_monthly",
+                                  paste(site,"_monthly_",past_data,".csv", sep = "")),
+                             na = c("-3276.7"))
+  
+  date_pm <- past_month_1$date # this is a work around
+# want to remove data that has all zeroes conditionally based on lat and lon
+# couldn't get data to work to only remove data that had a sum of zero unless removed all non-variable columns
+
+past_month <- past_month_1 %>%
+  select(-lat, -lon, -date) %>%
+  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
+  mutate(date = date_pm, #adds date back into the df
+         year = lubridate::year(date),
+         month = lubridate::month(date,
+                                  label = TRUE,
+                                  abbr = TRUE))
+}
+
 
 ```
 
@@ -222,15 +250,6 @@ future_day_1 <- read_csv(here::here( site,
                                   "future_daily",
                                   paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "daily_future.csv", sep = "_")),
                     na = c("-3276.7"))
-
-# ---------
-# this is only for now
-# won't mess up the code if not removed
-# named coded wrong when downloading (coded as monthly)
-# for some reason there is an extra longitude column, need to fix this
-# ---------
-
-#colnames(future_day_1)[]<-c("date", "lat","lon","soil_water_daily_wc", "runoff_daily_wc", "rain_daily_wc", "agdd_daily_wc", "accumswe_daily_wc", "pet_daily_wc", "deficit_daily_wc", "aet_daily_wc", "soil_water_daily_bc", "runoff_daily_bc", "rain_daily_bc", "agdd_daily_bc", "accumswe_daily_bc", "pet_daily_bc", "deficit_daily_bc", "aet_daily_bc")
 
 date_fd <- future_day_1$date
 # this is a work around
@@ -285,57 +304,82 @@ past_day <- past_day_1 %>%
 # -------------
 
 # -------------
-# long format past data daily
+# past data daily for summarizing by year
 # -------------
 
-site_long_past_d <- past_day %>% 
-  pivot_longer(`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
-               names_to = "variable", # new column name for existing names
-               values_to = "value") %>% # new column name to store values
-  mutate(variable = case_when(
-    .$variable == "runoff_daily" ~ "Runoff",
-    #.Svariable calls the variable, then it can be renamed
-    .$variable == "agdd_daily" ~ "AGDD",
-    .$variable == "soil_water_daily" ~ "Soil Water",
-    .$variable == "rain_daily" ~ "Rain",
-    .$variable == "accumswe_daily" ~ "Accumulated SWE",
-    .$variable == "pet_daily" ~ "PET",
-    .$variable == "deficit_daily" ~ "Deficit",
-    TRUE ~ "AET" # last ifelse is just labeled as TRUE
-  )) %>% 
-  mutate(decade = case_when(
-    .$year %in% c(1980:1989) ~ "1980s",
-    .$year %in% c(1990:1999) ~ "1990s",
-    .$year %in% c(2000:2009) ~ "2000s",
-    TRUE ~ "2010s"
-  )) 
+annual_past <- past_day %>% 
+  group_by(year) %>% 
+  filter(!year == 2020) %>% 
+  summarize(annual_soil_water = mean(soil_water_daily, na.rm = TRUE),
+            annual_runoff = sum(runoff_daily, na.rm = TRUE), 
+            annual_rain = sum(rain_daily, na.rm = TRUE),
+            annual_accumswe = max(accumswe_daily, na.rm = TRUE),
+            annual_pet = sum(pet_daily, na.rm = TRUE),
+            annual_deficit = sum(deficit_daily, na.rm = TRUE), 
+            #annual_agdd = max(agdd_daily, na.rm = TRUE), 
+            #put this back in when agdd is working
+            annual_aet = sum(aet_daily, na.rm = TRUE))
 
-annual_past <- site_long_past_d %>% 
-  group_by(variable, year) %>% 
-  mutate(annual_avg = mean(value, na.rm = TRUE)) %>% 
-  ungroup(variable, year)
 
 # -------------
 # long format future data daily
 # -------------
 
-site_long_wc <- future_day %>%
+# -------------
+# worst case
+# -------------
+
+wc_annual_future <- future_day %>%
   select(soil_water_daily_wc:aet_daily_wc, date:doy) %>% # selecting for variables for 8.5 only
-  pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
+  filter(!year == 2100) %>% 
+  group_by(year) %>% 
+    summarize(annual_soil_water_wc = mean(soil_water_daily_wc, na.rm = TRUE),
+              annual_runoff_wc = sum(runoff_daily_wc, na.rm = TRUE),
+              annual_rain_wc = sum(rain_daily_wc, na.rm = TRUE),
+              annual_accumswe_wc = max(accumswe_daily_wc, na.rm = TRUE),
+              annual_pet_wc = sum(pet_daily_wc, na.rm = TRUE),
+              annual_deficit_wc = sum(deficit_daily_wc, na.rm = TRUE),
+              #annual_agdd_wc = max(agdd_daily_wc, na.rm = TRUE), 
+              #put this back in when agdd is working
+              annual_aet_wc = sum(aet_daily_wc, na.rm = TRUE))
+    
+#-------------
+# best case
+# ------------
+  
+bc_annual_future <- future_day %>% 
+  select(soil_water_daily_bc:aet_daily_bc, date:doy) %>% #selecting for 4.5 only
+  filter(!year == 2100) %>% 
+  group_by(year) %>% 
+    summarize(annual_soil_water_bc = mean(soil_water_daily_bc, na.rm = TRUE),
+              annual_runoff_bc = sum(runoff_daily_bc, na.rm = TRUE),
+              annual_rain_bc = sum(rain_daily_bc, na.rm = TRUE),
+              annual_accumswe_bc = max(accumswe_daily_bc, na.rm = TRUE),
+              annual_deficit_bc = sum(deficit_daily_bc, na.rm = TRUE),
+              annual_pet_bc = sum(pet_daily_bc, na.rm = TRUE),
+              #annual_agdd_bc = max(agdd_daily_bc, na.rm = TRUE),
+              #put this back in when agdd is working
+              annual_aet_bc = sum(aet_daily_bc, na.rm = TRUE))
+
+# -----------
+# make values into one df
+# -----------
+
+# -----------
+# best case
+# ----------
+
+bc_annual_values <- annual_past %>%
+  full_join(bc_annual_future) %>% 
+  pivot_longer(`annual_soil_water`:`annual_aet_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
-               values_to = "rcp_wc") %>%  
-  filter(!year == 2100) %>%
-  mutate(variable = case_when(
-    .$variable == "runoff_daily_wc" ~ "Runoff",
-    #.Svariable calls the variable, then it can be renamed
-    .$variable == "agdd_daily_wc" ~ "AGDD",
-    .$variable == "soil_water_daily_wc" ~ "Soil Water",
-    .$variable == "rain_daily_wc" ~ "Rain",
-    .$variable == "accumswe_daily_wc" ~ "Accumulated SWE",
-    .$variable == "pet_daily_wc" ~ "PET",
-    .$variable == "deficit_daily_wc" ~ "Deficit",
-    TRUE ~ "AET")) %>% 
+               values_to = "annual_value") %>% 
+  na.omit(annual_values) %>% # new column name to store values
   mutate(decade = case_when(
+    .$year %in% c(1980:1989) ~ "1980s",
+    .$year %in% c(1990:1999) ~ "1990s",
+    .$year %in% c(2000:2009) ~ "2000s",
+    .$year %in% c(2010:2019) ~ "2010s",
     .$year %in% c(2020:2029) ~ "2020s",
     .$year %in% c(2030:2039) ~ "2030s",
     .$year %in% c(2040:2049) ~ "2040s",
@@ -344,33 +388,43 @@ site_long_wc <- future_day %>%
     .$year %in% c(2070:2079) ~ "2070s",
     .$year %in% c(2080:2089) ~ "2080s",
     TRUE ~ "2090s"
-  ))
-
-annual_future_wc <- site_long_wc %>% 
-  group_by(variable, year) %>% 
-  mutate(annual_avg_wc = mean(rcp_wc, na.rm = TRUE)) %>%
-  ungroup(year, variable) 
-
-  
-  
-site_long_bc <- future_day %>% 
-  select(soil_water_daily_bc:aet_daily_bc, date:doy) %>% #selecting for 4.5 only
-  pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
-               names_to = "variable", # new column name for existing names
-               values_to = "rcp_bc") %>% 
-  filter(!year == 2100) %>% 
-  mutate(variable = case_when(
-    .$variable == "runoff_daily_bc" ~ "Runoff",
+  ))  %>%  mutate(variable = case_when(
+    .$variable %in% c("annual_runoff", "annual_runoff_bc") ~ "Runoff",
     #.Svariable calls the variable, then it can be renamed
-    .$variable == "agdd_daily_bc" ~ "AGDD",
-    .$variable == "soil_water_daily_bc" ~ "Soil Water",
-    .$variable == "rain_daily_bc" ~ "Rain",
-    .$variable == "accumswe_daily_bc" ~ "Accumulated SWE",
-    .$variable == "pet_daily_bc" ~ "PET",
-    .$variable == "deficit_daily_bc" ~ "Deficit",
+    .$variable %in% c("annual_agdd", "annual_agdd_bc") ~ "AGDD",
+    .$variable %in% c("annual_soil_water", "annual_soil_water_bc") ~ "Soil Water",
+    .$variable %in% c("annual_rain", "annual_rain_bc") ~ "Rain",
+    .$variable %in% c("annual_accumswe", "annual_accumswe_bc") ~ "Accumulated SWE",
+    .$variable %in% c("annual_pet", "annual_pet_bc") ~ "PET",
+    .$variable %in% c("annual_deficit", "annual_deficit_bc") ~ "Deficit",
     TRUE ~ "AET" # last ifelse is just labeled as TRUE
   )) %>% 
+  mutate(averages = case_when(
+    .$year %in% c(1980:2019) ~ "annual_avg",
+    TRUE ~ "annual_avg_bc"
+  )) %>% 
+  mutate(decades = case_when( #don't need individual decades for this data
+    .$year %in% c(1980:2019) ~ "1980-2019",
+    .$year %in% c(2020:2059) ~ "2020-2059",
+    TRUE ~ "2060-2099")) #decades by 39 yr chunks
+
+
+
+# ------------
+# worst case
+# ------------
+
+wc_annual_values <- annual_past %>% 
+  full_join(wc_annual_future) %>%
+  pivot_longer(`annual_soil_water`:`annual_aet_wc`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "annual_value") %>% 
+  na.omit(annual_values) %>% # new column name to store values
   mutate(decade = case_when(
+    .$year %in% c(1980:1989) ~ "1980s",
+    .$year %in% c(1990:1999) ~ "1990s",
+    .$year %in% c(2000:2009) ~ "2000s",
+    .$year %in% c(2010:2019) ~ "2010s",
     .$year %in% c(2020:2029) ~ "2020s",
     .$year %in% c(2030:2039) ~ "2030s",
     .$year %in% c(2040:2049) ~ "2040s",
@@ -378,42 +432,59 @@ site_long_bc <- future_day %>%
     .$year %in% c(2060:2069) ~ "2060s",
     .$year %in% c(2070:2079) ~ "2070s",
     .$year %in% c(2080:2089) ~ "2080s",
-    TRUE ~ "2090s"
-  ))
+    TRUE ~ "2090s" #decade individually
+  )) %>% 
+  mutate(variable = case_when( #make names more readable
+    .$variable %in% c("annual_runoff", "annual_runoff_wc") ~ "Runoff",
+    #.$variable calls the variable, then it can be renamed
+    .$variable %in% c("annual_agdd", "annual_agdd_wc") ~ "AGDD",
+    .$variable %in% c("annual_soil_water", "annual_soil_water_wc") ~ "Soil Water",
+    .$variable %in% c("annual_rain", "annual_rain_wc") ~ "Rain",
+    .$variable %in% c("annual_accumswe", "annual_accumswe_wc") ~ "Accumulated SWE",
+    .$variable %in% c("annual_pet", "annual_pet_wc") ~ "PET",
+    .$variable %in% c("annual_deficit", "annual_deficit_wc") ~ "Deficit",
+    TRUE ~ "AET" # last ifelse is just labeled as TRUE
+  ))  %>% 
+  mutate(averages = case_when(
+    .$year %in% c(1980:2019) ~ "annual_avg",
+    TRUE ~ "annual_avg_wc"
+  )) %>% 
+  mutate(decades = case_when( #don't need individual decades for this data
+    .$year %in% c(1980:2019) ~ "1980-2019",
+    .$year %in% c(2020:2059) ~ "2020-2059",
+    TRUE ~ "2060-2099")) #decades by 39 yr chunks
 
-annual_future_bc <- site_long_bc %>% 
-   group_by(variable, year) %>% 
-  mutate(annual_avg_bc = mean(rcp_bc, na.rm = TRUE)) %>%
-  ungroup(year, variable) 
+# ---------------
+# all together now!
+# ---------------
 
+annual_values <- bc_annual_values %>% 
+  full_join(wc_annual_values) 
 
-annual_future <- annual_future_bc %>%
-  full_join(annual_future_wc)
 
 ```
 
-# Histograms and qq plots to look at data spread
 
 ```{r, include = FALSE, eval = FALSE}
 
 # ------------
+# Histograms and qq plots to look at data spread
 # histogram for future data
 # ------------
 
 
-plot_histogram_future = function(.y) {
+plot_histogram = function(.y) {
   
-  site_long_.y <- annual_future %>%
-    filter(decade %in% (.y))
-  
-.y_hist_bc <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_bc), binwidth = 10) +
+.y_hist_bc <- ggplot(data = bc_annual_values %>%
+                       filter(decade %in% c(.y))) +
+    geom_histogram(aes(x = annual_value), binwidth = 10) +
     facet_wrap(~variable)+
     labs(title = paste(.y, model_bc_rcp_name))
 
-.y_hist_wc <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_wc), binwidth = 10) +
-    facet_wrap(~variable)+
+.y_hist_wc <- ggplot(data = wc_annual_values %>%
+                       filter(decade %in% c(.y))) +
+    geom_histogram(aes(x = annual_value), binwidth = 10) +
+    facet_wrap(~variable) +
     labs(title = paste(.y, model_wc_rcp_name))
   
   print(.y_hist_bc)
@@ -424,91 +495,19 @@ plot_histogram_future = function(.y) {
 # histogram for past data
 # ------------
 
-plot_histogram_past = function(.y) {
-  
-  site_long_.y <- annual_past %>%
-    filter(decade %in% (.y))
-  
-.y_hist_past <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = value), binwidth = 10) +
-    facet_wrap(~variable)+
-    labs(title = .y)
-  
-  print(.y_hist_past)
-}
+plot_histogram("1980s")
+plot_histogram("1990s")
+plot_histogram("2000s")
+plot_histogram("2010s")
+plot_histogram("2020s")
+plot_histogram("2030s")
+plot_histogram("2040s")
+plot_histogram("2050s")
+plot_histogram("2060s")
+plot_histogram("2070s")
+plot_histogram("2080s")
+plot_histogram("2090s")
 
-plot_histogram_past("1980s")
-plot_histogram_past("1990s")
-plot_histogram_past("2000s")
-plot_histogram_past("2010s")
-plot_histogram_future("2020s")
-plot_histogram_future("2030s")
-plot_histogram_future("2040s")
-plot_histogram_future("2050s")
-plot_histogram_future("2060s")
-plot_histogram_future("2070s")
-plot_histogram_future("2080s")
-plot_histogram_future("2090s")
-
-
-#-------------
-# look at data removing months that aren't rainy
-# ------------
-
-# ------------
-# histogram for future data rainy months
-# ------------
-
-plot_rainy_hist_future = function(.y) {
-  
-  site_long_.y <- annual_future %>%
-    filter(decade %in% (.y),
-           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
-  
-.y_hist_bc <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_bc), binwidth = 10) +
-    facet_wrap(~variable)+
-    labs(title = paste(.y, "May - Sep", model_bc_rcp_name))
-
-.y_hist_wc <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = rcp_wc), binwidth = 10) +
-    facet_wrap(~variable)+
-    labs(title = paste(.y, "May - Sep" model_wc_rcp_name))
-  
-  print(.y_hist_bc)
-  print(.y_hist_wc)
-}
-
-# ------------
-# histogram for past data rainy months
-# ------------
-
-plot_rainy_hist_past = function(.y) {
-  
-  site_long_.y <- annual_past %>%
-    filter(decade %in% (.y),
-           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
-  
-.y_hist_past <- ggplot(data = site_long_.y) +
-    geom_histogram(aes(x = value), binwidth = 10) +
-    facet_wrap(~variable)+
-    labs(title = paste(.y, "May - Sep"))
-  
-  print(.y_hist_past)
-}
-
-plot_rainy_hist_past("1980s")
-plot_rainy_hist_past("1990s")
-plot_rainy_hist_past("2000s")
-plot_rainy_hist_past("2010s")
-plot_rainy_hist_future("2020s")
-plot_rainy_hist_future("2030s")
-plot_rainy_hist_future("2040s")
-plot_rainy_hist_future("2050s")
-plot_rainy_hist_future("2060s")
-plot_rainy_hist_future("2070s")
-plot_rainy_hist_future("2080s")
-plot_rainy_hist_future("2090s")
 
 # ---------
 # qq plots of the data to look at data normalcy
@@ -519,18 +518,17 @@ plot_rainy_hist_future("2090s")
 # qq plots of future data
 # ---------
 
-plot_qq_future = function(.y) {
+plot_qq = function(.y) {
   
-  site_long_.y <- annual_future %>%
-    filter(decade %in% (.y))
-  
-.y_qq_bc <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_bc)) +
+.y_qq_bc <- ggplot(data = bc_annual_values %>%
+                     filter(decade %in% (.y))) +
+    geom_qq(aes(sample = annual_value)) +
     facet_wrap(~variable, scales = "free")+
     labs(title = paste(.y, model_bc_rcp_name))
 
-.y_qq_wc <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_wc)) +
+.y_qq_wc <- ggplot(data = wc_annual_values %>%
+                     filter(decade %in% (.y))) +
+    geom_qq(aes(sample = annual_value)) +
     facet_wrap(~variable, scales = "free")+
     labs(title = paste(.y, model_wc_rcp_name))
   
@@ -538,108 +536,39 @@ plot_qq_future = function(.y) {
   print(.y_qq_wc)
 }
 
-# ----------
-# qq plots of past data
-# ----------
-
-plot_qq_past = function(.y) {
-  
-  site_long_.y <- annual_past %>%
-    filter(decade %in% (.y))
-  
-.y_qq_past <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = value)) +
-    facet_wrap(~variable, scales = "free")+
-    labs(title = .y)
-
-  print(.y_qq_past)
-}
-
-plot_qq_past("1980s")
-plot_qq_past("1990s")
-plot_qq_past("2000s")
-plot_qq_past("2010s")
-plot_qq_future("2020s")
-plot_qq_future("2030s")
-plot_qq_future("2040s")
-plot_qq_future("2050s")
-plot_qq_future("2060s")
-plot_qq_future("2070s")
-plot_qq_future("2080s")
-plot_qq_future("2090s")
-
-# ----------
-# qq plots of future rainy month data
-# ----------
-
-plot_rainy_qq_future = function(.y) {
-  
-  site_long_.y <- annual_future %>%
-    filter(decade %in% (.y),
-           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
-  
-.y_qq_bc <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_bc)) +
-    facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "May - Sep", model_bc_rcp_name))
-
-.y_qq_wc <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = rcp_wc)) +
-    facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "May - Sep", model_wc_rcp_name))
-  
-  print(.y_qq_bc)
-  print(.y_qq_wc)
-}
-
-# ----------
-# qq for past rainy month data
-# ----------
-
-plot_rainy_qq_past = function(.y) {
-  
-  site_long_.y <- annual_past %>%
-    filter(decade %in% (.y),
-           month %in% c("May", "Jun", "Jul", "Aug", "Sep"))
-  
-.y_qq_past <- ggplot(data = site_long_.y) +
-    geom_qq(aes(sample = value)) +
-    facet_wrap(~variable, scales = "free")+
-    labs(title = paste(.y, "May - Sep"))
-  
-  print(.y_qq_past)
-}
-
-plot_rainy_qq_past("1980s")
-plot_rainy_qq_past("1990s")
-plot_rainy_qq_past("2000s")
-plot_rainy_qq_past("2010s")
-plot_rainy_qq_future("2020s")
-plot_rainy_qq_future("2030s")
-plot_rainy_qq_future("2040s")
-plot_rainy_qq_future("2050s")
-plot_rainy_qq_future("2060s")
-plot_rainy_qq_future("2070s")
-plot_rainy_qq_future("2080s")
-plot_rainy_qq_future("2090s")
-
+plot_qq("1980s")
+plot_qq("1990s")
+plot_qq("2000s")
+plot_qq("2010s")
+plot_qq("2020s")
+plot_qq("2030s")
+plot_qq("2040s")
+plot_qq("2050s")
+plot_qq("2060s")
+plot_qq("2070s")
+plot_qq("2080s")
+plot_qq("2090s")
 
 ```
 
-## Graphs for 40 yr. period, shifts in timing of events
+
 ```{r}
+
+## Graphs for 40 yr. period, shifts in timing of events
 
 # --------
 # clean data for 40 yr graphs
+# graphs grouped by 40 yr chunks
+# graphs then grouped by doy
+# mean of doy taken, to be plotted on a single line that represents the mean of the doy for that 40 yr chunk
 # --------
 
-day_join_1980_2019 <-  past_day %>% 
+doy_avg_1980_2019 <-  past_day %>% 
   filter(year %in% c(1980:2019)) %>%
   pivot_longer(`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
-               values_to = "value") # new column name to store values) 
-
-day_join_1980_2019_d <- day_join_1980_2019 %>% #for grouping by doy
+               values_to = "value") %>%  # new column name to store values) 
+#for grouping by doy
   group_by(doy, variable) %>% 
   summarize(`1980-2019` = mean(value, na.rm = TRUE))
 
@@ -650,7 +579,7 @@ day_join_1980_2019_d <- day_join_1980_2019 %>% #for grouping by doy
 # 2020 - 2059 Best case
 # first, rename variables to be able to combine them later
 
-day_join_2020_2059_bc <- future_day %>% 
+doy_avg_2020_2059_bc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
   select(soil_water_daily_bc:doy) %>% 
   pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
@@ -663,11 +592,7 @@ day_join_2020_2059_bc <- future_day %>%
     .$variable == "accumswe_daily_bc" ~ "accumswe_daily",
     .$variable == "soil_water_daily_bc" ~ "soil_water_daily",
     .$variable == "agdd_daily_bc" ~ "agdd_daily",
-    TRUE ~ "deficit_daily")) 
-
-#for grouping by doy
-
-day_join_2020_2059_bc_d <- day_join_2020_2059_bc %>% 
+    TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
   summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
 
@@ -675,7 +600,7 @@ day_join_2020_2059_bc_d <- day_join_2020_2059_bc %>%
 # 2060 - 2099 Best case df
 # first, rename variables to be able to combine them later
 
-day_join_2060_2099_bc <-  future_day %>% 
+doy_avg_2060_2099_bc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
   select(soil_water_daily_bc:doy) %>%
   pivot_longer(`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
@@ -688,23 +613,19 @@ day_join_2060_2099_bc <-  future_day %>%
     .$variable == "accumswe_daily_bc" ~ "accumswe_daily",
     .$variable == "soil_water_daily_bc" ~ "soil_water_daily",
     .$variable == "agdd_daily_bc" ~ "agdd_daily",
-    TRUE ~ "deficit_daily"))
-
-#for grouping by doy
-
-day_join_2060_2099_bc_d <- day_join_2060_2099_bc %>% #for grouping by doy
+    TRUE ~ "deficit_daily")) %>% #for grouping by doy
   group_by(doy, variable) %>% 
   summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
 
 #full doy dataframe Best case
 
-day_join_bc_d <- day_join_1980_2019_d %>% 
-  full_join(day_join_2020_2059_bc_d) %>% 
-  full_join(day_join_2060_2099_bc_d) %>% 
+doy_avg_bc <- doy_avg_1980_2019%>% 
+  full_join(doy_avg_2020_2059_bc) %>% 
+  full_join(doy_avg_2060_2099_bc) %>% 
   pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
-  na.omit(day_join_bc_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  na.omit(doy_avg_bc) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
   pivot_wider(names_from = variable,
               values_from = value) 
 
@@ -716,7 +637,7 @@ day_join_bc_d <- day_join_1980_2019_d %>%
 # 2020 - 2059 wc df
 # first, rename variables to be able to combine them later
 
-day_join_2020_2059_wc <- future_day %>% 
+doy_avg_2020_2059_wc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
   select(soil_water_daily_wc:doy) %>% 
   pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
@@ -729,11 +650,7 @@ day_join_2020_2059_wc <- future_day %>%
     .$variable == "accumswe_daily_wc" ~ "accumswe_daily",
     .$variable == "soil_water_daily_wc" ~ "soil_water_daily",
     .$variable == "agdd_daily_wc" ~ "agdd_daily",
-    TRUE ~ "deficit_daily"))   
-  
-#for grouping by doy
-  
-day_join_2020_2059_wc_d <- day_join_2020_2059_wc %>% 
+    TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
   summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
 
@@ -741,7 +658,7 @@ day_join_2020_2059_wc_d <- day_join_2020_2059_wc %>%
 # 2060 - 2099 wc df
 # first, rename variables to be able to combine them later
 
-day_join_2060_2099_wc <-  future_day %>% 
+doy_avg_2060_2099_wc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
   select(soil_water_daily_wc:doy) %>%
   pivot_longer(`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
@@ -754,24 +671,20 @@ day_join_2060_2099_wc <-  future_day %>%
     .$variable == "accumswe_daily_wc" ~ "accumswe_daily",
     .$variable == "soil_water_daily_wc" ~ "soil_water_daily",
     .$variable == "agdd_daily_wc" ~ "agdd_daily",
-    TRUE ~ "deficit_daily"))
-
-#for grouping by doy
-
-day_join_2060_2099_wc_d <- day_join_2060_2099_wc %>% 
+    TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
   summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
 
 
 #full day dataset wc
 
-day_join_wc_d <- day_join_1980_2019_d %>% 
-  full_join(day_join_2020_2059_wc_d) %>% 
-  full_join(day_join_2060_2099_wc_d) %>% 
+doy_avg_wc <- doy_avg_1980_2019 %>% 
+  full_join(doy_avg_2020_2059_wc) %>% 
+  full_join(doy_avg_2060_2099_wc) %>% 
   pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
-  na.omit(day_join_wc_d) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
+  na.omit(doy_avg_wc) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
   pivot_wider(names_from = variable,
               values_from = value) 
 
@@ -779,8 +692,10 @@ day_join_wc_d <- day_join_1980_2019_d %>%
 ```
 
 ```{r}
-
-# Month data
+# ---------
+# Month data made into a joined df
+# used for the jitter plots
+# ---------
 month_join_1980_2019 <- past_month %>% 
   pivot_longer(`soil_water_monthly`:`aet_monthly`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
@@ -796,8 +711,7 @@ month_join_1980_2019 <- past_month %>%
     .$variable == "deficit_monthly" ~ "Deficit",
     TRUE ~ "AET" # last ifelse is just labeled as TRUE
   )) %>% 
-  mutate("1980-2019" = value) %>% 
-  select(-value)
+  rename("1980-2019" = value)
 
 # --------
 # Best case month data in long format
@@ -820,8 +734,7 @@ month_join_2020_2059_bc <- future_month %>%
     .$variable == "soil_water_monthly_bc" ~ "Soil Water",
     .$variable == "agdd_monthly_bc" ~ "AGDD",
     TRUE ~ "Deficit")) %>% 
-  mutate("2020-2059" = value) %>% 
-  select(-value)
+  rename("2020-2059" = value) 
   
 
 
@@ -842,8 +755,7 @@ month_join_2060_2099_bc <-  future_month %>%
     .$variable == "soil_water_monthly_bc" ~ "Soil Water",
     .$variable == "agdd_monthly_bc" ~ "AGDD",
     TRUE ~ "Deficit"))%>% 
-  mutate(`2060-2099` = value) %>% 
-  select(-value)
+  rename("2060-2099" = value) 
 
 #full doy dataframe Best case
 
@@ -857,7 +769,7 @@ month_join_bc <- month_join_1980_2019 %>%
 
 
 # --------
-# wc means
+# wc
 # --------
 
 # 2020 - 2059 worst case
@@ -877,9 +789,7 @@ month_join_2020_2059_wc <- future_month %>%
     .$variable == "soil_water_monthly_wc" ~ "Soil Water",
     .$variable == "agdd_monthly_wc" ~ "AGDD",
     TRUE ~ "Deficit")) %>% 
-  mutate("2020-2059" = value) %>% 
-  select(-value)
-  
+  rename("2020-2059" = value) 
 
 
 # 2060 - 2099 worst case df
@@ -899,8 +809,7 @@ month_join_2060_2099_wc <-  future_month %>%
     .$variable == "soil_water_monthly_wc" ~ "Soil Water",
     .$variable == "agdd_monthly_wc" ~ "AGDD",
     TRUE ~ "Deficit"))%>% 
-  mutate(`2060-2099` = value) %>% 
-  select(-value)
+  rename("2060-2099" = value) 
 
 #full doy dataframe worst case
 
@@ -917,14 +826,14 @@ month_join_wc <- month_join_1980_2019 %>%
 
 ```{r}
 # -------
-# Function for 40 yr chunks - line graph by doy
+# Function for 40 yr chunks - smoothed line graph by doy
 # -------
 
 
 plot_decades_smooth = function(.y) { #start function
   
-  max_y_1 <- day_join_bc_d %>%
-    full_join(day_join_wc_d) %>%
+  max_y_1 <- doy_avg_bc %>%
+    full_join(doy_avg_wc) %>%
   select(.y)
 
 
@@ -933,11 +842,11 @@ max_y_2 <- max(max_y_1[,2], na.rm = TRUE)
 max_y <- max_y_2*1.15
 
   
-  exists_.y <- exists(.y, where = day_join_bc_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = doy_avg_bc) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement Best case
   
-  .y_plot_bc <- ggplot(day_join_bc_d) + 
+  .y_plot_bc <- ggplot(doy_avg_bc) + 
     geom_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = doy,
@@ -952,7 +861,7 @@ max_y <- max_y_2*1.15
     #quasipoisson is some type of statistical analysis type
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
-    # geom_vline(data = day_join_bc_d,
+    # geom_vline(data = doy_avg_bc,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
     labs(x = "Month",
          color = "Year",
@@ -998,11 +907,11 @@ max_y <- max_y_2*1.15
   
   } #end if statement for Best case
   
-  exists_.y <- exists(.y, where = day_join_wc_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = doy_avg_wc) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement RCP 8.5
   
-  .y_plot_wc <- ggplot(day_join_wc_d) +
+  .y_plot_wc <- ggplot(doy_avg_wc) +
     stat_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = doy,
@@ -1076,11 +985,11 @@ max_y <- max_y_2*1.15
 
 plot_decades_line = function(.y) { #start function
   
-  exists_.y <- exists(.y, where = day_join_bc_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = doy_avg_bc) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement Best case
 
-.y_plot_bc <- ggplot(day_join_bc_d) + 
+.y_plot_bc <- ggplot(doy_avg_bc) + 
     geom_line(size = 1.5,
                 aes(x = doy,
                     y = .data[[.y]],
@@ -1091,7 +1000,7 @@ plot_decades_line = function(.y) { #start function
     #quasipoisson is some type of statistical analysis type
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
-    # geom_vline(data = day_join_bc_d,
+    # geom_vline(data = doy_avg_bc,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
     labs(x = "Day of Year",
          color = "Year",
@@ -1136,22 +1045,17 @@ plot_decades_line = function(.y) { #start function
   
   } # end if statement rcp bc
   
-  exists_.y <- exists(.y, where = day_join_wc_d) #check to see if the variable exists
+  exists_.y <- exists(.y, where = doy_avg_wc) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement best case
   
-  .y_plot_wc <- ggplot(day_join_wc_d) +
+  .y_plot_wc <- ggplot(doy_avg_wc) +
     geom_line(size = 1.5,
                 aes(x = doy,
                     y = .data[[.y]],
                     # calling my variable, which I'll name later in the command
                     group = decades,
                     color = decades)) +
-    #internet said to do this
-    #quasipoisson is some type of statistical analysis type
-    #forumula has something to do with the degrees of freedom
-    #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
-    #geom_vline(xintercept = doy[.data[[.y]] == max(.data[[.y]])],color='red') +
     labs(x = "Day of Year",
          color = "Year",
          y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
@@ -1198,45 +1102,19 @@ plot_decades_line = function(.y) { #start function
   
 } #end function decades_line
 
-```
-
-
-```{r, out.width="50%"}
-
-plot_decades_smooth("soil_water_daily")
-plot_decades_smooth("runoff_daily")
-plot_decades_smooth("rain_daily")
-plot_decades_smooth("accumswe_daily")
-plot_decades_smooth("pet_daily")
-plot_decades_smooth("deficit_daily")
-plot_decades_smooth("aet_daily")
-# plot_decades_line("agdd_daily") - fix later, this data is bad - shouldn't plot 8-20-20
+# call graphs later
 
 ```
-
 
 
 ## Annual Average over time
 
 ```{r, fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents RCP 4.5 and the yellow line represents RCP 8.5"}
 
-annual_values <- annual_past %>%
-  full_join(annual_future_bc) %>% 
-  full_join(annual_future_wc) %>%
-  select(year, variable, annual_avg, annual_avg_bc, annual_avg_wc) %>% 
-  pivot_longer(`annual_avg`:`annual_avg_wc`,
-               names_to = "averages", # new column name for existing names
-               values_to = "value") %>% 
-  na.omit(annual_values) %>% # because of the way the dataframe was made, there are NA's for the future averages, just don't want those there
-  group_by(year, variable) %>% 
-  summarize(value = unique(value), averages = unique(averages)) 
-# first() allows me to keep the first observation from that grouped dataset, and allows me to keep columns so that there is only one observation per year per variable, unique keeps unique observations in that column
-
-
 
 ggplot() +
   geom_line(data = annual_values, aes(x = year,
-                                      y = value,
+                                      y = annual_value,
                                       color = averages),
             size = 0.6) +
   facet_wrap(~variable, scales = "free") +
@@ -1252,28 +1130,12 @@ ggsave(here::here(site, #site subfolder
                   "annual_facet.png")) #file name
 
 ```
-## Individual Graphs of change over time
+
 
 ```{r, out.width="50%"}
+## Individual Graphs of change over time
 
-wrap_sentence <- function(string, width) {
-  words <- unlist(strsplit(string, " "))
-  fullsentence <- ""
-  checklen <- ""
-  for(i in 1:length(words)) {
-    checklen <- paste(checklen, words[i])
-    if(nchar(checklen)>(width+1)) {
-      fullsentence <- paste0(fullsentence, "\n")
-      checklen <- ""
-    }
-    fullsentence <- paste(fullsentence, words[i])
-  }
-  fullsentence <- sub("^\\s", "", fullsentence)
-  fullsentence <- gsub("\n ", "\n", fullsentence)
-  return(fullsentence)
-} # this code taken from https://stackoverflow.com/a/27734975/14061596
-
-plot_annual = function(.y, .l) { 
+plot_annual = function(.y) { 
   #.y = historical
   #.x = future 4.5
   #.z = future 8.5
@@ -1281,16 +1143,16 @@ plot_annual = function(.y, .l) {
    
    point_low <- annual_values %>%
      filter(variable %in% c(.y)) %>% 
-     filter(year %in% c(.l))
+     filter(year == hot_year)
    
-   line_low <- point_low$value
+   line_low <- point_low$annual_value
   
   annual_graph_bc <- ggplot() +
     geom_line(data = annual_values %>% 
                 filter(averages %in% c("annual_avg", "annual_avg_bc")) %>% 
                 filter(variable == .y), # filter data for historical and bc lines
               aes(x = year, 
-                  y = value, 
+                  y = annual_value, 
                   color = averages),
               size = .75) +
     geom_hline(data = point_low, # draws a line at a dry year
@@ -1298,16 +1160,16 @@ plot_annual = function(.y, .l) {
                linetype = "dashed",
                color = "firebrick3") +
     geom_point(data = point_low, # highlights a dry year point
-               aes(x = year, y = value),
+               aes(x = year, y = annual_value),
                color = "firebrick3",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual Average of", .y),
+  labs(title = paste("Annual", .y),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
               aes(x = 1973, 
-                  y = value,
+                  y = annual_value,
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "firebrick3") +
@@ -1325,7 +1187,7 @@ plot_annual = function(.y, .l) {
                 filter(averages %in% c("annual_avg", "annual_avg_wc")) %>%
                 filter(variable == .y), # filter data for historical and wc lines
               aes(x = year, 
-                  y = value, 
+                  y = annual_value, 
                   color = averages),
               size = .75) +
     geom_hline(data = point_low, 
@@ -1333,16 +1195,16 @@ plot_annual = function(.y, .l) {
                linetype = "dashed",
                color = "firebrick3") +
     geom_point(data = point_low, # highlights a dry year point
-               aes(x = year, y = value),
+               aes(x = year, y = annual_value),
                color = "firebrick3",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual Average of",.y),
+  labs(title = paste("Annual",.y),
        y = ifelse(.y == "ADGG", "Growing Degree Days (C)",
                     "Water (mm)")) +
     geom_text(data = point_low,
               aes(x = 1973, 
-                  y = value,
+                  y = annual_value,
                   label = year, 
                   vjust = -0.35),
               color = "firebrick3") +
@@ -1360,21 +1222,106 @@ plot_annual = function(.y, .l) {
   print(annual_graph_bc)
   print(annual_graph_wc)
   
-  }
-
-plot_annual("Runoff", "2002")
-#plot_annual("AGDD", "2002")
-plot_annual("Accumulated SWE", "2002")
-plot_annual("PET", "2002")
-plot_annual("AET", "2002")
-plot_annual("Deficit", "2002")
-plot_annual("Rain", "2002")
-plot_annual("Soil Water", "2002")
-
+}
 
 ```
 
 ```{r}
+
+#----------
+# Deficit v. AET
+# ---------
+
+deficit_aet_bc <- bc_annual_values %>% 
+  pivot_wider(names_from = variable,
+              values_from = annual_value) %>% 
+  clean_names()
+
+deficit_aet_wc <- wc_annual_values %>% 
+  pivot_wider(names_from = variable,
+              values_from = annual_value) %>% 
+  clean_names()
+
+
+ggplot(deficit_aet_bc) +
+  geom_point(aes(x = deficit, y = aet, color = decades),
+             size = 4,
+             alpha = 0.6) +
+  labs(title = paste(model_bc, model_bc_rcp_name)) +
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4"))
+
+ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
+  geom_point(aes(color = decades),
+             size = 4,
+             alpha = 0.6) +
+  labs(title = paste(model_wc, model_wc_rcp_name))+
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("goldenrod2", "darkolivegreen3", "turquoise4"))
+  
+
+```
+
+
+## Soil Water
+
+```{r, out.width="50%"}
+plot_decades_smooth("soil_water_daily")
+plot_annual("Soil Water")
+```
+
+## Runoff
+
+```{r, out.width="50%"}
+plot_decades_smooth("runoff_daily")
+plot_annual("Runoff")
+```
+
+## Rain
+
+```{r, out.width="50%"}
+plot_decades_smooth("rain_daily")
+plot_annual("Rain")
+```
+
+## Accumulated Snow Water Equivalent
+
+```{r, out.width="50%"}
+plot_decades_smooth("accumswe_daily")
+plot_annual("Accumulated SWE")
+```
+
+## Potential Evapotranspiration
+
+```{r, out.width="50%"}
+plot_decades_smooth("pet_daily")
+plot_annual("PET")
+```
+
+## Actual Evapotranspiration
+
+```{r, out.width="50%"}
+plot_decades_smooth("aet_daily")
+plot_annual("AET")
+
+```
+
+## Deficit
+
+```{r, out.width="50%"}
+plot_decades_smooth("deficit_daily")
+plot_annual("Deficit")
+```
+
+## Accumulated Growing Degree Days
+
+```{r, out.width="50%"}
+# plot_decades_line("agdd_daily") - fix later, this data is bad - shouldn't plot 8-20-20
+#plot_annual("AGDD")
+
+```
+
+```{r, out.width= "50%"}
 # --------
 # jitter under boxplot
 # --------
@@ -1408,7 +1355,11 @@ ggplot(data =  month_join_bc %>%
                      values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
   labs(y = "Water(mm)",
        title = paste(model_bc, model_bc_rcp_name)) +
-  facet_wrap(~variable, scales = "free")
+  facet_wrap(~variable, scales = "free")+
+  guides(color = guide_legend(override.aes = list(size=5,
+                                                  alpha = 0.5)))+
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 7))
 
 ggsave(here::here(site, #site subfolder
                   "figures", #subfolder
@@ -1443,7 +1394,11 @@ ggplot(data =  month_join_wc %>%
                      values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
   labs(y = "Water(mm)",
        title = paste(model_wc, model_wc_rcp_name)) +
-  facet_wrap(~variable, scales = "free")
+  facet_wrap(~variable, scales = "free") +
+  guides(color = guide_legend(override.aes = list(size=5,
+                                                  alpha = 0.5)))+
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 7))
 
 ggsave(here::here(site, #site subfolder
                   "figures", #subfolder
