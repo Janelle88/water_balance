@@ -100,10 +100,10 @@ These charts represent seasonality of and annual average of time series. The gra
 # daily future data
 # ------------
 
-mixed_model_bc <- read_csv(here::here("raw_data",
-                                  "future_daily",
-                                  site,
+mixed_model_bc <- read_csv(here::here(site,
+                                  "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
+                                  "future_daily",
                                   paste(site, model_bc,"daily_future.csv", sep = "_")),
                     na = c("-3276.7")) %>% 
   select(date:lon, soil_water_daily_45:aet_daily_45, -agdd_daily_45) # fix this, put agdd back in when it is back
@@ -119,10 +119,10 @@ colnames(mixed_model_bc)[]<-c("date", "lat","lon","soil_water_daily_bc", "runoff
 #          lon = as.character(lon)) %>% 
 #   mutate_if(is.numeric, divide.by.10)
 
-mixed_model_wc <- read_csv(here::here("raw_data",
-                                  "future_daily",
-                                  site,
+mixed_model_wc <- read_csv(here::here(site,
+                                  "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
+                                  "future_daily",
                                   paste(site, model_wc,"daily_future.csv", sep = "_")),
                     na = c("-3276.7"))
 
@@ -131,6 +131,12 @@ colnames(mixed_model_wc)[]<-c("date", "lat","lon","soil_water_daily_wc", "runoff
 
 future_day_1 <- mixed_model_bc %>% 
   inner_join(mixed_model_wc)
+
+write_csv(as_tibble(future_day_1, here::here(site,
+                                  "raw_data",
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  "future_daily",
+                                  paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "daily_future.csv", sep = "_"))))
 
 date_fd <- future_day_1$date
 # this is a work around
@@ -158,11 +164,10 @@ future_day <- future_day_1 %>%
 #   x/10
 # }
 
-past_day_1 <- read_csv(here::here("raw_data",
-                                "historical_daily",
-                                site,
-                                paste("lat",lat,"lon",lon, sep = "_"),
-                                paste(site,"_daily_",past_data,".csv", sep = "")),
+past_day_1 <- read_csv(here::here(site,
+                                  "raw_data",
+                                  paste("lat",lat,"lon",lon, sep = "_"),
+                                  "historical_daily"),
                            na = c("-3276.7"))
 
 

@@ -75,11 +75,24 @@ wrap_sentence <- function(string, width) {
 # all of this should be changed before the code is run for a new site
 # ------------
 
-site = "little_saddle_mtn" 
+site = "little_saddle_mtn"
+  
+  #"quitobaquito" 
+  
+  #"little_saddle_mtn"
 
 lat = 44.702
+  
+  # quito: 31.942809
+  
+  #lsm: 44.702
 
 lon = -110.018
+
+
+  #quito:-113.020708
+
+  #lsm: -110.018
 
 model_bc = "inmcm4" # "best case"
 
@@ -112,7 +125,9 @@ past_data = "gridmet"
 # past_data options: "gridmet", "daymet"
 # if you want to use data that will work with the future models, gridmet is a better choice. It doesn't require adjusting for any biases
 
-hot_year = 2012 # a particularly hot year, maybe with lots of fire activity? something for people to reference
+dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+
+wet_year = 2007 # particulary wet year for people to reference
 
 
 # ----------
@@ -262,7 +277,7 @@ past_month <- past_month_1 %>%
 # daily future data
 # ------------
 
-future_day_1 <- read_csv(here::here( site,
+future_day_1 <- read_csv(here::here(site,
                                   "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
                                   "future_daily",
@@ -276,8 +291,8 @@ date_fd <- future_day_1$date
 
 
 future_day <- future_day_1 %>% 
-  select(-lat, -lon, -date)  %>%
-  select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
+  select(-lat, -lon, -date) %>%
+  #select(which(!colSums(., na.rm = TRUE) < 2)) %>% # this removes variable that sum to 2 (i.e. accumswe in a hot climate)
   mutate(date = date_fd,
     year = lubridate::year(date), 
     month = lubridate::month(date,
@@ -918,7 +933,7 @@ max_y <- max_y_2*1.15
                                "Actual Evapotranspiration Seasonality",
                                    model_bc, model_bc_rcp_name), 30))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3")) +
+                       values = c("#93A661", "#D3B53D", "#3C6478")) +
   ylim(0, max_y)
   
   ggsave(here::here(site, # site subfolder
@@ -988,7 +1003,7 @@ max_y <- max_y_2*1.15
                                "Actual Evapotranspiration Seasonality",
                                    model_wc, model_wc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3")) +
+                       values = c("#93A661", "#D3B53D", "#3C6478")) +
   ylim(0, max_y)
   
   ggsave(here::here(site, #site subfolder
@@ -1068,7 +1083,7 @@ plot_decades_line = function(.y) { #start function
                                "Actual Evapotranspiration Seasonality",
                                    model_bc, model_bc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+                       values = c("#93A661", "#D3B53D", "#3C6478"))
   
   ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
@@ -1125,7 +1140,9 @@ plot_decades_line = function(.y) { #start function
                                "Actual Evapotranspiration Seasonality",
                                    model_wc, model_wc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("turquoise4", "darkolivegreen3", "darkgoldenrod3"))
+                       values = c("#93A661", #turquoise
+                                  "#D3B53D", #green
+                                  "#3C6478"))#yellow
   
   ggsave(here::here(site, #site subfolder
                     "figures", #top folder
@@ -1158,7 +1175,7 @@ ggplot() +
                                       color = averages),
             size = 0.6) +
   facet_wrap(~variable, scales = "free") +
-  scale_color_manual(name = "Annual Averages", values = c("gray60","turquoise4", "darkgoldenrod3"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
+  scale_color_manual(name = "Annual Averages", values = c("gray60","#93A661", "#D3B53D"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
   theme(legend.text = element_text(size = 10),
         legend.title = element_blank(),
         plot.margin = margin(0, 0.5, 0, 0.5, "cm")) +
@@ -1178,17 +1195,19 @@ ggsave(here::here(site, #site subfolder
 ```{r, out.width="50%"}
 ## Individual Graphs of change over time
 
-plot_annual = function(.y) { 
-  #.y = historical
-  #.x = future 4.5
-  #.z = future 8.5
-  #.l = highlighted drought year
+plot_annual = function(.y) {
    
    point_low <- annual_values %>%
      filter(variable %in% c(.y)) %>% 
-     filter(year == hot_year)
+     filter(year == dry_year)
+   
+   point_high<- annual_values %>%
+     filter(variable %in% c(.y)) %>% 
+     filter(year == wet_year)
    
    line_low <- point_low$annual_value
+   
+   line_high <- point_high$annual_value
   
   annual_graph_bc <- ggplot() +
     geom_line(data = annual_values %>% 
@@ -1201,10 +1220,19 @@ plot_annual = function(.y) {
     geom_hline(data = point_low, # draws a line at a dry year
                yintercept = line_low, 
                linetype = "dashed",
-               color = "firebrick3") +
+               color = "#DA621E") +
+    geom_hline(data = point_high, # draws a line at a wet year
+               yintercept = line_high, 
+               linetype = "dashed",
+               color = "#1287A8") +
     geom_point(data = point_low, # highlights a dry year point
                aes(x = year, y = annual_value),
-               color = "firebrick3",
+               color = "#DA621E",
+               alpha =  0.25,
+               size = 4) +
+    geom_point(data = point_high, # highlights a dry year point
+               aes(x = year, y = annual_value),
+               color = "#1287A8",
                alpha =  0.25,
                size = 4) +
   labs(title = paste("Annual", .y),
@@ -1216,8 +1244,14 @@ plot_annual = function(.y) {
                   y = annual_value,
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
-              color = "firebrick3") +
-    scale_color_manual(name = "", values = c("gray60","turquoise4"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) # colors is a named vector, see top of function
+              color = "#DA621E") +
+    geom_text(data = point_high, # labels the line
+              aes(x = 1973, 
+                  y = annual_value,
+                  label = year, 
+                  vjust = -0.35), # -0.x moves the text up above the line
+              color = "#1287A8") +
+    scale_color_manual(name = "", values = c("gray60","#93A661"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) # colors is a named vector, see top of function
  
   
   ggsave(here::here(site, #site subfolder
@@ -1237,10 +1271,19 @@ plot_annual = function(.y) {
     geom_hline(data = point_low, 
                yintercept = line_low, 
                linetype = "dashed",
-               color = "firebrick3") +
+               color = "#DA621E") +
+    geom_hline(data = point_high, # draws a line at a wet year
+               yintercept = line_high, 
+               linetype = "dashed",
+               color = "#1287A8") +
     geom_point(data = point_low, # highlights a dry year point
                aes(x = year, y = annual_value),
-               color = "firebrick3",
+               color = "#DA621E",
+               alpha =  0.25,
+               size = 4) +
+    geom_point(data = point_high, # highlights a dry year point
+               aes(x = year, y = annual_value),
+               color = "#1287A8",
                alpha =  0.25,
                size = 4) +
   labs(title = paste("Annual",.y),
@@ -1252,8 +1295,14 @@ plot_annual = function(.y) {
                   y = annual_value,
                   label = year, 
                   vjust = -0.35),
-              color = "firebrick3") +
-    scale_color_manual(name = "", values = c("gray60", "darkgoldenrod3"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) # colors is a named vector, see top of function
+              color = "#DA621E") +
+    geom_text(data = point_high, # labels the line
+              aes(x = 1973, 
+                  y = annual_value,
+                  label = year, 
+                  vjust = -0.35), # -0.x moves the text up above the line
+              color = "#1287A8") +
+    scale_color_manual(name = "", values = c("gray60", "#D3B53D"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) # colors is a named vector, see top of function
   
   
   ggsave(here::here(site, #site subfolder
@@ -1321,10 +1370,15 @@ ggplot(deficit_aet_bc) +
        x = "Deficit",
        y = "AET") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "#3C6478")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
   xlim(NA, max_x_d_aet)
+
+ggsave(here::here(site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
 
 # ------------
 # D v. AET worst case
@@ -1338,10 +1392,15 @@ ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
        x = "Deficit",
        y = "AET")+
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "#3C6478")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
   xlim(NA, max_x_d_aet)
+
+ggsave(here::here(site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste("d_v_aet", model_wc_rcp, ".png", sep = "_"))) #file name)
   
 
 ```
@@ -1434,9 +1493,9 @@ ggplot(data =  month_join_bc %>%
                #position = dodge, # has to match the other half
                fill = "grey60") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "#3C6478")) +
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "DA621E")) +
   labs(y = "Water(mm)",
        title = paste(model_bc, model_bc_rcp_name)) +
   facet_wrap(~variable, scales = "free")+
@@ -1473,9 +1532,9 @@ ggplot(data =  month_join_wc %>%
                #position = dodge, # has to match the other half
                fill = "grey60") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "#3C6478")) +
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("goldenrod2", "darkolivegreen3", "turquoise4")) +
+                     values = c("#93A661", "#D3B53D", "#3C6478")) +
   labs(y = "Water(mm)",
        title = paste(model_wc, model_wc_rcp_name)) +
   facet_wrap(~variable, scales = "free") +

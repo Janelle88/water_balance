@@ -69,11 +69,17 @@ Make sure to run this code chunk before running any other code chunks.
 #initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
-site = "little_saddle_mtn" 
+# site = "clarks_fork" 
+# 
+# lat = 44.847443
+# 
+# lon = -109.304468
 
-lat = 44.702
+site = "quitobaquito" 
 
-lon = -110.018
+lat = 31.942809
+
+lon = -113.020708
 
 start_past = 1980
 
