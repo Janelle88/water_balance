@@ -933,7 +933,7 @@ max_y <- max_y_2*1.15
                                "Actual Evapotranspiration Seasonality",
                                    model_bc, model_bc_rcp_name), 30))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("#93A661", "#D3B53D", "#3C6478")) +
+                       values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(0, max_y)
   
   ggsave(here::here(site, # site subfolder
@@ -1003,7 +1003,7 @@ max_y <- max_y_2*1.15
                                "Actual Evapotranspiration Seasonality",
                                    model_wc, model_wc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("#93A661", "#D3B53D", "#3C6478")) +
+                       values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(0, max_y)
   
   ggsave(here::here(site, #site subfolder
@@ -1083,7 +1083,7 @@ plot_decades_line = function(.y) { #start function
                                "Actual Evapotranspiration Seasonality",
                                    model_bc, model_bc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("#93A661", "#D3B53D", "#3C6478"))
+                       values = c("#A3B86C", "#EBC944", "#1496BB"))
   
   ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
@@ -1140,9 +1140,9 @@ plot_decades_line = function(.y) { #start function
                                "Actual Evapotranspiration Seasonality",
                                    model_wc, model_wc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("#93A661", #turquoise
-                                  "#D3B53D", #green
-                                  "#3C6478"))#yellow
+                       values = c("#A3B86C", #turquoise
+                                  "#EBC944", #green
+                                  "#1496BB"))#yellow
   
   ggsave(here::here(site, #site subfolder
                     "figures", #top folder
@@ -1175,7 +1175,7 @@ ggplot() +
                                       color = averages),
             size = 0.6) +
   facet_wrap(~variable, scales = "free") +
-  scale_color_manual(name = "Annual Averages", values = c("gray60","#93A661", "#D3B53D"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
+  scale_color_manual(name = "Annual Averages", values = c("gray60","#A3B86C", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
   theme(legend.text = element_text(size = 10),
         legend.title = element_blank(),
         plot.margin = margin(0, 0.5, 0, 0.5, "cm")) +
@@ -1251,7 +1251,7 @@ plot_annual = function(.y) {
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60","#93A661"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) # colors is a named vector, see top of function
+    scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) # colors is a named vector, see top of function
  
   
   ggsave(here::here(site, #site subfolder
@@ -1302,7 +1302,7 @@ plot_annual = function(.y) {
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60", "#D3B53D"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) # colors is a named vector, see top of function
+    scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) # colors is a named vector, see top of function
   
   
   ggsave(here::here(site, #site subfolder
@@ -1370,7 +1370,7 @@ ggplot(deficit_aet_bc) +
        x = "Deficit",
        y = "AET") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "#3C6478")) +
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
   xlim(NA, max_x_d_aet)
@@ -1392,7 +1392,7 @@ ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
        x = "Deficit",
        y = "AET")+
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "#3C6478")) +
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
   xlim(NA, max_x_d_aet)
@@ -1493,9 +1493,9 @@ ggplot(data =  month_join_bc %>%
                #position = dodge, # has to match the other half
                fill = "grey60") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "#3C6478")) +
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "DA621E")) +
+                     values = c("#A3B86C", "#EBC944", "DA621E")) +
   labs(y = "Water(mm)",
        title = paste(model_bc, model_bc_rcp_name)) +
   facet_wrap(~variable, scales = "free")+
@@ -1532,9 +1532,9 @@ ggplot(data =  month_join_wc %>%
                #position = dodge, # has to match the other half
                fill = "grey60") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "#3C6478")) +
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#93A661", "#D3B53D", "#3C6478")) +
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
   labs(y = "Water(mm)",
        title = paste(model_wc, model_wc_rcp_name)) +
   facet_wrap(~variable, scales = "free") +
