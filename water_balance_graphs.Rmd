@@ -352,6 +352,18 @@ past_day <- past_day_1 %>%
 
 ```
 
+```{r, eval=FALSE}
+
+# --------------------------------------------------------------------------------------
+#
+# DATA CLEANING
+#
+# -------------------------------------------------------------------------------------_
+
+
+```
+
+
 ```{r}
 # -------------
 # Make site data into long format
@@ -608,7 +620,7 @@ plot_qq("2090s")
 
 ```{r}
 
-## Graphs for 40 yr. period, shifts in timing of events
+## Data for graphs for 40 yr. period, shifts in timing of events
 
 # --------
 # clean data for 40 yr graphs
@@ -876,6 +888,19 @@ month_join_wc <- month_join_1980_2019 %>%
   na.omit(month_join_wc_m)# because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
 
 ```
+
+
+```{r, eval=FALSE}
+
+# -------------------------------------------------------------------------------------
+#
+# GRAPH FUNCTIONS
+#
+# -------------------------------------------------------------------------------------
+
+
+```
+
 
 
 ```{r}
@@ -1184,35 +1209,6 @@ plot_decades_line = function(.y) { #start function
 ```
 
 
-## Annual averages through time
-
-```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents and the yellow line represents RCP 8.5"}
-
-
-
-ggplot() +
-  geom_line(data = annual_values, aes(x = year,
-                                      y = annual_value,
-                                      color = averages),
-            size = 0.6) +
-  facet_wrap(~variable, scales = "free") +
-  scale_color_manual(name = "Annual Averages", values = c("gray60","#A3B86C", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
-  theme(legend.text = element_text(size = 10),
-        legend.title = element_blank(),
-        plot.margin = margin(0, 0.5, 0, 0.5, "cm")) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) +
-  labs(x ="",
-       y = "Water (mm)")
-  
-
-ggsave(here::here(site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  "annual_facet.png")) #file name
-
-```
-
-
 ```{r, out.width="50%"}
 ## Individual Graphs of change over time
 
@@ -1229,6 +1225,21 @@ plot_annual = function(.y) {
    line_low <- point_low$annual_value
    
    line_high <- point_high$annual_value
+   
+   # ---------------
+   # create y limit for graph
+   # ---------------
+   
+    max_y_1 <- annual_values %>%
+      filter(variable %in% c(.y))
+    
+    max_y_2 <- max(max_y_1[,3], na.rm = TRUE)
+    
+    max_y <- max_y_2*1.15
+    
+    # ---------------
+    # graph
+    # ---------------
   
   annual_graph_bc <- ggplot() +
     geom_line(data = annual_values %>% 
@@ -1272,8 +1283,8 @@ plot_annual = function(.y) {
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) # colors is a named vector, see top of function
- 
+    scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) + # colors is a named vector, see top of function
+ ylim(NA, max_y)
   
   ggsave(here::here(site, #site subfolder
                     "figures", #subfolder
@@ -1323,8 +1334,8 @@ plot_annual = function(.y) {
                   label = year, 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) # colors is a named vector, see top of function
-  
+    scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) + # colors is a named vector, see top of function
+  ylim(NA, max_y)
   
   ggsave(here::here(site, #site subfolder
                     "figures", #subfolder
@@ -1338,6 +1349,147 @@ plot_annual = function(.y) {
   print(annual_graph_wc)
   
 }
+
+```
+
+```{r}
+
+# --------
+# jitter under boxplot
+# --------
+
+plot_jitter <- function(.y){
+  
+   max_y_1 <- month_join_bc %>%
+     full_join(month_join_wc) %>% 
+      filter(variable %in% c(.y))
+    
+    max_y_2 <- max(max_y_1[,6], na.rm = TRUE) #calling the values column, number 6
+    
+    max_y <- max_y_2*1.15
+# ---------
+# jitter best case
+# ---------
+
+dodge <- position_dodge(width = 1)
+
+jitter_bc <- ggplot(data =  month_join_bc %>%
+         filter(variable %in% c(.y)),
+       aes(x = decades, 
+           y = value, 
+           shape = NULL)) + #originally had "group = decade" here
+                            # this caused the facet_wrap to include all variables on all facets
+  geom_jitter(aes(colour = decades),
+             size = 3,
+             alpha = 0.25) + # dodge is a written code (see above)
+  geom_boxplot(aes(x = decades, # internet had "mapping =" in front of
+                   # aes, removed and nothing changed
+                   y = value),
+               alpha = 0.3,
+               nudge = 0.025,
+               outlier.shape = NA,#hides outliers
+               #position = dodge, # has to match the other half
+               fill = "grey60") +
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
+  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("#A3B86C", "#EBC944", "DA621E")) +
+  labs(y = "Water(mm)",
+       title = paste(.y, model_bc, model_bc_rcp_name)) +
+  guides(color = guide_legend(override.aes = list(size=5, #changes size of legend dots
+                                                  alpha = 0.5)))+
+  theme(legend.title = element_blank(),
+        axis.text.x = element_blank()) +
+  ylim(NA, max_y)
+
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_bc_",.y,".png", sep = ""))) # file name
+
+# ----------
+# Jitter worst case
+# ----------
+
+
+jitter_wc <- ggplot(data =  month_join_wc %>%
+         filter(variable %in% c(.y)),
+       aes(x = decades, 
+           y = value, 
+           shape = NULL)) + #originally had "group = decade" here
+                            # this caused the facet_wrap to include all variables on all facets
+  geom_jitter(aes(colour = decades),
+             size = 3,
+             alpha = 0.25) + # dodge is a written code (see above)
+  geom_boxplot(aes(x = decades, # internet had "mapping =" in front of
+                   # aes, removed and nothing changed
+                   y = value),
+               alpha = 0.3,
+               nudge = 0.025,
+               outlier.shape = NA,#hides outliers
+               #position = dodge, # has to match the other half
+               fill = "grey60") +
+  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
+  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
+                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
+  labs(y = "Water(mm)",
+       title = paste(model_wc, model_wc_rcp_name)) +
+  guides(color = guide_legend(override.aes = list(size=5,
+                                                  alpha = 0.5)))+
+  theme(legend.title = element_blank(),
+        axis.text.x = element_blank()) +
+  ylim(NA, max_y)
+
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_wc_", .y,".png", sep = "_"))) # file name
+
+print(jitter_bc)
+print(jitter_wc)
+}
+
+
+```
+
+
+```{r}
+
+# --------------------------------------------------------------------------------------
+#
+# BEGIN OF ACTUAL REPORT
+#
+# --------------------------------------------------------------------------------------
+
+```
+
+
+## Annual averages through time
+
+```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents and the yellow line represents RCP 8.5"}
+
+
+
+ggplot() +
+  geom_line(data = annual_values, aes(x = year,
+                                      y = annual_value,
+                                      color = averages),
+            size = 0.6) +
+  facet_wrap(~variable, scales = "free") +
+  scale_color_manual(name = "Annual Averages", values = c("gray60","#A3B86C", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
+  theme(legend.text = element_text(size = 10),
+        legend.title = element_blank(),
+        plot.margin = margin(0, 0.5, 0, 0.5, "cm")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) +
+  labs(x ="",
+       y = "Water (mm)")
+  
+
+ggsave(here::here(site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  "annual_facet.png")) #file name
 
 ```
 
@@ -1432,6 +1584,7 @@ ggsave(here::here(site, # site subfolder
 ```{r, out.width="50%"}
 plot_decades_smooth("soil_water_daily")
 plot_annual("Soil Water")
+plot_jitter("Soil Water")
 ```
 
 ## Runoff
@@ -1439,6 +1592,7 @@ plot_annual("Soil Water")
 ```{r, out.width="50%"}
 plot_decades_smooth("runoff_daily")
 plot_annual("Runoff")
+plot_jitter("Runoff")
 ```
 
 ## Rain
@@ -1446,6 +1600,7 @@ plot_annual("Runoff")
 ```{r, out.width="50%"}
 plot_decades_smooth("rain_daily")
 plot_annual("Rain")
+plot_jitter("Rain")
 ```
 
 ## Accumulated Snow Water Equivalent (SWE)
@@ -1453,6 +1608,7 @@ plot_annual("Rain")
 ```{r, out.width="50%"}
 plot_decades_smooth("accumswe_daily")
 plot_annual("Accumulated SWE")
+plot_jitter("Accumulated SWE")
 ```
 
 ## Potential Evapotranspiration (PET)
@@ -1467,6 +1623,7 @@ plot_annual("PET")
 ```{r, out.width="50%"}
 plot_decades_smooth("aet_daily")
 plot_annual("AET")
+plot_jitter("AET")
 
 ```
 
@@ -1475,6 +1632,7 @@ plot_annual("AET")
 ```{r, out.width="50%"}
 plot_decades_smooth("deficit_daily")
 plot_annual("Deficit")
+plot_jitter("Deficit")
 ```
 
 ## Accumulated Growing Degree Days
@@ -1485,90 +1643,6 @@ plot_annual("Deficit")
 
 ```
 
-```{r, out.width= "50%"}
-# --------
-# jitter under boxplot
-# --------
-
-# ---------
-# jitter best case
-# ---------
-
-dodge <- position_dodge(width = 1)
-
-ggplot(data =  month_join_bc %>%
-         filter(!variable %in% c("agdd_daily", "pet_daily")),
-       aes(x = decades, 
-           y = value, 
-           shape = NULL)) + #originally had "group = decade" here
-                            # this caused the facet_wrap to include all variables on all facets
-  geom_jitter(aes(colour = decades),
-             size = .9,
-             alpha = 0.25) + # dodge is a written code (see above)
-  geom_boxplot(aes(x = decades, # internet had "mapping =" in front of
-                   # aes, removed and nothing changed
-                   y = value),
-               alpha = 0.3,
-               nudge = 0.025,
-               outlier.shape = NA,#hides outliers
-               #position = dodge, # has to match the other half
-               fill = "grey60") +
-  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
-  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#A3B86C", "#EBC944", "DA621E")) +
-  labs(y = "Water(mm)",
-       title = paste(model_bc, model_bc_rcp_name)) +
-  facet_wrap(~variable, scales = "free")+
-  guides(color = guide_legend(override.aes = list(size=5,
-                                                  alpha = 0.5)))+
-  theme(legend.title = element_blank(),
-        axis.text.x = element_text(size = 7))
-
-ggsave(here::here(site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  paste("jitter_water_all_bc.png", sep = "_"))) # file name
-
-# ----------
-# Jitter worst case
-# ----------
-
-
-ggplot(data =  month_join_wc %>%
-         filter(!variable %in% c("agdd_daily", "pet_daily")),
-       aes(x = decades, 
-           y = value, 
-           shape = NULL)) + #originally had "group = decade" here
-                            # this caused the facet_wrap to include all variables on all facets
-  geom_jitter(aes(colour = decades),
-             size = .9,
-             alpha = 0.25) + # dodge is a written code (see above)
-  geom_boxplot(aes(x = decades, # internet had "mapping =" in front of
-                   # aes, removed and nothing changed
-                   y = value),
-               alpha = 0.3,
-               nudge = 0.025,
-               outlier.shape = NA,#hides outliers
-               #position = dodge, # has to match the other half
-               fill = "grey60") +
-  scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
-  scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                     values = c("#A3B86C", "#EBC944", "#1496BB")) +
-  labs(y = "Water(mm)",
-       title = paste(model_wc, model_wc_rcp_name)) +
-  facet_wrap(~variable, scales = "free") +
-  guides(color = guide_legend(override.aes = list(size=5,
-                                                  alpha = 0.5)))+
-  theme(legend.title = element_blank(),
-        axis.text.x = element_text(size = 7))
-
-ggsave(here::here(site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  paste("jitter_water_all_wc.png", sep = "_"))) # file name
-```
 
 ```{r, eval=FALSE}
 
