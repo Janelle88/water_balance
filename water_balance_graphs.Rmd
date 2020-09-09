@@ -1,6 +1,5 @@
 ---
-title: "Historical and Projected Water Balance Report for Little Saddle Mountain"
-author: "Janelle Christensen & Mike Tercek"
+author: "Janelle Christensen, Mike Tercek, David Thoma, John Gross"
 date: "8/3/2020"
 output: html_document
 ---
@@ -135,6 +134,28 @@ wet_year = 2007 # particulary wet year for people to reference
 # ----------
 
 ```
+
+```{r}
+
+# ---------
+# set up function to dynamically change title
+# ---------
+
+cap_str <- function(y) {
+  c <- strsplit(y, "_")[[1]]
+  paste(toupper(substring(c, 1,1)), substring(c, 2),
+      sep="", collapse=" ")
+}
+# function taken from Dr. Arvind Singla 
+# https://rstudio-pubs-static.s3.amazonaws.com/408658_512da947714740b99253228f084a08a9.html
+
+title <- sapply(site, cap_str)
+
+```
+
+---
+title: "Historical and Projected Water Balance Report for `r title`"
+---
 
 ```{r, include=FALSE, eval=FALSE}
 # Before running the code, create subfolders as needed to save figures, only needs to be run once

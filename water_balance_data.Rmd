@@ -75,11 +75,17 @@ Make sure to run this code chunk before running any other code chunks.
 # 
 # lon = -109.304468
 
-site = "quitobaquito" 
+site = "lamar_river"
 
-lat = 31.942809
+lat = 44.686843
 
-lon = -113.020708
+lon = -110.061929
+
+# site = "quitobaquito" 
+# 
+# lat = 31.942809
+# 
+# lon = -113.020708
 
 start_past = 1980
 
