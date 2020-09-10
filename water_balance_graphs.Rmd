@@ -7,68 +7,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
-# -------------
-# attach packages
-# -------------
-
-library(data.table) 
-library(here)
-#library(plyr) 
-# be careful with this, it causes issues for dplyr::group_by
-# I didn't try, but the internet says if you load it before tidyverse, that issue goes away
-library(tidyverse)
-library(beepr)
-library(lubridate)
-library(directlabels)
-library(data.table)
-library(ggbeeswarm)
-library(gghalves)
-library(directlabels)
-library(ggrepel)
-library(splines)
-library(magrittr)
-library(janitor)
-
-```
-
-
-```{r}
-
-# -----------
-# set global options
-# -----------
-
-#set theme for all graphs
-theme_set(theme_classic() + #has the L shape around the graph
-            theme(panel.grid = element_blank(), #removes grid lines
-                  plot.title = element_text(size = 25), #title of plot text size
-                  legend.text = element_text(size = 15), #legend inside text size
-                  legend.title = element_text(size = 18), #legend title text size
-                  axis.title.y = element_text(size = 15), #changes y axis lable text size
-                  axis.title.x = element_text(size = 15),#x axis text size
-                  axis.text.x = element_text(size = 15), #changes x-axis text size
-                  axis.text.y = element_text(size = 15), #changes y-axis text size
-                  legend.position = "top"))  #location of legend
-
-wrap_sentence <- function(string, width) {
-  words <- unlist(strsplit(string, " "))
-  fullsentence <- ""
-  checklen <- ""
-  for(i in 1:length(words)) {
-    checklen <- paste(checklen, words[i])
-    if(nchar(checklen)>(width+1)) {
-      fullsentence <- paste0(fullsentence, "\n")
-      checklen <- ""
-    }
-    fullsentence <- paste(fullsentence, words[i])
-  }
-  fullsentence <- sub("^\\s", "", fullsentence)
-  fullsentence <- gsub("\n ", "\n", fullsentence)
-  return(fullsentence)
-}
-#wrap_sentence function taken from https://stackoverflow.com/a/27734975/14061596
-                  
-
 # ------------
 # set variables for the data and code
 # all of this should be changed before the code is run for a new site
@@ -129,11 +67,30 @@ dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? som
 wet_year = 2007 # particulary wet year for people to reference
 
 
-# ----------
-# inmcm4, NorESM1-M downloaded wrong, don't use until updated (noted this 8-5-20)
-# ----------
+# -------------
+# attach packages
+# -------------
+
+library(data.table) 
+library(here)
+#library(plyr) 
+# be careful with this, it causes issues for dplyr::group_by
+# I didn't try, but the internet says if you load it before tidyverse, that issue goes away
+library(tidyverse)
+library(beepr)
+library(lubridate)
+library(directlabels)
+library(data.table)
+library(ggbeeswarm)
+library(gghalves)
+library(directlabels)
+library(ggrepel)
+library(splines)
+library(magrittr)
+library(janitor)
 
 ```
+
 
 ```{r}
 
@@ -155,7 +112,53 @@ title <- sapply(site, cap_str)
 
 ---
 title: "Historical and Projected Water Balance Report for `r title`"
+knit: (function(inputFile, encoding) { rmarkdown::render(inputFile, encoding = encoding, output_file = file.path(dirname(inputFile), "site.html")) })
 ---
+
+
+```{r}
+
+# -----------
+# set global options
+# -----------
+
+#set theme for all graphs
+theme_set(theme_classic() + #has the L shape around the graph
+            theme(panel.grid = element_blank(), #removes grid lines
+                  plot.title = element_text(size = 25), #title of plot text size
+                  legend.text = element_text(size = 15), #legend inside text size
+                  legend.title = element_text(size = 18), #legend title text size
+                  axis.title.y = element_text(size = 15), #changes y axis lable text size
+                  axis.title.x = element_text(size = 15),#x axis text size
+                  axis.text.x = element_text(size = 15), #changes x-axis text size
+                  axis.text.y = element_text(size = 15), #changes y-axis text size
+                  legend.position = "top"))  #location of legend
+
+wrap_sentence <- function(string, width) {
+  words <- unlist(strsplit(string, " "))
+  fullsentence <- ""
+  checklen <- ""
+  for(i in 1:length(words)) {
+    checklen <- paste(checklen, words[i])
+    if(nchar(checklen)>(width+1)) {
+      fullsentence <- paste0(fullsentence, "\n")
+      checklen <- ""
+    }
+    fullsentence <- paste(fullsentence, words[i])
+  }
+  fullsentence <- sub("^\\s", "", fullsentence)
+  fullsentence <- gsub("\n ", "\n", fullsentence)
+  return(fullsentence)
+}
+#wrap_sentence function taken from https://stackoverflow.com/a/27734975/14061596
+
+
+# ----------
+# inmcm4, NorESM1-M downloaded wrong, don't use until updated (noted this 8-5-20)
+# ----------
+
+```
+
 
 ```{r, include=FALSE, eval=FALSE}
 # Before running the code, create subfolders as needed to save figures, only needs to be run once
@@ -1395,6 +1398,7 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "DA621E")) +
   labs(y = "Water(mm)",
+       x = "",
        title = paste(.y, model_bc, model_bc_rcp_name)) +
   guides(color = guide_legend(override.aes = list(size=5, #changes size of legend dots
                                                   alpha = 0.5)))+
@@ -1434,6 +1438,7 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   labs(y = "Water(mm)",
+       x = "",
        title = paste(model_wc, model_wc_rcp_name)) +
   guides(color = guide_legend(override.aes = list(size=5,
                                                   alpha = 0.5)))+
@@ -1644,12 +1649,10 @@ plot_jitter("Deficit")
 ```
 
 
-```{r, eval=FALSE}
+```{r}
 
 #save this rmd as a file based on the site name in the site folder
-rmarkdown::render(here:here("water_balance_graphs.Rmd"),  # file 2
-                   output_file =  paste(site, ".html", sep=""), 
-                   output_dir = here::here(site))
+
 ```
 
 ## Works Cited
