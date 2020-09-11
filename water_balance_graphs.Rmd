@@ -1499,15 +1499,15 @@ print(jitter_wc)
 
 ```
 
-This data is based off of `r model_bc` `r model_bc_rcp_name` and `r model_wc``r model_wc_rcp_name` to display projections for two potential climate futures. The historical data uses `r past_data`. All data is sourced from a National Park Service data set created by Mike Tercek, David Thoma and John Gross to predict climate futures out to 2100 and report historical daymet and gridmet data back to 1980 at the project level. A link to his original data set can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+This data is based off of `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name` to display projections for two potential climate futures. The historical data uses `r past_data`. All data is sourced from a National Park Service data set created by Mike Tercek, David Thoma and John Gross to predict climate futures out to 2100 and report historical daymet and gridmet data back to 1980 at the project level. A link to his original data set can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
 ## Annual values through time
 
 These graphs, are shown in more detail later in this report. The variables of runoff, rain, potential evapotranspiration (PET),  actual evapotranspiration (AET), and deficit are summed in the graphs that show annual values through time. Accumulated snow water equivalent (SWE) and accumulated growing degree days (AGDD) show the max value in the year, and soil water shows the mean of the values. 
 
-The reason for the different mathematical evaluations is due to how hydrologist look at these variables. Hydrologists accumulate water variables that don't have an upper limit like rain runoff and evapostranspiration, whereas they average values that have an upper limit like soil moisture. With soil moisture there is a limit to the amount of water soil can hold based on soil water holding capacity that is related to soil texture, rock fragments (that don't store water) and soil depth.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the varible because it is already a summation of the total through the year.
+The reason for the different mathematical evaluations is due to how hydrologist look at these variables. Hydrologists accumulate water variables that don't have an upper limit like rain runoff, and evapostranspiration, whereas they average values that have an upper limit like soil moisture. With soil moisture there is a limit to the amount of water soil can hold based on soil water holding capacity that is related to soil texture, rock fragments (that don't store water) and soil depth.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the varible because it is already a summation of the total through the year.
 
-```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents and the yellow line represents RCP 8.5"}
+```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from gridmet climate data, the turquoise line represents and the yellow line represents paste(model_bc)"}
 
 
 
