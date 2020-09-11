@@ -129,7 +129,7 @@ theme_set(theme_classic() + #has the L shape around the graph
                   legend.text = element_text(size = 15), #legend inside text size
                   legend.title = element_text(size = 18), #legend title text size
                   axis.title.y = element_text(size = 15), #changes y axis lable text size
-                  axis.title.x = element_text(size = 15),#x axis text size
+                  axis.title.x = element_blank(),#x axis text size
                   axis.text.x = element_text(size = 15), #changes x-axis text size
                   axis.text.y = element_text(size = 15), #changes y-axis text size
                   legend.position = "top"))  #location of legend
@@ -185,7 +185,6 @@ here::here(dir.create(paste(site,
                             sep = "/")))
 ```
 
-This data is based off of `r model_bc` `r model_bc_rcp_name` and `r model_wc``r model_wc_rcp_name` to display projections for two potential climate futures. The historical data uses `r past_data`. All data is sourced from a model created by Mike Tercek to predict climate futures out to 2100 and report historical daymet and gridmet data back to 1980 at the project level. A link to his original data set can be found [here](http://www.yellowstone.solutions/thredds/catalog.html)
 ```{r}
 # -------------
 # MONTHLY DATA
@@ -639,7 +638,8 @@ doy_avg_1980_2019 <-  past_day %>%
                values_to = "value") %>%  # new column name to store values) 
 #for grouping by doy
   group_by(doy, variable) %>% 
-  summarize(`1980-2019` = mean(value, na.rm = TRUE))
+  summarize(`1980-2019` = mean(value, na.rm = TRUE),
+            month = unique(month))
 
 # --------
 # Best case means
@@ -663,7 +663,8 @@ doy_avg_2020_2059_bc <- future_day %>%
     .$variable == "agdd_daily_bc" ~ "agdd_daily",
     TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
-  summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
+  summarize(`2020-2059` = mean(value, na.rm = TRUE),
+            month = unique(month)) 
 
 
 # 2060 - 2099 Best case df
@@ -684,14 +685,15 @@ doy_avg_2060_2099_bc <-  future_day %>%
     .$variable == "agdd_daily_bc" ~ "agdd_daily",
     TRUE ~ "deficit_daily")) %>% #for grouping by doy
   group_by(doy, variable) %>% 
-  summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
+  summarize(`2060-2099` = mean(value, na.rm = TRUE),
+            month = unique(month)) 
 
 #full doy dataframe Best case
 
-doy_avg_bc <- doy_avg_1980_2019%>% 
+doy_avg_bc <- doy_avg_1980_2019 %>% 
   full_join(doy_avg_2020_2059_bc) %>% 
   full_join(doy_avg_2060_2099_bc) %>% 
-  pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
+  pivot_longer(c(`1980-2019`,`2020-2059`,`2060-2099`), # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
   na.omit(doy_avg_bc) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
@@ -721,7 +723,8 @@ doy_avg_2020_2059_wc <- future_day %>%
     .$variable == "agdd_daily_wc" ~ "agdd_daily",
     TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
-  summarize(`2020-2059` = mean(value, na.rm = TRUE)) 
+  summarize(`2020-2059` = mean(value, na.rm = TRUE),
+            month = unique(month)) 
 
 
 # 2060 - 2099 wc df
@@ -742,7 +745,8 @@ doy_avg_2060_2099_wc <-  future_day %>%
     .$variable == "agdd_daily_wc" ~ "agdd_daily",
     TRUE ~ "deficit_daily")) %>% 
   group_by(doy, variable) %>% 
-  summarize(`2060-2099` = mean(value, na.rm = TRUE)) 
+  summarize(`2060-2099` = mean(value, na.rm = TRUE),
+            month = unique(month)) 
 
 
 #full day dataset wc
@@ -750,7 +754,7 @@ doy_avg_2060_2099_wc <-  future_day %>%
 doy_avg_wc <- doy_avg_1980_2019 %>% 
   full_join(doy_avg_2020_2059_wc) %>% 
   full_join(doy_avg_2060_2099_wc) %>% 
-  pivot_longer(`1980-2019`:`2060-2099`, # The columns I'm gathering together
+  pivot_longer(c(`1980-2019`,`2020-2059`,`2060-2099`), # The columns I'm gathering together
                names_to = "decades", # new column name for existing names
                values_to = "value") %>% # new column name to store values 
   na.omit(doy_avg_wc) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
@@ -931,7 +935,7 @@ max_y <- max_y_2*1.15
   .y_plot_bc <- ggplot(doy_avg_bc) + 
     geom_smooth(size = 1.5,
                 se = FALSE,
-                aes(x = doy,
+                aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
                     y = .data[[.y]],
                     # calling my variable, which I'll name later in the command
                     group = decades,
@@ -946,8 +950,7 @@ max_y <- max_y_2*1.15
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
     # geom_vline(data = doy_avg_bc,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
-    labs(x = "Day of Year",
-         color = "Year",
+    labs(color = "Year",
          y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
          # R needs the "" here
          # the ifelse goes after the command you want to change
@@ -983,7 +986,14 @@ max_y <- max_y_2*1.15
                                    model_bc, model_bc_rcp_name), 30))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
-  ylim(0, max_y)
+    ylim(0, max_y) +
+    scale_x_date(as.Date.numeric(doy_avg_bc$doy, origin = "1980-01-01"),
+                 breaks = seq(as.Date("1980-01-15"), 
+                            as.Date("1980-12-15"),#plots dates midmonth
+                            by = "1 month"),
+                 date_labels = "%b")#%b is abbreviated %B is full month name
+    
+  
   
   ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
@@ -1002,7 +1012,7 @@ max_y <- max_y_2*1.15
   .y_plot_wc <- ggplot(doy_avg_wc) +
     stat_smooth(size = 1.5,
                 se = FALSE,
-                aes(x = doy,
+                aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
                     y = .data[[.y]],
                     # calling my variable, which I'll name later in the command
                     group = decades,
@@ -1016,8 +1026,7 @@ max_y <- max_y_2*1.15
     #forumula has something to do with the degrees of freedom
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
     #geom_vline(xintercept = doy[.data[[.y]] == max(.data[[.y]])],color='red') +
-    labs(x = "Day of Year",
-         color = "Year",
+    labs(color = "Year",
          y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
          # R needs the "" here
          # the ifelse goes after the command you want to change
@@ -1053,7 +1062,12 @@ max_y <- max_y_2*1.15
                                    model_wc, model_wc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
-  ylim(0, max_y)
+  ylim(0, max_y)+
+    scale_x_date(as.Date.numeric(doy_avg_bc$doy, origin = "1980-01-01"),
+                 breaks = seq(as.Date("1980-01-15"), 
+                            as.Date("1980-12-15"), #plots date at midmonth
+                            by = "1 month"),
+                 date_labels = "%b")#%b is abbreviated, %B is full month name
   
   ggsave(here::here(site, #site subfolder
                     "figures", #top folder
@@ -1078,13 +1092,22 @@ max_y <- max_y_2*1.15
 
 plot_decades_line = function(.y) { #start function
   
+  max_y_1 <- doy_avg_bc %>%
+    full_join(doy_avg_wc) %>%
+  select(.y)
+
+
+max_y_2 <- max(max_y_1[,2], na.rm = TRUE)
+
+max_y <- max_y_2*1.15
+  
   exists_.y <- exists(.y, where = doy_avg_bc) #check to see if the variable exists
   
   if(exists_.y == TRUE){ #start if statement Best case
 
 .y_plot_bc <- ggplot(doy_avg_bc) + 
     geom_line(size = 1.5,
-                aes(x = doy,
+                aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#plots month on x axis
                     y = .data[[.y]],
                     # calling my variable, which I'll name later in the command
                     group = decades,
@@ -1096,8 +1119,7 @@ plot_decades_line = function(.y) { #start function
     #https://stackoverflow.com/questions/2777053/in-ggplot-restrict-y-to-be-0-in-loess
     # geom_vline(data = doy_avg_bc,
     #            xintercept = doy[.data[[.y]] == max(.data[[.y]])], color='red') +
-    labs(x = "Day of Year",
-         color = "Year",
+    labs(color = "Year",
          y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
          # R needs the "" here
          # the ifelse goes after the command you want to change
@@ -1132,7 +1154,13 @@ plot_decades_line = function(.y) { #start function
                                "Actual Evapotranspiration Seasonality",
                                    model_bc, model_bc_rcp_name), 30))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
-                       values = c("#A3B86C", "#EBC944", "#1496BB"))
+                       values = c("#A3B86C", "#EBC944", "#1496BB")) +
+  ylim(NA, max_y) +
+    scale_x_date(as.Date.numeric(doy_avg_bc$doy, origin = "1980-01-01"),
+                 breaks = seq(as.Date("1980-01-15"), 
+                            as.Date("1980-12-15"),#moves breaks to midmonth
+                            by = "1 month"),
+                 date_labels = "%b")# %b gives abbreviated %B gives full month name
   
   ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
@@ -1149,14 +1177,13 @@ plot_decades_line = function(.y) { #start function
   
   .y_plot_wc <- ggplot(doy_avg_wc) +
     geom_line(size = 1.5,
-                aes(x = doy,
+                aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows months to plot on x axis
                     y = .data[[.y]],
                     # calling my variable, which I'll name later in the command
                     group = decades,
                     color = decades)) +
     theme(legend.title = element_blank()) +
-    labs(x = "Day of Year",
-         color = "Year",
+    labs(color = "Year",
          y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)", "Water (mm)"), 
          # R needs the "" here
          # the ifelse or case_when goes after the command you want to change
@@ -1191,7 +1218,13 @@ plot_decades_line = function(.y) { #start function
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", #turquoise
                                   "#EBC944", #green
-                                  "#1496BB"))#yellow
+                                  "#1496BB")) +#yellow
+    ylim(NA, max_y) +
+    scale_x_date(as.Date.numeric(doy_avg_bc$doy, origin = "1980-01-01"),
+                 breaks = seq(as.Date("1980-01-15"), 
+                            as.Date("1980-12-15"),#sets labels at the middle of the month
+                            by = "1 month"),
+                 date_labels = "%b")
   
   ggsave(here::here(site, #site subfolder
                     "figures", #top folder
@@ -1208,6 +1241,7 @@ plot_decades_line = function(.y) { #start function
 } #end function decades_line
 
 # call graphs later
+
 
 ```
 
@@ -1272,8 +1306,7 @@ plot_annual = function(.y) {
                size = 4) +
   labs(title = paste("Annual", .y),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
-                    "Water (mm)"),
-       x = "") +
+                    "Water (mm)")) +
       geom_text(data = point_low, # labels the line
               aes(x = 1973, 
                   y = annual_value,
@@ -1323,8 +1356,7 @@ plot_annual = function(.y) {
                size = 4) +
   labs(title = paste("Annual",.y),
        y = ifelse(.y == "ADGG", "Growing Degree Days (C)",
-                    "Water (mm)"),
-       x = "") +
+                    "Water (mm)")) +
     geom_text(data = point_low,
               aes(x = 1973, 
                   y = annual_value,
@@ -1398,8 +1430,7 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "DA621E")) +
   labs(y = "Water(mm)",
-       x = "",
-       title = paste(.y, model_bc, model_bc_rcp_name)) +
+       title = wrap_sentence(paste(.y, model_bc, model_bc_rcp_name), 30)) +
   guides(color = guide_legend(override.aes = list(size=5, #changes size of legend dots
                                                   alpha = 0.5)))+
   theme(legend.title = element_blank(),
@@ -1438,8 +1469,7 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   labs(y = "Water(mm)",
-       x = "",
-       title = paste(model_wc, model_wc_rcp_name)) +
+       title = wrap_sentence(paste(.y, model_wc, model_wc_rcp_name), 30)) +
   guides(color = guide_legend(override.aes = list(size=5,
                                                   alpha = 0.5)))+
   theme(legend.title = element_blank(),
@@ -1469,8 +1499,13 @@ print(jitter_wc)
 
 ```
 
+This data is based off of `r model_bc` `r model_bc_rcp_name` and `r model_wc``r model_wc_rcp_name` to display projections for two potential climate futures. The historical data uses `r past_data`. All data is sourced from a National Park Service data set created by Mike Tercek, David Thoma and John Gross to predict climate futures out to 2100 and report historical daymet and gridmet data back to 1980 at the project level. A link to his original data set can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
-## Annual averages through time
+## Annual values through time
+
+These graphs, are shown in more detail later in this report. The variables of runoff, rain, potential evapotranspiration (PET),  actual evapotranspiration (AET), and deficit are summed in the graphs that show annual values through time. Accumulated snow water equivalent (SWE) and accumulated growing degree days (AGDD) show the max value in the year, and soil water shows the mean of the values. 
+
+The reason for the different mathematical evaluations is due to how hydrologist look at these variables. Hydrologists accumulate water variables that don't have an upper limit like rain runoff and evapostranspiration, whereas they average values that have an upper limit like soil moisture. With soil moisture there is a limit to the amount of water soil can hold based on soil water holding capacity that is related to soil texture, rock fragments (that don't store water) and soil depth.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the varible because it is already a summation of the total through the year.
 
 ```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from Daymet climate data, the turquoise line represents and the yellow line represents RCP 8.5"}
 
@@ -1500,7 +1535,13 @@ ggsave(here::here(site, #site subfolder
 
 ## Deficit v. Actual Evapotranspiration (AET)
 
-Deficit and Actual Evapotranspiration (AET) are the two best predictors of vegetation type, and are useful variables in understanding what an area may look like in the future. To understand why these variables are such good predictors of vegetation, deficit can be understood as unmet water need by plants and AET as the water used by vegetation. According to Nathan Stevenson, AET and D are Climatic Controls of Vegetation Distribution.  If the clustering of AET and D change in climate space, vegetation assemblages will respond and change to assemblages adapted to the new climate space (1998).
+Deficit and Actual Evapotranspiration (AET) are the two best predictors of vegetation type, and are useful variables in understanding what an area may look like in the future. To understand why these variables are such good predictors of vegetation, deficit can be understood as unmet water need by plants and AET as the water used by vegetation. According to Nathan Stevenson, AET and deficit are climatic controls of vegetation distribution.  If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and change to assemblages adapted to the new climate space (1998). The figure below shows how AET v. deficit changes for different habitat types.
+```{r, echo=FALSE, out.width="50%", fig.cap="Stephenson (1998)", fig.align="center"}
+
+knitr::include_graphics("aet_v_d.gif")
+
+```
+
 
 ```{r, out.width="50%"}
 
