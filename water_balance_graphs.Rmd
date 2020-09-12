@@ -1304,7 +1304,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual", .y),
+  labs(title = wrap_sentence(paste("Annual", .y, model_bc, model_bc_rcp_name),30),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
@@ -1354,7 +1354,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual",.y),
+  labs(title = wrap_sentence(paste("Annual",.y, model_wc, model_wc_rcp_name), 30),
        y = ifelse(.y == "ADGG", "Growing Degree Days (C)",
                     "Water (mm)")) +
     geom_text(data = point_low,
@@ -1433,8 +1433,7 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
        title = wrap_sentence(paste(.y, model_bc, model_bc_rcp_name), 30)) +
   guides(color = guide_legend(override.aes = list(size=5, #changes size of legend dots
                                                   alpha = 0.5)))+
-  theme(legend.title = element_blank(),
-        axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
 ggsave(here::here(site, #site subfolder
@@ -1472,8 +1471,7 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
        title = wrap_sentence(paste(.y, model_wc, model_wc_rcp_name), 30)) +
   guides(color = guide_legend(override.aes = list(size=5,
                                                   alpha = 0.5)))+
-  theme(legend.title = element_blank(),
-        axis.text.x = element_blank()) +
+  theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
 ggsave(here::here(site, #site subfolder
@@ -1585,14 +1583,15 @@ ggplot(deficit_aet_bc) +
   geom_point(aes(x = deficit, y = aet, color = decades),
              size = 4,
              alpha = 0.6) +
-  labs(title = paste(model_bc, model_bc_rcp_name),
+  labs(title = wrap_sentence(paste("Deficit v. AET", model_bc, model_bc_rcp_name), 30),
        x = "Deficit",
        y = "AET") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
-  xlim(NA, max_x_d_aet)
+  xlim(NA, max_x_d_aet) +
+  theme(axis.title.x = element_text(size = 15))
 
 ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
@@ -1607,14 +1606,15 @@ ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
   geom_point(aes(color = decades),
              size = 4,
              alpha = 0.6) +
-  labs(title = paste(model_wc, model_wc_rcp_name),
+  labs(title = wrap_sentence(paste("Deficit v. AET", model_wc, model_wc_rcp_name), 30),
        x = "Deficit",
        y = "AET")+
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   theme(legend.title = element_blank()) +
   ylim(NA, max_y_d_aet) +
-  xlim(NA, max_x_d_aet)
+  xlim(NA, max_x_d_aet) +
+  theme(axis.title.x = element_text(size = 15))
 
 ggsave(here::here(site, # site subfolder
                     "figures", #sub folder
