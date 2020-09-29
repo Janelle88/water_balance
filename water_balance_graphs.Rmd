@@ -1,11 +1,12 @@
 ---
 author: "Janelle Christensen, Mike Tercek, David Thoma, John Gross"
 date: "8/3/2020"
-output: html_document
+output: "html_document"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
 
 # ------------
 # set variables for the data and code
@@ -57,10 +58,10 @@ model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" this is the SAME RCP as is in the file, just written in the "less readable" way for the file name
 
-past_data = "gridmet"
+past_data = "gridMET"
 
-# past_data options: "gridmet", "daymet"
-# if you want to use data that will work with the future models, gridmet is a better choice. It doesn't require adjusting for any biases
+# past_data options: "gridMET", "Daymet"
+# if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 
 dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
 
@@ -88,6 +89,7 @@ library(ggrepel)
 library(splines)
 library(magrittr)
 library(janitor)
+library(ggalt)
 
 ```
 
@@ -225,14 +227,14 @@ future_month <- future_month_1 %>%
 # -------------
 
 # -------------
-# daymet cleaning
+# Daymet cleaning
 # -------------
 
 
-# daymet downloads date data wrong(all download as 1980), needing the code to be adjusted in the download
-# this makes the dates formatted differently, so the data needs to be cleaned differently than gridmet
+# Daymet downloads date data wrong(all download as 1980), needing the code to be adjusted in the download
+# this makes the dates formatted differently, so the data needs to be cleaned differently than gridMET
 
-if(past_data == "daymet"){ 
+if(past_data == "Daymet"){ 
   past_month_1 <- read_csv(here::here(site,
                                   "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
@@ -262,10 +264,10 @@ past_month <- past_month_1 %>%
 } 
 
 # ------------
-# gridmet cleaning
+# gridMET cleaning
 # ------------
 
-if(past_data == "gridmet"){ 
+if(past_data == "gridMET"){ 
   past_month_1 <- read_csv(here::here( site,
                                   "raw_data",
                                   paste("lat",lat,"lon",lon, sep = "_"),
@@ -698,7 +700,7 @@ doy_avg_bc <- doy_avg_1980_2019 %>%
                values_to = "value") %>% # new column name to store values 
   na.omit(doy_avg_bc) %>%  # because of the way the dataframe was made, there's NA's for second and third 40, just don't want those there
   pivot_wider(names_from = variable,
-              values_from = value) 
+              values_from = value)
 
 
 # --------
@@ -909,7 +911,6 @@ month_join_wc <- month_join_1980_2019 %>%
 ```
 
 
-
 ```{r}
 # -------
 # Function for 40 yr chunks - smoothed line graph by doy
@@ -933,7 +934,7 @@ max_y <- max_y_2*1.15
   if(exists_.y == TRUE){ #start if statement Best case
   
   .y_plot_bc <- ggplot(doy_avg_bc) + 
-    geom_smooth(size = 1.5,
+    stat_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
                     y = .data[[.y]],
@@ -993,6 +994,11 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")#%b is abbreviated %B is full month name
     
+# gb <- ggplot_build(.y_plot_bc)
+# 
+# exact_x_value_of_the_curve_maximum <- gb$data[[1]]$x[which(diff(sign(diff(gb$data[[1]]$y)))==-2)+1]
+# 
+# .y_plot_bc <- .y_plot_bc + geom_vline(xintercept=exact_x_value_of_the_curve_maximum)
   
   
   ggsave(here::here(site, # site subfolder
@@ -1000,7 +1006,7 @@ max_y <- max_y_2*1.15
                     paste("lat",lat,"lon",lon, sep = "_"),
                     "40_yr_graphs", # subfolder
                     paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
-  
+  # 
   print(.y_plot_bc)
   
   } #end if statement for Best case
@@ -1243,6 +1249,8 @@ max_y <- max_y_2*1.15
 # call graphs later
 
 
+
+  
 ```
 
 
@@ -1497,15 +1505,29 @@ print(jitter_wc)
 
 ```
 
-This data is based off of `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name` to display projections for two potential climate futures. The historical data uses `r past_data`. All data is sourced from a National Park Service data set created by Mike Tercek, David Thoma and John Gross to predict climate futures out to 2100 and report historical daymet and gridmet data back to 1980 at the project level. A link to his original data set can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and water holding capacity of different soil types. Water balance represents the modification of regional weather and climate to represent the biophysical conditions at local scales.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation.
+
+```{r, echo=FALSE, out.width="60%", fig.align="center"}
+
+knitr::include_graphics("mccabe_and_markstrom.png")
+
+```
+```{r, results="hide"}
+
+website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatologylab.org/gridmet.html)"), print("[Daymet](https://daymet.ornl.gov/)"))
+
+```
+
+This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+
 
 ## Annual values through time
 
-These graphs, are shown in more detail later in this report. The variables of runoff, rain, potential evapotranspiration (PET),  actual evapotranspiration (AET), and deficit are summed in the graphs that show annual values through time. Accumulated snow water equivalent (SWE) and accumulated growing degree days (AGDD) show the max value in the year, and soil water shows the mean of the values. 
+The variables of runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) shows the max value for the year regardless of the month it occurs in. Accumulated growing degree days (AGDD) starts accumulating on October 1 of the previous year, and the max value is taken at its highest point. Soil water shows the mean value for the year.
 
-The reason for the different mathematical evaluations is due to how hydrologist look at these variables. Hydrologists accumulate water variables that don't have an upper limit like rain runoff, and evapostranspiration, whereas they average values that have an upper limit like soil moisture. With soil moisture there is a limit to the amount of water soil can hold based on soil water holding capacity that is related to soil texture, rock fragments (that don't store water) and soil depth.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the varible because it is already a summation of the total through the year.
+The reason for the different summary statistics is because hydrologist use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapostranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the variable because it is already a summation of the total through the year. 
 
-```{r, fig.align="center", fig.cap="Figure 1. Annual averages over time. The gray line represents historical data modeled from gridmet climate data, the turquoise line represents and the yellow line represents paste(model_bc)"}
+```{r, fig.align="center", fig.cap= paste("Figure 1. Annual averages over time. The gray line represents historical data modeled from", past_data, "climate data, the turquoise line represents", model_bc, model_bc_rcp, "and the yellow line represents", model_wc, model_wc_rcp)}
 
 
 
@@ -1515,9 +1537,10 @@ ggplot() +
                                       color = averages),
             size = 0.6) +
   facet_wrap(~variable, scales = "free") +
-  scale_color_manual(name = "Annual Averages", values = c("gray60","#A3B86C", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
-  theme(legend.text = element_text(size = 10),
-        legend.title = element_blank(),
+  scale_color_manual(name = "Annual Averages", values = c("gray60","#1496BB", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
+  theme(legend.title = element_blank(),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 8),
         plot.margin = margin(0, 0.5, 0, 0.5, "cm")) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) +
   labs(x ="",
@@ -1533,15 +1556,15 @@ ggsave(here::here(site, #site subfolder
 
 ## Deficit v. Actual Evapotranspiration (AET)
 
-Deficit and Actual Evapotranspiration (AET) are the two best predictors of vegetation type, and are useful variables in understanding what an area may look like in the future. To understand why these variables are such good predictors of vegetation, deficit can be understood as unmet water need by plants and AET as the water used by vegetation. According to Nathan Stevenson, AET and deficit are climatic controls of vegetation distribution.  If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and change to assemblages adapted to the new climate space (1998). The figure below shows how AET v. deficit changes for different habitat types.
-```{r, echo=FALSE, out.width="50%", fig.cap="Stephenson (1998)", fig.align="center"}
+Deficit (D) and actual evapotranspiration (AET) represent unmet water needs of vegetation and vegetation water use.  They are good predictors of vegetation type, and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Stephenson) shows how AET v. D differs across bioregions in the U.S. 
+```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Stephenson (1998)", fig.align="center"}
 
 knitr::include_graphics("aet_v_d.gif")
 
 ```
 
 
-```{r, out.width="50%"}
+```{r, out.width="50%", fig.cap= paste("Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points encircle the climate space for ", model_bc, " ", model_bc_rcp, " and ", model_wc, " ", model_wc_rcp, ".", sep = ""), fig.show="hold"}
 
 #----------
 # Deficit v. AET
@@ -1583,6 +1606,9 @@ ggplot(deficit_aet_bc) +
   geom_point(aes(x = deficit, y = aet, color = decades),
              size = 4,
              alpha = 0.6) +
+  geom_encircle(aes(x = deficit, y = aet, color = decades),
+                show.legend = FALSE,
+                size = 2) +
   labs(title = wrap_sentence(paste("Deficit v. AET", model_bc, model_bc_rcp_name), 30),
        x = "Deficit",
        y = "AET") +
@@ -1606,6 +1632,9 @@ ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
   geom_point(aes(color = decades),
              size = 4,
              alpha = 0.6) +
+  geom_encircle(aes(x = deficit, y = aet, color = decades),
+                show.legend = FALSE,
+                size = 2) +
   labs(title = wrap_sentence(paste("Deficit v. AET", model_wc, model_wc_rcp_name), 30),
        x = "Deficit",
        y = "AET")+
@@ -1681,7 +1710,12 @@ plot_annual("Deficit")
 plot_jitter("Deficit")
 ```
 
+
+```{r}
 ## Accumulated Growing Degree Days
+
+# remove this title from the code chunk when AGDD is put back into the report.
+```
 
 ```{r, out.width="50%"}
 # plot_decades_line("agdd_daily") - fix later, this data is bad - shouldn't plot 8-20-20

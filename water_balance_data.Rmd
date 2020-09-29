@@ -2,7 +2,7 @@
 title: "Data Mining Thredds"
 author: "Janelle Christensen"
 date: "8/4/2020"
-output: html_document
+output: "html_document"
 ---
 
 ```{r setup, include=FALSE}
@@ -109,10 +109,10 @@ model_wc = "HadGEM2-CC365" #model for "worst case" scenario
 model_wc_rcp = "rcp85" #this will be subbed in the HTML
 #options are "rcp85", "rcp45"
 
-past_data = "gridmet"
+past_data = "gridMET"
 
-#options: "gidmet", "daymet"
-# if you want to use data that will work with the future models, gridmet is a better choice. It doesn't require adjusting for any biases
+#options: "gidmet", "Daymet"
+# if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 ```
 
 
@@ -152,7 +152,7 @@ here::here(dir.create(paste(site,
 
 # Historical Data
 
-Be sure of what the intended use is for your historical data. If comparing it to future data, then you'll want to use the gridmet data.
+Be sure of what the intended use is for your historical data. If comparing it to future data, then you'll want to use the gridMET data.
 
 
 ### Daily Historical Data
@@ -202,9 +202,9 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
     # 1980 has only 30 days in December, all other years have 31
     
     
-   if(past_data == "gridmet"){  #if statement for gridmet data url
+   if(past_data == "gridMET"){  #if statement for gridMET data url
      
-     leap <- lubridate::leap_year(yr) #gridmet data treats leap years differently
+     leap <- lubridate::leap_year(yr) #gridMET data treats leap years differently
       if(leap == TRUE){
         enddate <- paste(yr,"12-31", sep = "-")
       } else {
@@ -213,11 +213,11 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
           
           data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv",sep ="")
 
-   } #end if statement for gridmet data url
+   } #end if statement for gridMET data url
     
-    if(past_data == "daymet"){ #if statement for daymet url
+    if(past_data == "Daymet"){ #if statement for Daymet url
           
-          if(yr == 1980){#daymet data has every year ending in 31 other than 1980
+          if(yr == 1980){#Daymet data has every year ending in 31 other than 1980
       day <- 30
     } else {
       day <- 31
@@ -255,7 +255,7 @@ mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including dat
 
 colnames(mydat3)[]<-c("date", "lat","lon","soil_water_daily", "runoff_daily", "rain_daily", "accumswe_daily", "pet_daily", "deficit_daily", "aet_daily") 
 
-if(past_data == "gridmet"){
+if(past_data == "gridMET"){
   
    divide.by.10 <- function(x, na.rm = FALSE) {
     x/10
@@ -274,7 +274,7 @@ if(past_data == "gridmet"){
   
 }
 
-if(past_data == "daymet"){
+if(past_data == "Daymet"){
 
 write_csv(mydat3, here::here(site,
                              "raw_data",
@@ -362,7 +362,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
     
     #single variable single year monthly time series with variable and year specified by user 
     
-    if(past_data == "gridmet"){  #if statement for gridmet data url
+    if(past_data == "gridMET"){  #if statement for gridMET data url
       
       leap <- lubridate::leap_year(yr) 
 #leap years act differently with this monthly future data
@@ -375,11 +375,11 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
     
     data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
     
-    } #end if statement for gridmet data url
+    } #end if statement for gridMET data url
     
-    if(past_data == "daymet"){  #if statement for daymet data url
+    if(past_data == "Daymet"){  #if statement for Daymet data url
     data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/monthly/v2_",yr,"_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=1980-01-16T05%3A14%3A31.916Z&time_end=1980-12-16T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
-    } #end if statement for daymet data url
+    } #end if statement for Daymet data url
     
     
     holder <-data.frame(fread(data_url, 
@@ -414,7 +414,7 @@ mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with meta data including d
 colnames(mydat3)[]<-c("date", "lat","lon","soil_water_monthly", "runoff_monthly", "rain_monthly", "accumswe_monthly", "pet_monthly", "deficit_monthly", "aet_monthly") 
 
 
-if(past_data == "gridmet"){
+if(past_data == "gridMET"){
   
    divide.by.10 <- function(x, na.rm = FALSE) {
     x/10
@@ -433,7 +433,7 @@ if(past_data == "gridmet"){
 }
 
 
-if(past_data == "daymet") {#dates for daymet data are wrong, they are all 1980
+if(past_data == "Daymet") {#dates for Daymet data are wrong, they are all 1980
 
 span<-end-start;span#of years downloaded 
 
@@ -454,7 +454,7 @@ write_csv(mydat4, here::here(site,
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_monthly",
                              paste(site,"_monthly_", past_data, ".csv", sep = "")))
-} #end if statement for daymet date data
+} #end if statement for Daymet date data
 #default is a space, sep = "" removes space
 
 # here::here allows you to choose a folder in your working directory to save to
@@ -878,4 +878,9 @@ beep(10)
 
 
 ```
+
+```{r}
+"http://thredds.northwestknowledge.net:8080/thredds/ncss/agg_met_pr_1979_CurrentYear_CONUS.nc?var=precipitation_amount&latitude=",lat, "&longitude=", lon, "&time_start=1979-01-01T00%3A00%3A00Z&time_end=2020-09-16T00%3A00%3A00Z&accept=csv_file"
+```
+
 
