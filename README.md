@@ -16,22 +16,21 @@ past_data = which data set have you selected to represent historical data? Optio
 dry_year = What is a historically dry year in the latitude and longitude you are looking at? Possibly a year with a lot of fire?
 wet_year = what is a historically wet year in the latitude and logitude you are looking at? Possibly a year with flooding?
 
-This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but this blog (https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, this website (https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
+This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
-There are two code chunks that set up the file paths in your working directory that will not be run with the rest of the code when you knit the document or select "run all", but need to be run individually, once.
 
-To update R:
+### To update R:
 
-Enter the following code for windows:
+#### Enter the following code for windows:
 
 1. install.packages("installr")
 2. library(installr)
 3. updateR()
 
-More information here: https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.
+[More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
 
 
-Enter the following code for mac:
+#### Enter the following code for mac
 
 1. install.packages('devtools') assuming it is not already installed
 2. library(devtools)
@@ -39,9 +38,21 @@ Enter the following code for mac:
 4. library(updateR)
 5. updateR(admin_password = 'Admin user password')
 
-More information here: http://www.andreacirillo.com/2018/03/10/updater-package-update-r-version-with-a-function-on-mac-osx/
+[More information here](http://www.andreacirillo.com/2018/03/10/updater-package-update-r-version-with-a-function-on-mac-osx/)
 
 
 R may tell you to open RGui
 
-More information about RGui here: https://www.dummies.com/programming/r/how-to-navigate-rgui/
+[More information about RGui here](https://www.dummies.com/programming/r/how-to-navigate-rgui/)
+
+You can run this code on a newer version of R but still have access to your older version if needed. This can be done by going to tools -> global options and changing the version of R to run this code. [This website](https://support.rstudio.com/hc/en-us/articles/212364537-Multiple-Versions-of-R-in-RStudio-Server-Pro) gives a bit more information about doing this, and [this website](https://cran.r-project.org/bin/windows/base/old/) gives access to all the previous and most recent version of R.
+
+
+Run the scripts in the following order:
+
+1. model_selection_graph.R
+    + this allows you to select which models you believe will best bracket your climate futures. Once you have run this code, you must select two models from the graph along with their RCPs (either 4.5 or 8.5) which will be input into the following two steps
+2. water_balance_data.Rmd
+    + this downloads all the data required to run the graphs script. I recommend running it over night, as the data can take quite some time to download.
+3. water_balance_graphs.Rmd
+    + this is the final report, which displays the data in graphical form

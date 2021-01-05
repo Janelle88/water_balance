@@ -32,34 +32,6 @@ library(ggrepel)
 
 ```
 
-Quick note: this code runs off the most recent version of R. Additionally, this code requires use of project directories. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
-
-
-### To update R:
-
-#### Enter the following code for windows:
-
-1. install.packages("installr")
-2. library(installr)
-3. updateR()
-
-[More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
-
-
-#### Enter the following code for mac
-
-1. install.packages('devtools') assuming it is not already installed
-2. library(devtools)
-3. install_github('andreacirilloac/updateR')
-4. library(updateR)
-5. updateR(admin_password = 'Admin user password')
-
-[More information here] (http://www.andreacirillo.com/2018/03/10/updater-package-update-r-version-with-a-function-on-mac-osx/)
-
-
-R may tell you to open RGui
-
-[More information about RGui here] (https://www.dummies.com/programming/r/how-to-navigate-rgui/)
 
 # Set up for the site
 
@@ -116,11 +88,11 @@ past_data = "gridMET"
 ```
 
 
-# Before running the code
+# Before running the remaining code
 
 Make sure you have created the folders as necessary in your wd. If you don't want to save the figures, then just comment out ggsave inside of the functions.
 
-Run the following code to create all folders in your project folder that will be needed to run this code:
+Run the following code after you have set your paramaters in the above code chunk to create all folders in your project folder that will be needed to run this code:
 
 ```{r}
 # create subfolders for data 
@@ -816,7 +788,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
   for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
     
     
-    #Specify URL where are stored on cloud 
+    #Specify URL where are stored on cloud. Leap years have a different December end date than non-leap years. IfElse statement accounts for this in the URL
     
     leap <- lubridate::leap_year(yr) 
     if(leap == TRUE){
@@ -847,7 +819,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
 
 
 mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
-# "agdd_monthly_85", fix this - was removed because agdd was removed from website
+# "agdd_monthly_wc", "agdd_monthly_bc" fix this - was removed because agdd was removed from website
 ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
 
 ### make sure to put agdd BEFORE AET - will mess up code if agdd is last

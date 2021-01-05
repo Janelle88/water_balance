@@ -72,6 +72,13 @@ wet_year = 2007 # particulary wet year for people to reference
 # attach packages
 # -------------
 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(remotes, data.table, here, tidyverse, beepr, lubridate, directlabels, data.table, ggbeeswarm, gghalves, directlabels, ggrepel, splines, magrittr, janitor, ggalt, ggrepel, sp, sf) 
+#pacman package installs packages required to run the script
+#the p_load function is for the packages that are a part of CRAN
+
+pacman::p_load_gh("earthlab/cft")
+
 library(data.table) 
 library(here)
 #library(plyr) 
@@ -90,6 +97,10 @@ library(splines)
 library(magrittr)
 library(janitor)
 library(ggalt)
+library(cft)
+library(ggrepel)
+library(sp)
+library(sf)
 
 ```
 
@@ -163,7 +174,7 @@ wrap_sentence <- function(string, width) {
 
 
 ```{r, include=FALSE, eval=FALSE}
-# Before running the code, create subfolders as needed to save figures, only needs to be run once
+# Before running the remaining code, create subfolders as needed to save figures, only needs to be run once
 
 #If you don't want to save the figures, then just comment out ggsave inside of the functions.
 
@@ -542,6 +553,15 @@ annual_values <- bc_annual_values %>%
 # histogram for future data
 # ------------
 
+plot_histogram_past = function(.y) {
+  .y_hist <- ggplot(data = annual_values %>%
+                       filter(decade %in% c(.y))) +
+    geom_histogram(aes(x = annual_value), binwidth = 10) +
+    facet_wrap(~variable)+
+    labs(title = paste(.y, model_bc_rcp_name))
+  
+  print(.y_hist)
+}
 
 plot_histogram = function(.y) {
   
@@ -570,6 +590,11 @@ plot_histogram("1990s")
 plot_histogram("2000s")
 plot_histogram("2010s")
 plot_histogram("2020s")
+
+# ------------
+# histogram for future data
+# ------------
+
 plot_histogram("2030s")
 plot_histogram("2040s")
 plot_histogram("2050s")
@@ -1519,6 +1544,17 @@ website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatolog
 ```
 
 This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+
+## Selection of the Models
+
+The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the potentials are shown in the graph below.
+```{r, echo=FALSE, out.width="80%", fig.align="center"}
+
+x <- "DeltaTavg"
+y <- "DeltaPr"
+
+knitr::include_graphics(here::here(site, "figures", paste("lat_", lat, "_lon_", lon, sep = ""), paste(site, "Scatter BY SCENARIO-",x,"--",y,".png",sep="")))
+```
 
 
 ## Annual values through time
