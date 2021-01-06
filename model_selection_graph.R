@@ -10,9 +10,9 @@
 
 ## Park data
 proj_dir <- here::here()
-Lat = lat
-Lon = lon
-SiteID = site
+Lat = 44.702
+Lon = -110.018
+site = "little_saddle_mtn"
 
 ## Download data
 #Variable and scenario names corresponding to MACA data directory structure
@@ -48,7 +48,7 @@ CFs = c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry") #Use spaces and
 ############################## END INITIALS ##################################################
 
 # Now can only use spatial object (not park name)
-Site_coordinates <- data.frame(PARK=SiteID,lat=Lat,lon=Lon)
+Site_coordinates <- data.frame(PARK=site,lat=Lat,lon=Lon)
 coordinates(Site_coordinates) <- ~lon+lat
 proj4string(Site_coordinates) <- "+proj=longlat +datum=NAD83 +no_defs " #same proj4string used in NPS_boundary_centroids.shp
 
@@ -59,7 +59,7 @@ proj4string(Site_coordinates) <- "+proj=longlat +datum=NAD83 +no_defs " #same pr
 
 # download data
 file_refs <- cftdata(aoi = Site_coordinates, 
-                     area_name = SiteID,
+                     area_name = site,
                      years = c(Hist_StartYear, Future_EndYear),
                      models = GCMs,
                      local_dir = proj_dir,
@@ -86,13 +86,13 @@ Baseline_all<-as.data.frame(subset(df,Date<"2006-01-01",select=c("Date", "GCM", 
                                                                  "RHmaxCustom", "RHminCustom","TavgCustom")))
 Future_all<-as.data.frame(subset(df,Date>"2005-12-31",select=c("Date", "GCM", "PrecipCustom", "TmaxCustom", "TminCustom", 
                                                                "RHmaxCustom", "RHminCustom","TavgCustom")))
-save.image(paste(proj_dir,"/",SiteID,"_init_parsed.RData",sep=""))
+save.image(paste(proj_dir,"/",site,"_init_parsed.RData",sep=""))
 
 # Remove saved climate files
 
 # Remove saved climate files
 if(Remove_files == "Y") {
-  do.call(file.remove, list(list.files(paste(proj_dir,SiteID,sep="/"), full.names = TRUE)))
+  do.call(file.remove, list(list.files(paste(proj_dir,site,sep="/"), full.names = TRUE)))
   print("Files removed")
 } else {print("Files remain")}
 
@@ -184,7 +184,7 @@ Baseline_all$CF = "Historical"
 
 ######################################### SCATTERPLOT CREATION ############################################
 #Colors for CF values plotted side by side (match order of CFs vector)
-colors5 <-  c("#9A9EE5","#12045C","white","#F3D3CB","#E10720")
+colors5 <-  c("#8386CC","#12045C","white","#D4A99F","#E10720")
 
 ##Plot parameters
 
@@ -222,7 +222,7 @@ dualscatter  + geom_text_repel(aes(label=GCM)) +
         plot.title=element_text(size=18,face="bold",vjust=2,hjust=0.5),
         legend.text=element_text(size=18), legend.title=element_text(size=16)) + 
   ###
-  labs(title =paste(SiteID," Changes in climate means in 2040 by GCM run",sep=""), 
+  labs(title =paste(site," Changes in climate means in 2040 by GCM run",sep=""), 
        x = paste("Changes in ",Longx,sep=""), # Change
        y = paste("Changes in ",Longy,sep="")) + #change
   scale_color_manual(name="Scenarios", values=c("black")) +
@@ -232,7 +232,11 @@ dualscatter  + geom_text_repel(aes(label=GCM)) +
   geom_hline(aes(yintercept=mean(DeltaPr*365)),linetype=2) + #change
   geom_vline(aes(xintercept=mean(DeltaTavg)),linetype=2) #change
 
-ggsave(paste(SiteID,"-Scatter-",x,"--",y,".png",sep=""), width = 15, height = 9)
+ggsave(here::here(site, 
+                  "figures",
+                  paste("lat_", Lat, "_lon_", Lon, sep = ""), 
+                  paste(site,"-Scatter-",x,"--",y,".png",sep="")), 
+       width = 15, height = 9)
 
 ####### Scatterplot with CF color
 FM<-Future_Means
@@ -244,9 +248,14 @@ FM$CFnew<-factor(FM$CFnew,levels=c("Warm Wet","Hot Wet","Not Selected","Warm Dry
 levels(FM$CFnew)
 
 ggplot(FM, aes(DeltaTavg, DeltaPr*365, xmin=Tavg25, xmax=Tavg75, ymin=Pr25*365, ymax=Pr75*365)) +
-  geom_text_repel(aes(label=GCM,color=CFnew),position=position_jitter(0,.2)) + 
-  geom_point(size=5,colour="black")+
-  geom_point(aes(color=CFnew),size=4) +
+  geom_text_repel(aes(label=GCM,
+                      color=CFnew),
+                  box.padding = 0.5,
+                  point.padding = 1.5) + 
+  geom_point(size=5,
+             colour="black")+
+  geom_point(aes(color=CFnew),
+             size=4) +
   theme(axis.text=element_text(size=18),
         axis.title.x=element_text(size=18,vjust=-0.2),
         axis.title.y=element_text(size=18,vjust=0.2),
@@ -263,4 +272,8 @@ ggplot(FM, aes(DeltaTavg, DeltaPr*365, xmin=Tavg25, xmax=Tavg75, ymin=Pr25*365, 
   geom_hline(aes(yintercept=mean(FM$DeltaPr*365)),linetype=2) + #change
   geom_vline(aes(xintercept=mean(FM$DeltaTavg)),linetype=2)  #change
 
-ggsave(paste(SiteID, "Scatter BY SCENARIO-",x,"--",y,".png",sep=""), width = 15, height = 9)
+ggsave(here::here(site, 
+                  "figures",
+                  paste("lat_", Lat, "_lon_", Lon, sep = ""), 
+                  paste(site, "Scatter BY SCENARIO-",x,"--",y,".png",sep="")),
+       width = 15, height = 9)

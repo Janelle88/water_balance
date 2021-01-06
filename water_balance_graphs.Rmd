@@ -13,19 +13,19 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # all of this should be changed before the code is run for a new site
 # ------------
 
-site = "little_saddle_mtn"
+site = "Crystal_bench"
   
   #"quitobaquito" 
   
   #"little_saddle_mtn"
 
-lat = 44.702
+lat = 44.9051022
   
   # quito: 31.942809
   
   #lsm: 44.702
 
-lon = -110.018
+lon = -110.2873649
 
 
   #quito:-113.020708
@@ -1548,7 +1548,7 @@ This report is created from temperature and precipitation data that is input to 
 ## Selection of the Models
 
 The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the potentials are shown in the graph below.
-```{r, echo=FALSE, out.width="80%", fig.align="center"}
+```{r, echo=FALSE, out.width="80%", fig.align="center", eval=FALSE}
 
 x <- "DeltaTavg"
 y <- "DeltaPr"
