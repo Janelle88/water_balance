@@ -41,17 +41,23 @@ Make sure to run this code chunk before running any other code chunks.
 #initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
+site = "Crystal_bench"
+
+lat = 44.9051022
+
+lon = -110.2873649
+
 # site = "clarks_fork" 
 # 
 # lat = 44.847443
 # 
 # lon = -109.304468
 
-site = "lamar_river"
-
-lat = 44.686843
-
-lon = -110.061929
+# site = "lamar_river"
+# 
+# lat = 44.686843
+# 
+# lon = -110.061929
 
 # site = "quitobaquito" 
 # 

@@ -585,10 +585,10 @@ plot_histogram = function(.y) {
 # histogram for past data
 # ------------
 
-plot_histogram("1980s")
-plot_histogram("1990s")
-plot_histogram("2000s")
-plot_histogram("2010s")
+plot_histogram_past("1980s")
+plot_histogram_past("1990s")
+plot_histogram_past("2000s")
+plot_histogram_past("2010s")
 plot_histogram("2020s")
 
 # ------------
@@ -1573,7 +1573,7 @@ ggplot() +
                                       color = averages),
             size = 0.6) +
   facet_wrap(~variable, scales = "free") +
-  scale_color_manual(name = "Annual Averages", values = c("gray60","#1496BB", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
+ scale_color_manual(name = "Annual Averages", values = c("gray60","#1496BB", "#EBC944"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))) +
   theme(legend.title = element_blank(),
         axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 8),

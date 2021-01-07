@@ -8,6 +8,13 @@
 
 #rm(list=ls())
 
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(remotes, data.table, here, tidyverse, beepr, lubridate, directlabels, data.table, ggbeeswarm, gghalves, directlabels, ggrepel, splines, magrittr, janitor, ggalt, ggrepel, sp, sf) 
+#pacman package installs packages required to run the script
+#the p_load function is for the packages that are a part of CRAN
+
+pacman::p_load_gh("earthlab/cft")
+
 ## Park data
 proj_dir <- here::here()
 Lat = 44.702
