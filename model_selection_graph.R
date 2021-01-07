@@ -17,9 +17,13 @@ pacman::p_load_gh("earthlab/cft")
 
 ## Park data
 proj_dir <- here::here()
-Lat = 44.702
-Lon = -110.018
-site = "little_saddle_mtn"
+
+Lat <- c(36.86282664, 32.14925916)
+
+Lon <- c(-112.7398567, -109.4511317)
+
+site <-  c("PISP", "FOBO")
+
 
 ## Download data
 #Variable and scenario names corresponding to MACA data directory structure
@@ -41,7 +45,7 @@ Future_EndYear = 2099   #2006-2099
 Hist_StartYear = 1950     #1950-2005
 Hist_EndYear = 2005      #1950-2005
 
-Remove_files ="N" #"Y"        #Removes all climate data files saved in directory
+Remove_files = "Y"   #"N"     #Removes all climate data files saved in directory
 
 #Year range for summarizing future climate (Year - Range/2) to (Year + Range/2)
 Year = 2040 #Central year

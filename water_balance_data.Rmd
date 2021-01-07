@@ -41,11 +41,19 @@ Make sure to run this code chunk before running any other code chunks.
 #initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
-site = "Crystal_bench"
+npcn_centroids <- read_csv(here::here("NCPN_centroids.csv"))
 
-lat = 44.9051022
+site = npcn_centroids$Park
 
-lon = -110.2873649
+lat = npcn_centroids$Lat
+
+lon = npcn_centroids$Long
+
+# site = "Crystal_bench"
+# 
+# lat = 44.9051022
+# 
+# lon = -110.2873649
 
 # site = "clarks_fork" 
 # 
@@ -103,6 +111,7 @@ Run the following code after you have set your paramaters in the above code chun
 ```{r}
 # create subfolders for data 
 
+
 here::here(dir.create(site))
 
 here::here(dir.create(paste(site, 
@@ -124,6 +133,8 @@ here::here(dir.create(paste(site,
                             sep = "/")))
 
 }
+
+
                              
 ```
 
