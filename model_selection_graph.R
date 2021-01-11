@@ -18,11 +18,17 @@ pacman::p_load_gh("earthlab/cft")
 ## Park data
 proj_dir <- here::here()
 
-Lat <- c(36.86282664, 32.14925916)
+ncpn_centroids <- read_csv("NCPN_centroids.csv")
 
-Lon <- c(-112.7398567, -109.4511317)
+Lat <- 32.14925916
+#36.86282664
 
-site <-  c("PISP", "FOBO")
+
+Lon <- -109.4511317
+         #-112.7398567
+
+site <-  "FOBO"
+# "PISP"
 
 
 ## Download data

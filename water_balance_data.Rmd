@@ -41,7 +41,7 @@ Make sure to run this code chunk before running any other code chunks.
 #initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
-npcn_centroids <- read_csv(here::here("NCPN_centroids.csv"))
+ncpn_centroids <- read_csv(here::here("NCPN_centroids.csv"))
 
 site = npcn_centroids$Park
 
@@ -111,6 +111,7 @@ Run the following code after you have set your paramaters in the above code chun
 ```{r}
 # create subfolders for data 
 
+for(row in (1:ncpn_centroids))
 
 here::here(dir.create(site))
 
@@ -133,8 +134,46 @@ here::here(dir.create(paste(site,
                             sep = "/")))
 
 }
+```
 
 
+```{r}
+
+for(i in range(0:sites)) {
+  site = sites[i]
+  lat = lats[i]
+  long = longs[i]
+}
+
+here::here(dir.create(paste(ncpn_centroids$Park)))
+
+here::here(dir.create(paste(ncpn_centroids$Park, 
+                            "raw_data",
+                            sep = "/")))
+
+here::here(dir.create(paste(ncpn_centroids$Park,
+                            "raw_data", 
+                            paste("lat",
+                                  npcn_centroids$Lat,
+                                  "lon",
+                                  npcn_centroids$Long,
+                                  sep = "_"), 
+                            sep = "/")))
+
+for (i in c("historical_daily", "historical_monthly", "future_daily", "future_monthly")){
+
+
+here::here(dir.create(paste(ncpn_centroids$Park, 
+                            "raw_data",
+                            paste("lat",
+                                  npcn_centroids$Lat,
+                                  "lon",
+                                  npcn_centroids$Long,
+                                  sep = "_"),
+                            i,
+                            sep = "/")))
+
+}
                              
 ```
 
