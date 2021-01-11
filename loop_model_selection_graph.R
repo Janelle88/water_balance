@@ -2,6 +2,7 @@
 # Output same as RSS_MACA_Parsing.R, saved as SiteID_init_parsed.RData
 # To be replaced once Rmd written from RCF project
 # A. Runyon 20201009
+# edited: J. Christensen 1/2021
 
 #Units: temp = K, precip = mm, Rh = %
 
@@ -18,23 +19,11 @@ pacman::p_load_gh("earthlab/cft")
 proj_dir <- here::here()
 
 
-for(row in read_csv(here::here("NCPN_centroids.csv"))) {
+for(row in read_csv(here::here("NCPN_centroids.csv"))) { 
   params = list(
     site = row["Park"],
     Lat = row["Lat"],
-    Lon = row["Long"]
-  )
-  
-  # Lat <- 32.14925916
-  # #36.86282664
-  # 
-  # 
-  # Lon <- -109.4511317
-  #          #-112.7398567
-  # 
-  # site <-  "FOBO"
-  # # "PISP"
-  
+    Lon = row["Long"])
   
   ## Download data
   #Variable and scenario names corresponding to MACA data directory structure
@@ -72,7 +61,7 @@ for(row in read_csv(here::here("NCPN_centroids.csv"))) {
   ############################## END INITIALS ##################################################
   
   # Now can only use spatial object (not park name)
-  Site_coordinates <- data.frame(PARK=site,lat=Lat,lon=Lon)
+  Site_coordinates <- data.frame(PARK=params$site,lat=params$Lat,lon=params$Lon)
   coordinates(Site_coordinates) <- ~lon+lat
   proj4string(Site_coordinates) <- "+proj=longlat +datum=NAD83 +no_defs " #same proj4string used in NPS_boundary_centroids.shp
   
@@ -88,7 +77,7 @@ for(row in read_csv(here::here("NCPN_centroids.csv"))) {
 download_data <- function(startyear, endyear){#start download_data function
   
   file_refs <- cftdata(aoi = Site_coordinates, 
-                       area_name = site,
+                       area_name = params$site,
                        years = c(startyear, endyear),
                        models = GCMs,
                        local_dir = proj_dir,
