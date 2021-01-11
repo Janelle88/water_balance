@@ -18,44 +18,45 @@ pacman::p_load_gh("earthlab/cft")
 ## Park data
 proj_dir <- here::here()
 
-ncpn_centroids <- read_csv("NCPN_centroids.csv")
 
-Lat <- 32.14925916
-#36.86282664
-
-
-Lon <- -109.4511317
-         #-112.7398567
-
-site <-  "FOBO"
-# "PISP"
+# Lat <- 32.14925916
+# #36.86282664
+# 
+# 
+# Lon <- -109.4511317
+#          #-112.7398567
+# 
+# site <-  "FOBO"
+# # "PISP"
 
 
 ## Download data
 #Variable and scenario names corresponding to MACA data directory structure
-vars = c("pr", "tasmax", "tasmin","rhsmax","rhsmin")
+vars = c("pr", "tasmax", "tasmin")#,"rhsmax","rhsmin")
 scens = c("rcp45", "rcp85")
 
 #Variable names for output tables
-VarNames = c("PrecipCustom", "TmaxCustom", "TminCustom","RHmaxCustom","RHminCustom")
+VarNames = c("PrecipCustom", "TmaxCustom", "TminCustom")#,"RHmaxCustom","RHminCustom")
 
 # GCMs to be extracted
 GCMs = c('bcc-csm1-1','bcc-csm1-1-m','BNU-ESM','CanESM2','CCSM4','CNRM-CM5','CSIRO-Mk3-6-0',
          'GFDL-ESM2G','GFDL-ESM2M','HadGEM2-CC365','HadGEM2-ES365',
          'inmcm4','IPSL-CM5A-MR','IPSL-CM5A-LR','IPSL-CM5B-LR',
          'MIROC5','MIROC-ESM','MIROC-ESM-CHEM','MRI-CGCM3','NorESM1-M')
+#Year range for summarizing future climate (Year - Range/2) to (Year + Range/2)
+
+Year = 2040 #Central year
+Range = 30  #Number of years to summarize (should be at least 30)
 
 #Date ranges to be extracted
-Future_StartYear = 2006   #2006-2099
-Future_EndYear = 2099   #2006-2099
+Future_StartYear = Year - (Range / 2)   #2006-2099 
+#Year - Range only extracts years needed to run the code, reduces data size needed to download
+Future_EndYear = Year + (Range / 2)   #2006-2099
+#Year + Range only extracts years needed to run the code, reduces data size needed to download
 Hist_StartYear = 1950     #1950-2005
 Hist_EndYear = 2005      #1950-2005
 
 Remove_files = "Y"   #"N"     #Removes all climate data files saved in directory
-
-#Year range for summarizing future climate (Year - Range/2) to (Year + Range/2)
-Year = 2040 #Central year
-Range = 30  #Number of years to summarize (should be at least 30)
 
 # Threshold percentages for defining Climate futures. Default low/high:  0.25, 0.75
 CFLow = 0.25     
@@ -77,7 +78,7 @@ proj4string(Site_coordinates) <- "+proj=longlat +datum=NAD83 +no_defs " #same pr
 # download data
 file_refs <- cftdata(aoi = Site_coordinates, 
                      area_name = site,
-                     years = c(Hist_StartYear, Future_EndYear),
+                     years = c(Hist_StartYear, Hist_EndYear),
                      models = GCMs,
                      local_dir = proj_dir,
                      parameters = vars,
@@ -294,3 +295,5 @@ ggsave(here::here(site,
                   paste("lat_", Lat, "_lon_", Lon, sep = ""), 
                   paste(site, "Scatter BY SCENARIO-",x,"--",y,".png",sep="")),
        width = 15, height = 9)
+
+} #close loop for running all parks
