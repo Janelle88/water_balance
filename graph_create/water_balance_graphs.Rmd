@@ -12,31 +12,31 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # set variables for the data and code
 # all of this should be changed before the code is run for a new site
 # ------------
-# 
-#  site = "Crystal_bench"
+
+site = "Crystal_bench"
   
   #"quitobaquito" 
   
   #"little_saddle_mtn"
 
-#  lat = 44.9051022
-# #   
-# #   # quito: 31.942809
-# #   
-# #   #lsm: 44.702
-# # 
-#  lon = -110.2873649
+lat = 44.9051022
+  
+  # quito: 31.942809
+  
+  #lsm: 44.702
+
+lon = -110.2873649
 
 
   #quito:-113.020708
 
   #lsm: -110.018
 
-# model_bc = "inmcm4" # "best case"
-# 
-# # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
-# 
-# model_bc_rcp = "rcp45"
+model_bc = "inmcm4" # "best case"
+
+# model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
+
+model_bc_rcp = "rcp45"
 
 # options: "rcp45", "rcp85" 
 
@@ -47,11 +47,11 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
 
-# model_wc = "HadGEM2-CC365" # "worst case"
-# 
-# # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
-# 
-# model_wc_rcp = "rcp85"
+model_wc = "HadGEM2-CC365" # "worst case"
+
+# model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
+
+model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" 
 
@@ -61,14 +61,15 @@ model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
   paste("RCP 8.5")
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
-# past_data = "gridMET"
-# 
-# # past_data options: "gridMET", "Daymet"
-# # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
-# 
-# dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
-# 
-# wet_year = 2007 # particulary wet year for people to reference
+
+past_data = "gridMET"
+
+# past_data options: "gridMET", "Daymet"
+# if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
+
+dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+
+wet_year = 2007 # particulary wet year for people to reference
 
 
 # -------------
@@ -176,17 +177,15 @@ wrap_sentence <- function(string, width) {
 ```
 
 
-```{r, include=FALSE}
+```{r, include=FALSE, eval=FALSE}
 # Before running the remaining code, create subfolders as needed to save figures, only needs to be run once
 
 #If you don't want to save the figures, then just comment out ggsave inside of the functions.
 
 # create subfolders for figures
 
-
 here::here(dir.create(paste("sites",
-                      site,
-                      sep = "/")))
+                            site))
 
 here::here(dir.create(paste("sites",
                             site,
@@ -205,7 +204,6 @@ here::here(dir.create(paste("sites",
                             paste("lat",lat,"lon",lon,sep = "_"),
                             "40_yr_graphs",
                             sep = "/")))
-
 ```
 
 ```{r}
@@ -974,11 +972,6 @@ max_y <- max_y_2*1.15
   if(exists_.y == TRUE){ #start if statement Best case
   
   .y_plot_bc <- ggplot(doy_avg_bc) + 
-    geom_line(aes(x = as.Date.numeric(doy, origin = "1980-01-01"),
-                   y = .data[[.y]],
-                   color = decades),
-               size = 0.7,
-               alpha = 0.4) +
     stat_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
@@ -1039,14 +1032,14 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")#%b is abbreviated %B is full month name
     
-# gb <- ggplot_build(.y_plot_bc)
-# 
-#   vline_data_bc <- 
-#     gb$data[[1]] %>% 
-#     group_by(group) %>% 
-#     summarize(xintercept = x[which(y == max(y))])
-#  
-#   .y_plot_bc <- .y_plot_bc + geom_vline(aes(xintercept = xintercept), data = vline_data_bc)
+gb <- ggplot_build(.y_plot_bc)
+
+  vline_data_bc <- 
+    gb$data[[1]] %>% 
+    group_by(group) %>% 
+    summarize(xintercept = x[which(y == max(y))])
+ 
+  .y_plot_bc <- .y_plot_bc + geom_vline(aes(xintercept = xintercept), data = vline_data_bc)
   
   
   ggsave(here::here("sites",
@@ -1065,11 +1058,6 @@ max_y <- max_y_2*1.15
   if(exists_.y == TRUE){ #start if statement RCP 8.5
   
   .y_plot_wc <- ggplot(doy_avg_wc) +
-    geom_line(aes(x = as.Date.numeric(doy, origin = "1980-01-01"),
-                   y = .data[[.y]],
-                   color = decades),
-               size = 0.7,
-               alpha = 0.4) +
     stat_smooth(size = 1.5,
                 se = FALSE,
                 aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
@@ -1128,14 +1116,14 @@ max_y <- max_y_2*1.15
                             as.Date("1980-12-15"), #plots date at midmonth
                             by = "1 month"),
                  date_labels = "%b")#%b is abbreviated, %B is full month name
-  # gb <- ggplot_build(.y_plot_bc)
-  # 
-  # vline_data_wc <- 
-  #   gb$data[[1]] %>% 
-  #   group_by(group) %>% 
-  #   summarize(xintercept = x[which(y == max(y))])
-  # 
-  # .y_plot_wc <- .y_plot_wc + geom_vline(aes(xintercept = xintercept), data = vline_data_wc)
+  gb <- ggplot_build(.y_plot_bc)
+
+  vline_data_wc <- 
+    gb$data[[1]] %>% 
+    group_by(group) %>% 
+    summarize(xintercept = x[which(y == max(y))])
+ 
+  .y_plot_wc <- .y_plot_wc + geom_vline(aes(xintercept = xintercept), data = vline_data_wc)
   
   ggsave(here::here("sites",
                     site, #site subfolder
@@ -1654,7 +1642,7 @@ knitr::include_graphics(here::here("figures", "aet_v_d.gif"))
 
 # max y limit for the graph - to change dynamically
 max_y_d_aet_1 <- annual_values %>% 
-filter(variable == "AET") 
+filter(variable == "Deficit") 
 
 max_y_d_aet_2 <- max(max_y_d_aet_1[,3], na.rm = TRUE)
 
@@ -1663,7 +1651,7 @@ max_y_d_aet <- max_y_d_aet_2*1.15
 # max x limit for the graph - to change dynamically
 
 max_x_d_aet_1 <- annual_values %>% 
-  filter(variable == "Deficit") 
+  filter(variable == "AET") 
 
 max_x_d_aet_2 <- max(max_x_d_aet_1[,3], na.rm = TRUE)
 
@@ -1720,7 +1708,7 @@ ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
                 size = 2) +
   labs(title = wrap_sentence(paste("Deficit v. AET", model_wc, model_wc_rcp_name), 30),
        x = "Deficit",
-       y = "AET") +
+       y = "AET")+
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   theme(legend.title = element_blank()) +

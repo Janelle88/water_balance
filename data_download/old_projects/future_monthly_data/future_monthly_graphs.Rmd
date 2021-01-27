@@ -1,0 +1,121 @@
+---
+title: "Future Monthly Graphs"
+author: "Janelle Christensen"
+date: "8/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# -------------
+# Attach packages
+# -------------
+
+library(data.table) 
+library(here)
+#library(plyr) 
+# be careful with this, it causes issues for dplyr::group_by
+# I didn't try, but the internet says if you load it before tidyverse, that issue goes away
+library(tidyverse)
+library(beepr)
+library(lubridate)
+library(directlabels)
+library(data.table)
+library(ggbeeswarm)
+library(gghalves)
+library(stringr)
+
+# ------------
+# set variables for the data
+# ------------
+
+site = "little_saddle_mtn" 
+
+lat = 44.702 
+
+lon = -110.018 
+
+start = 2020
+
+end = 2099
+
+model = "MRI-CGCM3"
+  
+  # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
+```
+
+```{r}
+# -------------
+# clean data for graphing
+# -------------
+
+
+site_df <- read_csv(here::here("raw_data", paste(site,"lat",lat,"lon",lon, model, "monthly_future.csv", sep = "_")),
+                    na = c("-3276.7")) %>% 
+  select(-lat, -long) %>%
+  mutate(year = lubridate::year(date),
+         month = lubridate::month(date,
+                                  label = TRUE,
+                                  abbr = TRUE))
+```
+
+# Histograms to look at data spread
+
+```{r}
+
+# -------------
+# Graph for plots of the data comparing all variables
+# -------------
+
+# created df for general data, maybe can be used later
+site_long_85 <- site_df %>%
+  select(date:aet_monthly_85, year:month) %>% # selecting for variables for 8.5 only
+  pivot_longer(`soil_water_monthly_85`:`aet_monthly_85`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "rcp_85") %>% 
+  mutate(variable = case_when(
+    .$variable == "runoff_monthly_85" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_monthly_85" ~ "AGDD",
+    .$variable == "soil_water_monthly_85" ~ "Soil Water",
+    .$variable == "rain_monthly_85" ~ "Rain",
+    .$variable == "accumswe_monthly_85" ~ "Accumulated SWE",
+    .$variable == "pet_monthly_85" ~ "PET",
+    .$variable == "deficit_monthly_85" ~ "Deficit",
+    TRUE ~ "AET"))
+  
+  
+site_long_45 <- site_df %>% 
+  select(date, soil_water_monthly_45:aet_monthly_45, year:month) %>% #selecting for 4.5 only
+  pivot_longer(`soil_water_monthly_45`:`aet_monthly_45`, # The columns I'm gathering together
+               names_to = "variable", # new column name for existing names
+               values_to = "rcp_45") %>% 
+  mutate(variable = case_when(
+    .$variable == "runoff_monthly_45" ~ "Runoff",
+    #.Svariable calls the variable, then it can be renamed
+    .$variable == "agdd_monthly_45" ~ "AGDD",
+    .$variable == "soil_water_monthly_45" ~ "Soil Water",
+    .$variable == "rain_monthly_45" ~ "Rain",
+    .$variable == "accumswe_monthly_45" ~ "Accumulated SWE",
+    .$variable == "pet_monthly_45" ~ "PET",
+    .$variable == "deficit_monthly_45" ~ "Deficit",
+    TRUE ~ "AET" # last ifelse is just labeled as TRUE
+  ))
+
+
+site_long <- site_long_45 %>%
+  inner_join(site_long_85) %>%
+  mutate(decade = case_when(
+    .$year %in% c(2020:2029) ~ "2020s",
+    .$year %in% c(2030:2039) ~ "2030s",
+    .$year %in% c(2040:2049) ~ "2040s",
+    .$year %in% c(2050:2059) ~ "2050s",
+    .$year %in% c(2060:2069) ~ "2060s",
+    .$year %in% c(2070:2079) ~ "2070s",
+    .$year %in% c(2080:2089) ~ "2080s",
+    TRUE ~ "2090s"
+  ))
+
+
+```
