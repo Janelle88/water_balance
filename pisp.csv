@@ -1,0 +1,2 @@
+Park,Lat,Long,Omernik 4,Omernik 3,Park Name,Park Name Short,model_bc,model_bc_rcp,model_wc,model_wc_rcp,note
+PISP,36.86282664,-112.7398567,NORTH AMERICAN DESERTS,Colorado Plateaus,Pipe Spring National Monument,Pipe Spring,inmcm4,rcp45,MIROC5,rcp85,"ISPL-CM5A-MR and HadGEM2-ES365 are drier and cooler, but Mike's data doesn't include them"
