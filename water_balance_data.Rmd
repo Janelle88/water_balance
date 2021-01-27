@@ -41,13 +41,13 @@ Make sure to run this code chunk before running any other code chunks.
 #initialize with time range of interest and location, these don't get overwritten in loops 
 # set up for the site, dates, models, and past data type
 
-ncpn_centroids <- read_csv(here::here("NCPN_centroids.csv"))
-
-site = npcn_centroids$Park
-
-lat = npcn_centroids$Lat
-
-lon = npcn_centroids$Long
+# ncpn_centroids <- read_csv(here::here("NCPN_centroids.csv"))
+# 
+# site = npcn_centroids$Park
+# 
+# lat = npcn_centroids$Lat
+# 
+# lon = npcn_centroids$Long
 
 # site = "Crystal_bench"
 # 
@@ -81,19 +81,19 @@ start_future = 2020
 
 end_future = 2099
 
-model_bc = "inmcm4" #model for "best case" scenario
-
-#options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
-
-model_bc_rcp = "rcp45" #this will be subbed in the HTML
-#options are "rcp85", "rcp45"
-
-model_wc = "HadGEM2-CC365" #model for "worst case" scenario
-
-#options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
-
-model_wc_rcp = "rcp85" #this will be subbed in the HTML
-#options are "rcp85", "rcp45"
+# model_bc = "inmcm4" #model for "best case" scenario
+# 
+# #options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
+# 
+# model_bc_rcp = "rcp45" #this will be subbed in the HTML
+# #options are "rcp85", "rcp45"
+# 
+# model_wc = "HadGEM2-CC365" #model for "worst case" scenario
+# 
+# #options: "inmcm4","NorESM1-M", "MRI-CGCM3", "MIROC5", "IPSL-CM5A-LR", "HadGEM2-CC365", "GFDL-ESM2G", "CanESM2", "CCSM4","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM" 
+# 
+# model_wc_rcp = "rcp85" #this will be subbed in the HTML
+# #options are "rcp85", "rcp45"
 
 past_data = "gridMET"
 
@@ -101,6 +101,37 @@ past_data = "gridMET"
 # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 ```
 
+Code to NOT evaluate chunks that already have the data downloaded. If the data has fully downloaded, I want those chunks to not be evaluated.
+
+```{r}
+
+
+data_historical_daily <- !file.exists(here::here(site,
+                             "raw_data",
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             "historical_daily",
+                             paste(site,"_daily_", past_data,".csv", sep = "")))
+
+data_historical_monthly <- !file.exists(here::here(site,
+                             "raw_data",
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             "historical_monthly",
+                             paste(site,"_monthly_", past_data, ".csv", sep = "")))
+
+data_future_daily <- !file.exists(here::here(site,
+                          "raw_data",
+                          paste("lat",lat,"lon",lon, sep = "_"),
+                          "future_daily",
+                          paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, "daily_future.csv", sep = "_")))
+
+data_future_monthly <- !file.exists(here::here(site, #requires project folder
+                             "raw_data",
+                             paste("lat",lat,"lon",lon, sep = "_"),
+                             "future_monthly",
+                             paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, "monthly_future.csv", sep = "_")))
+
+
+```
 
 # Before running the remaining code
 
@@ -111,15 +142,19 @@ Run the following code after you have set your paramaters in the above code chun
 ```{r}
 # create subfolders for data 
 
-for(row in (1:ncpn_centroids))
+here::here(dir.create(paste("sites")))
 
-here::here(dir.create(site))
+here::here(dir.create(paste("sites",
+                      site), 
+                      sep ="/"))
 
-here::here(dir.create(paste(site, 
+here::here(dir.create(paste("sites",
+                            site, 
                             "raw_data",
                             sep = "/")))
 
-here::here(dir.create(paste(site,
+here::here(dir.create(paste("sites",
+                            site,
                             "raw_data", 
                             paste("lat",lat,"lon",lon,sep = "_"), 
                             sep = "/")))
@@ -127,54 +162,14 @@ here::here(dir.create(paste(site,
 for (i in c("historical_daily", "historical_monthly", "future_daily", "future_monthly")){
 
 
-here::here(dir.create(paste(site, 
+here::here(dir.create(paste("sites",
+                            site, 
                             "raw_data",
                             paste("lat",lat,"lon",lon,sep = "_"),
                             i,
                             sep = "/")))
 
 }
-```
-
-
-```{r}
-
-for(i in range(0:sites)) {
-  site = sites[i]
-  lat = lats[i]
-  long = longs[i]
-}
-
-here::here(dir.create(paste(ncpn_centroids$Park)))
-
-here::here(dir.create(paste(ncpn_centroids$Park, 
-                            "raw_data",
-                            sep = "/")))
-
-here::here(dir.create(paste(ncpn_centroids$Park,
-                            "raw_data", 
-                            paste("lat",
-                                  npcn_centroids$Lat,
-                                  "lon",
-                                  npcn_centroids$Long,
-                                  sep = "_"), 
-                            sep = "/")))
-
-for (i in c("historical_daily", "historical_monthly", "future_daily", "future_monthly")){
-
-
-here::here(dir.create(paste(ncpn_centroids$Park, 
-                            "raw_data",
-                            paste("lat",
-                                  npcn_centroids$Lat,
-                                  "lon",
-                                  npcn_centroids$Long,
-                                  sep = "_"),
-                            i,
-                            sep = "/")))
-
-}
-                             
 ```
 
 
@@ -185,7 +180,7 @@ Be sure of what the intended use is for your historical data. If comparing it to
 
 ### Daily Historical Data
 
-```{r}
+```{r, eval = data_historical_daily}
 
 # ----------
 # DAILY HISTORICAL LOOP
@@ -239,7 +234,9 @@ for(climvar in c("soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "
         enddate <- paste(yr + 1, "01-01", sep = "-")
       }
           
-          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv",sep ="")
+          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+          
+          
 
    } #end if statement for gridMET data url
     
@@ -304,7 +301,8 @@ if(past_data == "gridMET"){
 
 if(past_data == "Daymet"){
 
-write_csv(mydat3, here::here(site,
+write_csv(mydat3, here::here("sites",
+                             site,
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_daily",
@@ -317,13 +315,14 @@ write_csv(mydat3, here::here(site,
 
 ### Monthly Historical Data
 
-```{r}
+```{r, eval = data_historical_monthly}
 
 # ------------
 # MONTHLY HISTORICAL LOOP
 # ------------
 
 # set time variables for historical data 
+
 
 start = start_past
 
@@ -477,7 +476,8 @@ mydat4<-cbind(year,month,mydat3[,c(2:10)]);head(mydat4)#drop bogus dates and add
 #fix this - with agdd back in it should be [,c(2:11)]
 
 
-write_csv(mydat4, here::here(site,
+write_csv(mydat4, here::here("sites",
+                             site,
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_monthly",
@@ -498,7 +498,7 @@ write_csv(mydat4, here::here(site,
 
 This data will download the futures of specified RCPs and models into a single csv. It will mix the model types as specified (i.e. inmcm4 4.5 and CCSM4 8.5 future scenarios) and label the data as bc (best case) and wc (worst case)
 
-```{r}
+```{r, eval = data_future_daily}
 
 
 start = start_future
@@ -548,7 +548,7 @@ end = end_future
                                 verbose=FALSE, 
                                 showProgress = FALSE,
       ))#temporary holder for subsets downloaded from cloud 
-      
+      colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
       mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
       
       date <- mydat$time # dates don't download correctly without this
@@ -616,6 +616,7 @@ end = end_future
                                 verbose=FALSE,
                                 showProgress = FALSE,
       )) #temporary holder for subsets downloaded from cloud
+      colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
 
       mydat<-rbind(mydat, holder) #file that grows by adding each chunk downloaded from cloud
 
@@ -654,7 +655,8 @@ end = end_future
            lon = as.character(lon)) %>% 
     mutate_if(is.numeric, divide.by.10)
   
-  write_csv(mydat5, here::here(site,
+  write_csv(mydat5, here::here("sites",
+                               site,
                                "raw_data",
                                paste("lat",lat,"lon",lon, sep = "_"),
                                "future_daily", 
@@ -669,7 +671,7 @@ beep(10)
 
 ### Monthly Future mixed models
 
-```{r}
+```{r, eval=data_future_monthly}
 
 # download best case/worst case climate models, into one csv specified rcps only
 
@@ -756,6 +758,7 @@ leap <- lubridate::leap_year(yr)
                               verbose=FALSE, 
                               showProgress = FALSE,
     ))#temporary holder for subsets downloaded from cloud 
+    colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
     
     mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
     
@@ -861,6 +864,7 @@ for(climvar in c("soil_water_monthly", "runoff_monthly", "rain_monthly", "accums
                               verbose=FALSE, 
                               showProgress = FALSE,
     ))#temporary holder for subsets downloaded from cloud 
+    colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
     
     mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
     
@@ -891,7 +895,8 @@ mydat5 <- mydat4 %>%
   mutate_if(is.numeric, divide.by.10)
 
 
-write_csv(mydat5, here::here(site, #requires project folder
+write_csv(mydat5, here::here("sites",
+                             site, #requires project folder
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "future_monthly",
@@ -907,8 +912,5 @@ beep(10)
 
 ```
 
-```{r}
-"http://thredds.northwestknowledge.net:8080/thredds/ncss/agg_met_pr_1979_CurrentYear_CONUS.nc?var=precipitation_amount&latitude=",lat, "&longitude=", lon, "&time_start=1979-01-01T00%3A00%3A00Z&time_end=2020-09-16T00%3A00%3A00Z&accept=csv_file"
-```
 
 
