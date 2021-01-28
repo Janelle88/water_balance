@@ -7,7 +7,7 @@ library(here)
 # for each type of car in the data create a report
 # these reports are saved in output_dir with the name specified by output_file
 
-centroids <- read_csv(here::here("NCPN_centroids.csv")) #
+centroids <- read_csv(here::here("pisp.csv")) #NCPN_centroids
 
 for(row in 1:nrow(centroids)) {
   sites <- centroids[row, "Park"]

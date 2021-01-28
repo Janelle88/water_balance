@@ -1652,14 +1652,6 @@ knitr::include_graphics(here::here("figures", "aet_v_d.gif"))
 # Deficit v. AET
 # ---------
 
-# max y limit for the graph - to change dynamically
-max_y_d_aet_1 <- annual_values %>% 
-filter(variable == "AET") 
-
-max_y_d_aet_2 <- max(max_y_d_aet_1[,3], na.rm = TRUE)
-
-max_y_d_aet <- max_y_d_aet_2*1.15
-
 # max x limit for the graph - to change dynamically
 
 max_x_d_aet_1 <- annual_values %>% 
@@ -1668,6 +1660,16 @@ max_x_d_aet_1 <- annual_values %>%
 max_x_d_aet_2 <- max(max_x_d_aet_1[,3], na.rm = TRUE)
 
 max_x_d_aet <- max_x_d_aet_2*1.15
+
+# max y limit for the graph - to change dynamically
+
+max_y_d_aet_1 <- annual_values %>% 
+filter(variable == "AET") 
+
+max_y_d_aet_2 <- max(max_y_d_aet_1[,3], na.rm = TRUE)
+
+max_y_d_aet <- max_y_d_aet_2*1.15
+
 
 deficit_aet_bc <- bc_annual_values %>% 
   pivot_wider(names_from = variable,
@@ -1711,8 +1713,8 @@ ggsave(here::here("sites",
 # D v. AET worst case
 # ------------
 
-ggplot(deficit_aet_wc, aes(x = deficit, y = aet)) +
-  geom_point(aes(color = decades),
+ggplot(deficit_aet_wc) +
+  geom_point(aes(x = deficit, y = aet, color = decades),
              size = 4,
              alpha = 0.6) +
   geom_encircle(aes(x = deficit, y = aet, color = decades),
