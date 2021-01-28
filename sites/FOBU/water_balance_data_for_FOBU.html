@@ -417,25 +417,29 @@ past_data = &quot;gridMET&quot;
 #options: &quot;gidmet&quot;, &quot;Daymet&quot;
 # if you want to use data that will work with the future models, gridMET is a better choice. It doesn&#39;t require adjusting for any biases</code></pre>
 <p>Code to NOT evaluate chunks that already have the data downloaded. If the data has fully downloaded, I want those chunks to not be evaluated.</p>
-<pre class="r"><code>data_historical_daily &lt;- !file.exists(here::here(site,
+<pre class="r"><code>data_historical_daily &lt;- !file.exists(here::here(&quot;sites&quot;,
+                                                 site,
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;historical_daily&quot;,
                              paste(site,&quot;_daily_&quot;, past_data,&quot;.csv&quot;, sep = &quot;&quot;)))
 
-data_historical_monthly &lt;- !file.exists(here::here(site,
+data_historical_monthly &lt;- !file.exists(here::here(&quot;sites&quot;,
+                                                   site,
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;historical_monthly&quot;,
                              paste(site,&quot;_monthly_&quot;, past_data, &quot;.csv&quot;, sep = &quot;&quot;)))
 
-data_future_daily &lt;- !file.exists(here::here(site,
+data_future_daily &lt;- !file.exists(here::here(&quot;sites&quot;,
+                                             site,
                           &quot;raw_data&quot;,
                           paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                           &quot;future_daily&quot;,
                           paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, &quot;daily_future.csv&quot;, sep = &quot;_&quot;)))
 
-data_future_monthly &lt;- !file.exists(here::here(site, #requires project folder
+data_future_monthly &lt;- !file.exists(here::here(&quot;sites&quot;,
+                                               site, #requires project folder
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;future_monthly&quot;,
@@ -447,41 +451,50 @@ data_future_monthly &lt;- !file.exists(here::here(site, #requires project folder
 <p>Run the following code after you have set your paramaters in the above code chunk to create all folders in your project folder that will be needed to run this code:</p>
 <pre class="r"><code># create subfolders for data 
 
-
-here::here(dir.create(site))</code></pre>
-<pre><code>## Warning in dir.create(site): &#39;FOBU&#39; already exists</code></pre>
+here::here(dir.create(paste(&quot;sites&quot;)))</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;)): &#39;sites&#39; already exists</code></pre>
 <pre><code>## [1] &quot;C:/Users/jnchr/Documents/R/Water Balance/FALSE&quot;</code></pre>
-<pre class="r"><code>here::here(dir.create(paste(site, 
+<pre class="r"><code>here::here(dir.create(paste(&quot;sites&quot;,
+                      site, 
+                      sep =&quot;/&quot;)))</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, sep = &quot;/&quot;)): &#39;sites\FOBU&#39; already exists</code></pre>
+<pre><code>## [1] &quot;C:/Users/jnchr/Documents/R/Water Balance/FALSE&quot;</code></pre>
+<pre class="r"><code>here::here(dir.create(paste(&quot;sites&quot;,
+                            site, 
                             &quot;raw_data&quot;,
                             sep = &quot;/&quot;)))</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, sep = &quot;/&quot;)): &#39;FOBU\raw_data&#39; already
-## exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, sep = &quot;/&quot;)):
+## &#39;sites\FOBU\raw_data&#39; already exists</code></pre>
 <pre><code>## [1] &quot;C:/Users/jnchr/Documents/R/Water Balance/FALSE&quot;</code></pre>
-<pre class="r"><code>here::here(dir.create(paste(site,
+<pre class="r"><code>here::here(dir.create(paste(&quot;sites&quot;,
+                            site,
                             &quot;raw_data&quot;, 
                             paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon,sep = &quot;_&quot;), 
                             sep = &quot;/&quot;)))</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, &quot;lon&quot;, lon, :
-## &#39;FOBU\raw_data\lat_41.85634277_lon_-110.7624714&#39; already exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
+## &#39;sites\FOBU\raw_data\lat_41.85634277_lon_-110.7624714&#39; already exists</code></pre>
 <pre><code>## [1] &quot;C:/Users/jnchr/Documents/R/Water Balance/FALSE&quot;</code></pre>
 <pre class="r"><code>for (i in c(&quot;historical_daily&quot;, &quot;historical_monthly&quot;, &quot;future_daily&quot;, &quot;future_monthly&quot;)){
 
 
-here::here(dir.create(paste(site, 
+here::here(dir.create(paste(&quot;sites&quot;,
+                            site, 
                             &quot;raw_data&quot;,
                             paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon,sep = &quot;_&quot;),
                             i,
                             sep = &quot;/&quot;)))
 
 }</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, &quot;lon&quot;, lon, :
-## &#39;FOBU\raw_data\lat_41.85634277_lon_-110.7624714\historical_daily&#39; already exists</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, &quot;lon&quot;, lon, :
-## &#39;FOBU\raw_data\lat_41.85634277_lon_-110.7624714\historical_monthly&#39; already exists</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, &quot;lon&quot;, lon, :
-## &#39;FOBU\raw_data\lat_41.85634277_lon_-110.7624714\future_daily&#39; already exists</code></pre>
-<pre><code>## Warning in dir.create(paste(site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, &quot;lon&quot;, lon, :
-## &#39;FOBU\raw_data\lat_41.85634277_lon_-110.7624714\future_monthly&#39; already exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
+## &#39;sites\FOBU\raw_data\lat_41.85634277_lon_-110.7624714\historical_daily&#39; already
+## exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
+## &#39;sites\FOBU\raw_data\lat_41.85634277_lon_-110.7624714\historical_monthly&#39; already
+## exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
+## &#39;sites\FOBU\raw_data\lat_41.85634277_lon_-110.7624714\future_daily&#39; already exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
+## &#39;sites\FOBU\raw_data\lat_41.85634277_lon_-110.7624714\future_monthly&#39; already exists</code></pre>
 </div>
 <div id="historical-data" class="section level1">
 <h1>Historical Data</h1>
@@ -607,7 +620,8 @@ if(past_data == &quot;gridMET&quot;){
 
 if(past_data == &quot;Daymet&quot;){
 
-write_csv(mydat3, here::here(site,
+write_csv(mydat3, here::here(&quot;sites&quot;,
+                             site,
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;historical_daily&quot;,
@@ -776,7 +790,8 @@ mydat4&lt;-cbind(year,month,mydat3[,c(2:10)]);head(mydat4)#drop bogus dates and 
 #fix this - with agdd back in it should be [,c(2:11)]
 
 
-write_csv(mydat4, here::here(site,
+write_csv(mydat4, here::here(&quot;sites&quot;,
+                             site,
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;historical_monthly&quot;,
@@ -853,25 +868,15 @@ end = end_future
     
     mydat&lt;-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it&#39;s extracting at each loop cycle 
     
-  }#end loop across climate variables for 8.5</code></pre>
-<pre><code>## [1] &quot;downloading soil_water daily CCSM4 rcp85&quot;
-## [1] &quot;downloading runoff daily CCSM4 rcp85&quot;
-## [1] &quot;downloading rain daily CCSM4 rcp85&quot;
-## [1] &quot;downloading accumswe daily CCSM4 rcp85&quot;
-## [1] &quot;downloading PET daily CCSM4 rcp85&quot;
-## [1] &quot;downloading Deficit daily CCSM4 rcp85&quot;
-## [1] &quot;downloading AET daily CCSM4 rcp85&quot;</code></pre>
-<pre class="r"><code>  mydat3&lt;-cbind(date,holder[,2:3],mydat2)#join the data with metadata including date, lat, long 
+  }#end loop across climate variables for 8.5
   
-  head(mydat3) </code></pre>
-<pre><code>##                  date latitude longitude    1 2 3   4 5 6 7
-## 1 2020-01-01 12:00:00 41.85634 -110.7625 1360 0 0 550 0 0 0
-## 2 2020-01-02 12:00:00 41.85634 -110.7625 1360 0 0 550 0 0 0
-## 3 2020-01-03 12:00:00 41.85634 -110.7625 1360 0 0 550 0 0 0
-## 4 2020-01-04 12:00:00 41.85634 -110.7625 1360 0 0 561 0 0 0
-## 5 2020-01-05 12:00:00 41.85634 -110.7625 1360 0 0 561 0 0 0
-## 6 2020-01-06 12:00:00 41.85634 -110.7625 1360 0 0 561 0 0 0</code></pre>
-<pre class="r"><code>  # ----------
+  
+  
+  mydat3&lt;-cbind(date,holder[,2:3],mydat2)#join the data with metadata including date, lat, long 
+  
+  head(mydat3) 
+
+  # ----------
   # Create loop for downloading the data rcp 4.5
   # ----------
 
@@ -928,15 +933,9 @@ end = end_future
 
     mydat&lt;-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it&#39;s extracting at each loop cycle
 
-  }#end loop across climate variables for 4.5</code></pre>
-<pre><code>## [1] &quot;downloading soil_water daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading runoff daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading rain daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading accumswe daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading PET daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading Deficit daily MRI-CGCM3 rcp45&quot;
-## [1] &quot;downloading AET daily MRI-CGCM3 rcp45&quot;</code></pre>
-<pre class="r"><code>  mydat4&lt;-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
+  }#end loop across climate variables for 4.5
+
+  mydat4&lt;-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
   
   # &quot;agdd_daily_wc&quot;, &quot;agdd_daily_bc&quot;, - fix this, return when agdd is back on the website
   # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
@@ -960,7 +959,8 @@ end = end_future
            lon = as.character(lon)) %&gt;% 
     mutate_if(is.numeric, divide.by.10)
   
-  write_csv(mydat5, here::here(site,
+  write_csv(mydat5, here::here(&quot;sites&quot;,
+                               site,
                                &quot;raw_data&quot;,
                                paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                                &quot;future_daily&quot;, 
@@ -1070,25 +1070,16 @@ leap &lt;- lubridate::leap_year(yr)
   
   mydat&lt;-NULL#reset this variable so it can accodomate a new column name given the new water balance variable it&#39;s extracting at each loop cycle 
   
-}#end loop across climate variables for rcp 8.5</code></pre>
-<pre><code>## [1] &quot;downloading soil_water_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading runoff_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading rain_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading accumswe_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading PET_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading Deficit_monthly CCSM4 rcp85&quot;
-## [1] &quot;downloading AET_monthly CCSM4 rcp85&quot;</code></pre>
-<pre class="r"><code>mydat3&lt;-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
+}#end loop across climate variables for rcp 8.5
+  
 
-head(mydat3) </code></pre>
-<pre><code>##                  date latitude longitude    1   2   3   4   5   6   7
-## 1 2020-01-16 05:14:31 41.85634 -110.7625 1360   0   0 728   0   0   0
-## 2 2020-02-15 15:43:35 41.85634 -110.7625 1412   0  43 961   0   0   0
-## 3 2020-03-17 02:12:39 41.85634 -110.7625 1697   0  62 371   0   0   0
-## 4 2020-04-16 12:41:43 41.85634 -110.7625 2643   0 281   0 361  23 335
-## 5 2020-05-16 23:10:47 41.85634 -110.7625 2841 277 704   0 561  14 547
-## 6 2020-06-16 09:39:51 41.85634 -110.7625 2427   0 207   0 845 132 711</code></pre>
-<pre class="r"><code># ----------
+
+mydat3&lt;-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
+
+head(mydat3) 
+
+
+# ----------
 # Create loop for downloading the data rcp 4.5
 # ----------
 
@@ -1204,33 +1195,16 @@ mydat5 &lt;- mydat4 %&gt;%
   mutate_if(is.numeric, divide.by.10)
 
 
-write_csv(mydat5, here::here(site, #requires project folder
+write_csv(mydat5, here::here(&quot;sites&quot;,
+                             site, #requires project folder
                              &quot;raw_data&quot;,
                              paste(&quot;lat&quot;,lat,&quot;lon&quot;,lon, sep = &quot;_&quot;),
                              &quot;future_monthly&quot;,
                              paste(site, model_wc, model_wc_rcp, model_bc, model_bc_rcp, &quot;monthly_future.csv&quot;, sep = &quot;_&quot;))) #default is a space, sep = &quot;&quot; removes space
 
-}# end loop across different climate projections</code></pre>
-<pre><code>## [1] &quot;downloading soil_water_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading runoff_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading rain_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading accumswe_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading PET_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading Deficit_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre><code>## Warning in colnames(mydat4)[] &lt;- c(&quot;date&quot;, &quot;lat&quot;, &quot;lon&quot;, &quot;soil_water_monthly_wc&quot;, :
-## number of items to replace is not a multiple of replacement length</code></pre>
-<pre><code>## [1] &quot;downloading AET_monthly MRI-CGCM3 rcp45&quot;</code></pre>
-<pre class="r"><code>beep(10)
+}# end loop across different climate projections
+
+beep(10)
 
 # here::here allows you to choose a folder in your working directory to save to
 # here::here(&quot;folder I want to save to (this has to be made in your working directory before you save it)&quot;, &quot;subfolder&quot;, &quot;subfolder (subfolders can be as numerous you want them to be, always separated by a commma)&quot;, &quot;last thing in the list is the name of the object I&#39;m saving&quot;)</code></pre>

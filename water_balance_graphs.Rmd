@@ -1591,7 +1591,7 @@ This report is created from temperature and precipitation data that is input to 
 
 ## Selection of the Models
 
-The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the potentials are shown in the graph below.
+The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the model selection was based off of the latitude and longitude for each park centroid, plotted on the scatterplot visualization of future projections from the [MACA website.](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot).
 ```{r, echo=FALSE, out.width="80%", fig.align="center", eval=FALSE}
 
 x <- "DeltaTavg"

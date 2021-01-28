@@ -106,25 +106,29 @@ Code to NOT evaluate chunks that already have the data downloaded. If the data h
 ```{r}
 
 
-data_historical_daily <- !file.exists(here::here(site,
+data_historical_daily <- !file.exists(here::here("sites",
+                                                 site,
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_daily",
                              paste(site,"_daily_", past_data,".csv", sep = "")))
 
-data_historical_monthly <- !file.exists(here::here(site,
+data_historical_monthly <- !file.exists(here::here("sites",
+                                                   site,
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_monthly",
                              paste(site,"_monthly_", past_data, ".csv", sep = "")))
 
-data_future_daily <- !file.exists(here::here(site,
+data_future_daily <- !file.exists(here::here("sites",
+                                             site,
                           "raw_data",
                           paste("lat",lat,"lon",lon, sep = "_"),
                           "future_daily",
                           paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, "daily_future.csv", sep = "_")))
 
-data_future_monthly <- !file.exists(here::here(site, #requires project folder
+data_future_monthly <- !file.exists(here::here("sites",
+                                               site, #requires project folder
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "future_monthly",
@@ -145,8 +149,8 @@ Run the following code after you have set your paramaters in the above code chun
 here::here(dir.create(paste("sites")))
 
 here::here(dir.create(paste("sites",
-                      site), 
-                      sep ="/"))
+                      site, 
+                      sep ="/")))
 
 here::here(dir.create(paste("sites",
                             site, 
