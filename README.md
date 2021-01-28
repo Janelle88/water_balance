@@ -3,18 +3,18 @@
 This project is meant to download information from the thredds server for water balance projections (http://www.yellowstone.solutions/thredds/catalog.html) using a few specified values.
 The values that need to be defined are at the tope of each rmd file. They are:
 
-site = a common name for the site you are looking at
-lat = latitude of the site
-lon = longitude of the site
-model_bc = which model have you selected to represent the "best case" scenario? Options are given in the code.
-model_bc_rcp = what is the RCP of the model you have selected to represent the "best case" scenario? Options are given in the code
-model_bc_rcp_name = a more "readable" version of the name for the RCP
-model_wc = which model have you selected to represent the "worst case" scenario? Options are given in the code.
-model_wc_rcp = what is the RCP of the model you have selected to represent the "worst case" scenario? Options are given in the code
-model_wc_rcp_name = a more "readable" version of the name for the RCP
-past_data = which data set have you selected to represent historical data? Options are given in the code.
-dry_year = What is a historically dry year in the latitude and longitude you are looking at? Possibly a year with a lot of fire?
-wet_year = what is a historically wet year in the latitude and logitude you are looking at? Possibly a year with flooding?
+- site = a common name for the site you are looking at
+- lat = latitude of the site
+- lon = longitude of the site
+- model_bc = which model have you selected to represent the "best case" scenario? Options are given in the code.
+- model_bc_rcp = what is the RCP of the model you have selected to represent the "best case" scenario? Options are given in the code
+- model_bc_rcp_name = a more "readable" version of the name for the RCP
+- model_wc = which model have you selected to represent the "worst case" scenario? Options are given in the code.
+- model_wc_rcp = what is the RCP of the model you have selected to represent the "worst case" scenario? Options are given in the code
+- model_wc_rcp_name = a more "readable" version of the name for the RCP
+- past_data = which data set have you selected to represent historical data? Options are given in the code.
+- dry_year = What is a historically dry year in the latitude and longitude you are looking at? Possibly a year with a lot of fire?
+- wet_year = what is a historically wet year in the latitude and logitude you are looking at? Possibly a year with flooding?
 
 This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
