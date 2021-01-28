@@ -19,9 +19,9 @@ The values that need to be defined are at the tope of each rmd file. They are:
 This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
 
-### To update R:
+## To update R:
 
-#### Enter the following code for windows:
+### Enter the following code for windows:
 
 1. install.packages("installr")
 2. library(installr)
@@ -48,7 +48,7 @@ R may tell you to open RGui
 You can run this code on a newer version of R but still have access to your older version if needed. This can be done by going to tools -> global options and changing the version of R to run this code. [This website](https://support.rstudio.com/hc/en-us/articles/212364537-Multiple-Versions-of-R-in-RStudio-Server-Pro) gives a bit more information about doing this, and [this website](https://cran.r-project.org/bin/windows/base/old/) gives access to all the previous and most recent version of R.
 
 
-Run the scripts in the following order:
+### Run the scripts in the following order:
 
 1. model_selection_graph.R
     + this allows you to select which models you believe will best bracket your climate futures. Once you have run this code, you must select two models from the graph along with their RCPs (either 4.5 or 8.5) which will be input into the following two steps
@@ -56,3 +56,6 @@ Run the scripts in the following order:
     + this downloads all the data required to run the graphs script. I recommend running it over night, as the data can take quite some time to download.
 3. water_balance_graphs.Rmd
     + this is the final report, which displays the data in graphical form
+    
+#### run_rmd
+If you have a csv that has column headers as displayed in the ncpn_centroids file, you should be able to use the run_rmd to run the report from that csv. This is especially useful if you have a number of latitudes and longitudes you would like to look at, it will essentially loop through the data download and the report generation for each latitude and longitude
