@@ -1,6 +1,6 @@
 # water_balance
 
-This project is meant to download information from the thredds server for water balance projections (http://www.yellowstone.solutions/thredds/catalog.html) using a few specified values.
+This project is meant to download information from the [thredds server](http://www.yellowstone.solutions/thredds/catalog.html) for water balance projections  using a few specified values.
 The values that need to be defined are at the tope of each rmd file. They are:
 
 - site = a common name for the site you are looking at
@@ -27,7 +27,7 @@ This code runs off the most recent version of R. Additionally, this code require
 2. library(installr)
 3. updateR()
 
-[More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
+[More information here](https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
 
 
 #### Enter the following code for mac
