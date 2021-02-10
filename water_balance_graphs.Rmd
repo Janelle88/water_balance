@@ -1,13 +1,18 @@
 ---
 author: "Janelle Christensen, Mike Tercek, David Thoma, John Gross"
 date: "8/3/2020"
-output: "html_document"
+output: "pdf_document"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
 
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
 
+```{r}
 # ------------
 # set variables for the data and code
 # all of this should be changed before the code is run for a new site
@@ -1049,12 +1054,12 @@ max_y <- max_y_2*1.15
 #   .y_plot_bc <- .y_plot_bc + geom_vline(aes(xintercept = xintercept), data = vline_data_bc)
   
   
-  ggsave(here::here("sites",
-                    site, # site subfolder
-                    "figures", #sub folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
+  # ggsave(here::here("sites",
+  #                   site, # site subfolder
+  #                   "figures", #sub folder
+  #                   paste("lat",lat,"lon",lon, sep = "_"),
+  #                   "40_yr_graphs", # subfolder
+  #                   paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
   # 
   print(.y_plot_bc)
   
@@ -1137,12 +1142,12 @@ max_y <- max_y_2*1.15
   # 
   # .y_plot_wc <- .y_plot_wc + geom_vline(aes(xintercept = xintercept), data = vline_data_wc)
   
-  ggsave(here::here("sites",
-                    site, #site subfolder
-                    "figures", #top folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr", model_wc_rcp, ".png", sep = "_"))) #file name
+  # ggsave(here::here("sites",
+  #                   site, #site subfolder
+  #                   "figures", #top folder
+  #                   paste("lat",lat,"lon",lon, sep = "_"),
+  #                   "40_yr_graphs", # subfolder
+  #                   paste(.y, "40_yr", model_wc_rcp, ".png", sep = "_"))) #file name
   
   print(.y_plot_wc)
   
@@ -1231,12 +1236,12 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")# %b gives abbreviated %B gives full month name
   
-  ggsave(here::here("sites",
-                    site, # site subfolder
-                    "figures", #sub folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_line",model_bc_rcp, ".png", sep = "_"))) #file name
+  # ggsave(here::here("sites",
+  #                   site, # site subfolder
+  #                   "figures", #sub folder
+  #                   paste("lat",lat,"lon",lon, sep = "_"),
+  #                   "40_yr_graphs", # subfolder
+  #                   paste(.y, "40_yr_line",model_bc_rcp, ".png", sep = "_"))) #file name
   print(.y_plot_bc)
   
   } # end if statement rcp bc
@@ -1296,12 +1301,12 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")
   
-  ggsave(here::here("sites",
-                    site, #site subfolder
-                    "figures", #top folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    "40_yr_graphs", # subfolder
-                    paste(.y, "40_yr_line",model_wc_rcp, ".png", sep = "_"))) #file name
+  # ggsave(here::here("sites",
+  #                   site, #site subfolder
+  #                   "figures", #top folder
+  #                   paste("lat",lat,"lon",lon, sep = "_"),
+  #                   "40_yr_graphs", # subfolder
+  #                   paste(.y, "40_yr_line",model_wc_rcp, ".png", sep = "_"))) #file name
   
   print(.y_plot_wc)
   
@@ -1395,11 +1400,11 @@ plot_annual = function(.y) {
     scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) + # colors is a named vector, see top of function
  ylim(NA, max_y)
   
-  ggsave(here::here("sites",
-                    site, #site subfolder
-                    "figures", #subfolder
-                    paste("lat",lat,"lon",lon,sep = "_"),
-                    paste(.y, "annual_graph_bc.png", sep = "_"))) #file name
+  # ggsave(here::here("sites",
+  #                   site, #site subfolder
+  #                   "figures", #subfolder
+  #                   paste("lat",lat,"lon",lon,sep = "_"),
+  #                   paste(.y, "annual_graph_bc.png", sep = "_"))) #file name
   
   
   annual_graph_wc <- ggplot() +
@@ -1446,11 +1451,11 @@ plot_annual = function(.y) {
     scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) + # colors is a named vector, see top of function
   ylim(NA, max_y)
   
-  ggsave(here::here("sites",
-                    site, #site subfolder
-                    "figures", #subfolder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    paste(.y, "annual_graph_wc.png", sep = "_"))) #filename
+  # ggsave(here::here("sites",
+  #                   site, #site subfolder
+  #                   "figures", #subfolder
+  #                   paste("lat",lat,"lon",lon, sep = "_"),
+  #                   paste(.y, "annual_graph_wc.png", sep = "_"))) #filename
   
   # return(annual_graph_bc)
   # return(annual_graph_wc) with these two it only prints the 4.5 graph
@@ -1511,11 +1516,11 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
   theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
-ggsave(here::here("sites",
-                  site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  paste("jitter_bc_",.y,".png", sep = ""))) # file name
+# ggsave(here::here("sites",
+#                   site, #site subfolder
+#                   "figures", #subfolder
+#                   paste("lat",lat,"lon",lon, sep = "_"),
+#                   paste("jitter_bc_",.y,".png", sep = ""))) # file name
 
 # ----------
 # Jitter worst case
@@ -1550,11 +1555,11 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
   theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
-ggsave(here::here("sites",
-                  site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  paste("jitter_wc_", .y,".png", sep = "_"))) # file name
+# ggsave(here::here("sites",
+#                   site, #site subfolder
+#                   "figures", #subfolder
+#                   paste("lat",lat,"lon",lon, sep = "_"),
+#                   paste("jitter_wc_", .y,".png", sep = "_"))) # file name
 
 print(jitter_bc)
 print(jitter_wc)
@@ -1628,11 +1633,11 @@ ggplot() +
        y = "Water (mm)")
   
 
-ggsave(here::here("sites",
-                  site, #site subfolder
-                  "figures", #subfolder
-                  paste("lat",lat,"lon",lon, sep = "_"),
-                  "annual_facet.png")) #file name
+# ggsave(here::here("sites",
+#                   site, #site subfolder
+#                   "figures", #subfolder
+#                   paste("lat",lat,"lon",lon, sep = "_"),
+#                   "annual_facet.png")) #file name
 
 ```
 
@@ -1703,11 +1708,11 @@ ggplot(deficit_aet_bc) +
   xlim(NA, max_x_d_aet) +
   theme(axis.title.x = element_text(size = 15))
 
-ggsave(here::here("sites",
-                  site, # site subfolder
-                    "figures", #sub folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
+# ggsave(here::here("sites",
+#                   site, # site subfolder
+#                     "figures", #sub folder
+#                     paste("lat",lat,"lon",lon, sep = "_"),
+#                     paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
 
 # ------------
 # D v. AET worst case
@@ -1730,11 +1735,11 @@ ggplot(deficit_aet_wc) +
   xlim(NA, max_x_d_aet) +
   theme(axis.title.x = element_text(size = 15))
 
-ggsave(here::here("sites",
-                   site, # site subfolder
-                    "figures", #sub folder
-                    paste("lat",lat,"lon",lon, sep = "_"),
-                    paste("d_v_aet", model_wc_rcp, ".png", sep = "_"))) #file name)
+# ggsave(here::here("sites",
+#                    site, # site subfolder
+#                     "figures", #sub folder
+#                     paste("lat",lat,"lon",lon, sep = "_"),
+#                     paste("d_v_aet", model_wc_rcp, ".png", sep = "_"))) #file name)
   
 
 ```
