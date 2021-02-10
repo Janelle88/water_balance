@@ -1,6 +1,6 @@
 # water_balance
 
-This project is meant to download information from the thredds server for water balance projections (http://www.yellowstone.solutions/thredds/catalog.html) using a few specified values.
+This project is meant to download information from the [thredds server](http://www.yellowstone.solutions/thredds/catalog.html) for water balance projections  using a few specified values.
 The values that need to be defined are at the tope of each rmd file. They are:
 
 - site = a common name for the site you are looking at
@@ -27,10 +27,10 @@ This code runs off the most recent version of R. Additionally, this code require
 2. library(installr)
 3. updateR()
 
-[More information here] (https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
+[More information here](https://www.r-statistics.com/2015/06/a-step-by-step-screenshots-tutorial-for-upgrading-r-on-windows/#:~:text=If%20you%20are%20running%20R,installr%20updateR()%20%23%20updating%20R.)
 
 
-#### Enter the following code for mac
+### Enter the following code for mac
 
 1. install.packages('devtools') assuming it is not already installed
 2. library(devtools)
@@ -50,7 +50,7 @@ You can run this code on a newer version of R but still have access to your olde
 
 ### Run the scripts in the following order:
 
-1. model_selection_graph.R
+1. model_selection_graph.R OR select your models using the scatterplot on the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Keep in mind that model selection isn't always intuitive, but using the scatterplot, you can select for what type of future you would like to see. There are some models that do not represent certain parts of the country well, so be aware of that as well.
     + this allows you to select which models you believe will best bracket your climate futures. Once you have run this code, you must select two models from the graph along with their RCPs (either 4.5 or 8.5) which will be input into the following two steps
 2. water_balance_data.Rmd
     + this downloads all the data required to run the graphs script. I recommend running it over night, as the data can take quite some time to download.
