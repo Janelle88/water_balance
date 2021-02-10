@@ -12,9 +12,7 @@ library(tidyverse)
 library(beepr)
 library(lubridate)
 library(directlabels)
-library(data.table)
-library(ggbeeswarm)
-library(gghalves)
+
 
 
 # Quick note: this code runs off the most recent version of R

@@ -463,8 +463,8 @@ here::here(dir.create(paste(&quot;sites&quot;)))</code></pre>
                             site, 
                             &quot;raw_data&quot;,
                             sep = &quot;/&quot;)))</code></pre>
-<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, sep = &quot;/&quot;)):
-## &#39;sites\BLCA\raw_data&#39; already exists</code></pre>
+<pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, sep = &quot;/&quot;)): &#39;sites\BLCA\raw_data&#39;
+## already exists</code></pre>
 <pre><code>## [1] &quot;C:/Users/jnchr/Documents/R/Water Balance/FALSE&quot;</code></pre>
 <pre class="r"><code>here::here(dir.create(paste(&quot;sites&quot;,
                             site,
@@ -486,11 +486,9 @@ here::here(dir.create(paste(&quot;sites&quot;,
 
 }</code></pre>
 <pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
-## &#39;sites\BLCA\raw_data\lat_38.57882425_lon_-107.7255568\historical_daily&#39; already
-## exists</code></pre>
+## &#39;sites\BLCA\raw_data\lat_38.57882425_lon_-107.7255568\historical_daily&#39; already exists</code></pre>
 <pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
-## &#39;sites\BLCA\raw_data\lat_38.57882425_lon_-107.7255568\historical_monthly&#39; already
-## exists</code></pre>
+## &#39;sites\BLCA\raw_data\lat_38.57882425_lon_-107.7255568\historical_monthly&#39; already exists</code></pre>
 <pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
 ## &#39;sites\BLCA\raw_data\lat_38.57882425_lon_-107.7255568\future_daily&#39; already exists</code></pre>
 <pre><code>## Warning in dir.create(paste(&quot;sites&quot;, site, &quot;raw_data&quot;, paste(&quot;lat&quot;, lat, :
@@ -642,7 +640,7 @@ start = start_past
 
 end = end_past
 
-#initialize some variables to hold data 
+z #initialize some variables to hold data 
 
 holder &lt;- NULL 
 
