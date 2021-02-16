@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 ```{r, include=FALSE}
 options(tinytex.verbose = TRUE)
+
 ```
 
 ```{r}
@@ -18,13 +19,13 @@ options(tinytex.verbose = TRUE)
 # all of this should be changed before the code is run for a new site
 # ------------
 # 
-#  site = "Crystal_bench"
+# site = "Crystal_bench"
   
   #"quitobaquito" 
   
   #"little_saddle_mtn"
 
-#  lat = 44.9051022
+# lat = 44.9051022
 # #   
 # #   # quito: 31.942809
 # #   
@@ -1581,12 +1582,12 @@ print(jitter_wc)
 
 Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and water holding capacity of different soil types. Water balance represents the modification of regional weather and climate to represent the biophysical conditions at local scales.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation.
 
-```{r, echo=FALSE, out.width="60%", fig.align="center"}
+```{r mccabe, echo=FALSE, fig.align="center", out.width="60%"}
 
 knitr::include_graphics(here::here("figures","mccabe_and_markstrom.png"))
 
 ```
-```{r, results="hide"}
+```{r website, results="hide"}
 
 website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatologylab.org/gridmet.html)"), print("[Daymet](https://daymet.ornl.gov/)"))
 
@@ -1597,14 +1598,6 @@ This report is created from temperature and precipitation data that is input to 
 ## Selection of the Models
 
 The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the model selection was based off of the latitude and longitude for each park centroid, plotted on the scatterplot visualization of future projections from the [MACA website.](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot).
-```{r, echo=FALSE, out.width="80%", fig.align="center", eval=FALSE}
-
-x <- "DeltaTavg"
-y <- "DeltaPr"
-
-knitr::include_graphics(here::here("sites",
-                                   site, "figures", paste("lat_", lat, "_lon_", lon, sep = ""), paste(site, "Scatter BY SCENARIO-",x,"--",y,".png",sep="")))
-```
 
 
 ## Annual values through time
@@ -1646,7 +1639,7 @@ ggplot() +
 Deficit (D) and actual evapotranspiration (AET) represent unmet water needs of vegetation and vegetation water use.  They are good predictors of vegetation type, and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Stephenson) shows how AET v. D differs across bioregions in the U.S. 
 ```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Stephenson (1998)", fig.align="center"}
 
-knitr::include_graphics(here::here("figures", "aet_v_d.gif"))
+knitr::include_graphics(here::here("figures", "aet_v_d.png"))
 
 ```
 
@@ -1818,6 +1811,8 @@ plot_jitter("Deficit")
 ```{r}
 
 #save this rmd as a file based on the site name in the site folder
+
+# tinytex::pdflatex(paste("water_balance_graphs_for_", site, ".tex", sep=""))
 
 ```
 

@@ -1,12 +1,9 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2021.2.10)  11 FEB 2021 19:32
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2021.2.9)  11 FEB 2021 18:32
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**"C:/Users/jnchr/Documents/R/Water Balance/sites/BLCA/water_balance_graphs_for
-_BLCA.tex"
-
-(c:/Users/jnchr/Documents/R/Water Balance/sites/BLCA/water_balance_graphs_for_B
-LCA.tex
+**water_balance_graphs.tex
+(./water_balance_graphs.tex
 LaTeX2e <2020-10-01> patch level 4
 L3 programming layer <2021-02-06> (c:/Users/jnchr/AppData/Roaming/TinyTeX/texmf
 -dist/tex/latex/base/article.cls
@@ -157,6 +154,11 @@ Package: inputenc 2020/08/01 v1.3d Input encoding file
 ) (c:/Users/jnchr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/base/textcomp.st
 y
 Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
+)
+(c:/Users/jnchr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/upquote/upquote.st
+y
+Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verba
+tim
 )
 (c:/Users/jnchr/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/microtype/microtyp
 e.sty
@@ -425,8 +427,8 @@ d-pdftex.def
 File: l3backend-pdftex.def 2021-02-06 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count279
 \l__pdf_internal_box=\box49
-) (./water_balance_graphs_for_BLCA.aux)
-\openout1 = `water_balance_graphs_for_BLCA.aux'.
+) (./water_balance_graphs.aux)
+\openout1 = `water_balance_graphs.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 67.
 LaTeX Font Info:    ... okay on input line 67.
@@ -493,9 +495,9 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 67.
 LaTeX Info: Redefining \pageref on input line 67.
 LaTeX Info: Redefining \nameref on input line 67.
-(./water_balance_graphs_for_BLCA.out) (./water_balance_graphs_for_BLCA.out)
+(./water_balance_graphs.out) (./water_balance_graphs.out)
 \@outlinefile=\write3
-\openout3 = `water_balance_graphs_for_BLCA.out'.
+\openout3 = `water_balance_graphs.out'.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -589,19 +591,15 @@ e_and_markstrom.png  used on input line 83.
 {c:/Users/jnchr/AppData/Roaming/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdfte
 x.map} <c:/Users/jnchr/Documents/R/Water Balance/figures/mccabe_and_markstrom.p
 ng>]
+<water_balance_graphs_files/figure-latex/unnamed-chunk-18-1.pdf, id=24, 469.755
+pt x 325.215pt>
+File: water_balance_graphs_files/figure-latex/unnamed-chunk-18-1.pdf Graphic fi
+le (type pdf)
+<use water_balance_graphs_files/figure-latex/unnamed-chunk-18-1.pdf>
+Package pdftex.def Info: water_balance_graphs_files/figure-latex/unnamed-chunk-
+18-1.pdf  used on input line 138.
+(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-! Undefined control sequence.
- ->\errmessage  LaTeX Error: File `C:\Users 
-                                            \jnchr \DOCUME ~1\R \WATERB ~1\s...
-l.138 ...WATER_~1/figure-latex/unnamed-chunk-18-1}
-                                                   
-Here is how much of TeX's memory you used:
- 11827 strings out of 481250
- 180914 string characters out of 5913850
- 506902 words of memory out of 5000000
- 28508 multiletter control sequences out of 15000+600000
- 429756 words of font info for 71 fonts, out of 8000000 for 9000
- 14 hyphenation exceptions out of 8191
- 71i,6n,74p,588b,335s stack positions out of 5000i,500n,10000p,200000b,80000s
-
-!  ==> Fatal error occurred, no output PDF file produced!
+!pdfTeX error: pdflatex.exe (file c:/Users/jnchr/Documents/R/Water Balance/figu
+res/aet_v_d.png): libpng: internal error
+ ==> Fatal error occurred, no output PDF file produced!
