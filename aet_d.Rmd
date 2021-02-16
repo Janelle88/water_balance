@@ -1,6 +1,16 @@
+---
+title: "aet v d"
+author: "Janelle Christensen"
+date: "2/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 # 2/4/21
 # Janele Christensen
 # AET v. D climate future plots
+
 
 # ------------------------
 # attach packages
@@ -11,7 +21,11 @@ library(data.table)
 library(here)
 library(lubridate)
 library(beepr)
+library(httr)
+```
 
+
+```{r}
 # -----------------------
 # initialize variables
 # -----------------------
@@ -34,12 +48,18 @@ future_start = future_center - (future_timespan / 2)
 
 future_end = future_center + (future_timespan / 2)
 
+aet_d_past <-  !file.exists(here::here("sites", 
+                                  site, 
+                                  "raw_data", 
+                                  paste("lat_", lat, "_lon_", lon, sep = ""),
+                                  "historical_aet_d.csv"))
+
 #suggest at least 30 yr chunk of time for both future and past
+```
 
-# -----------------------
-# download data
-# -----------------------
+# Download Data
 
+```{r, eval = aet_d_past}
 # average of years in the past, average of years in the future
 
 # -----------------------
@@ -135,10 +155,16 @@ colnames(mydat3)[]<-c("date", "lat","lon", "deficit_monthly", "aet_monthly")
   
 beep(3)
 
+```
+
+
+```{r}
 
 # -----------------------
 # future data
 # -----------------------
+
+mydat7 <- NULL
 
 climmodel <- c("inmcm4","NorESM1-M","MRI-CGCM3","MIROC5","IPSL-CM5A-LR","HadGEM2-CC365","GFDL-ESM2G","CanESM2","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM")# climate model names
 for(m in climmodel){ #open climmodel
@@ -205,13 +231,15 @@ for(m in climmodel){ #open climmodel
         day <- 17
       }
       
-      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",rcp,"/",m,"/V_1_5_",yr,"_",m,"_",rcp, "_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+      data_url<- paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",rcp,"/",m,"/V_1_5_",yr,"_",m,"_",rcp, "_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="")
 
       
       holder <-data.frame(fread(data_url, 
                                 verbose=FALSE, 
                                 showProgress = FALSE,
       ))#temporary holder for subsets downloaded from cloud 
+      
+      colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
       
       mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
       
@@ -243,9 +271,9 @@ if(rcp == "rcp85"){
     
   } #close rcp
   
-  mydat5<-cbind(mydat3,mydat4) #join the data with metadata including date, lat, long
+  mydat5 <- cbind(mydat3,mydat4[,4:5]) #join the data with metadata including date, lat, long
   
-  colnames(mydat5)[]<-c("date", "lat","lon","deficit_monthly_45", "aet_monthly_45", "deficit_monthly_85", "aet_monthly_85") 
+  colnames(mydat5)[] <- c("date", "lat","lon","deficit_monthly_45", "aet_monthly_45", "deficit_monthly_85", "aet_monthly_85") 
   
   divide.by.10 <- function(x, na.rm = FALSE) {
     x/10
@@ -254,22 +282,24 @@ if(rcp == "rcp85"){
   mydat6 <- mydat5 %>% 
     mutate(lat = as.character(lat),
            lon = as.character(lon)) %>% 
-    mutate_if(is.numeric, divide.by.10)
-
+    mutate_if(is.numeric, divide.by.10) %>% 
+    mutate(model = m)
   
-  write_csv(mydat6, here::here("sites", 
+  mydat7 <- rbind(mydat7, mydat6)
+  
+}# end loop across different climate projections
+
+  write_csv(mydat7, here::here("sites", 
                                site, 
                                "raw_data", 
                                paste("lat",lat,"lon",lon, sep = "_"), 
                                "future_aet_d.csv")) #default is a space, sep = "" removes space
-  
-}# end loop across different climate projections
-
 beep(1)
 
 # here::here allows you to choose a folder in your working directory to save to
 # here::here("folder I want to save to (this has to be made in your working directory before you save it)", "subfolder", "subfolder ( subfolders can be as numerous you want them to be, always separated by a commma)", "last thing in the list is the name of the object I'm saving")
 
-#write.csv(mydat4,paste(site,lat,lon,".csv"))
+
+```
 
 
