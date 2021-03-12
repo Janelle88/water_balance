@@ -22,6 +22,9 @@ library(here)
 library(lubridate)
 library(beepr)
 library(httr)
+library(directlabels)
+library(ggrepel)
+library(janitor)
 ```
 
 
@@ -48,18 +51,23 @@ future_start = future_center - (future_timespan / 2)
 
 future_end = future_center + (future_timespan / 2)
 
-aet_d_past <-  !file.exists(here::here("sites", 
+aet_d_past_check <-  !file.exists(here::here("sites", 
                                   site, 
                                   "raw_data", 
                                   paste("lat_", lat, "_lon_", lon, sep = ""),
                                   "historical_aet_d.csv"))
+
+# Threshold percentages for defining Climate futures. Default low/high:  0.25, 0.75
+CFLow = 0.25     
+CFHigh = 0.75
+CFs = c("Warm Wet", "Hot Wet", "Central", "Warm Dry", "Hot Dry")
 
 #suggest at least 30 yr chunk of time for both future and past
 ```
 
 # Download Data
 
-```{r, eval = aet_d_past}
+```{r, eval = aet_d_past_check}
 # average of years in the past, average of years in the future
 
 # -----------------------
@@ -112,7 +120,17 @@ for(climvar in c("Deficit_monthly", "AET_monthly")){
     
     #single variable single year monthly time series with variable and year specified by user 
     
-      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/monthly/v2_",yr,"_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=1980-01-16T05%3A14%3A31.916Z&time_end=1980-12-16T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
+    leap <- lubridate::leap_year(yr) 
+#leap years act differently with this monthly future data
+#need to correct for that
+    
+    if(leap == TRUE){
+      day <- 16
+    } else {
+      day <- 17
+    }
+    
+    data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",vshort,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-16T05%3A14%3A31.916Z&time_end=",yr,"-12-",day,"T00%3A34%3A14.059Z&accept=csv_file",sep ="") 
     
     
     holder <-data.frame(fread(data_url, 
@@ -166,7 +184,7 @@ beep(3)
 
 mydat7 <- NULL
 
-climmodel <- c("inmcm4","NorESM1-M","MRI-CGCM3","MIROC5","IPSL-CM5A-LR","HadGEM2-CC365","GFDL-ESM2G","CanESM2","CSIRO-Mk3-6-0","CNRM-CM5","BNU-ESM")# climate model names
+climmodel <- c("inmcm4","NorESM1-M","MRI-CGCM3","MIROC5","IPSL-CM5A-LR","HadGEM2-CC365","GFDL-ESM2G","CanESM2","CSIRO-Mk3-6-0","CNRM-CM5","CCSM4", "BNU-ESM")# climate model names
 for(m in climmodel){ #open climmodel
   #initialize some variables to hold data 
   
@@ -301,5 +319,129 @@ beep(1)
 
 
 ```
+```{r}
 
 
+aet_d_past <- read_csv(here::here("sites",
+                               site,
+                               "raw_data",
+                               paste("lat",lat,"lon",lon, sep = "_"),
+                               "historical_aet_d.csv")) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "past",
+         rcp = "past",
+         model = "gridMET") %>% 
+  group_by(year) %>% 
+  summarize(deficit_past_total = unique(sum(deficit_monthly)),
+         aet_past_total = unique(sum(aet_monthly)),
+         time = unique(time),
+         rcp = unique(rcp),
+         model = unique(model)) %>% 
+  summarize(deficit_past = mean(deficit_past_total),
+            aet_past = mean(aet_past_total),
+            time = unique(time),
+            rcp = unique(rcp),
+            model = unique(model))
+
+
+RCPs <- as.character(c(45, 85))
+
+d_future <- read_csv(here::here("sites", 
+                               site, 
+                               "raw_data", 
+                               paste("lat",lat,"lon",lon, sep = "_"), 
+                               "future_aet_d.csv")) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "future") %>% 
+  select(!c(aet_monthly_45,aet_monthly_85)) %>% 
+  pivot_longer(c(deficit_monthly_45, deficit_monthly_85),
+               names_to = "rcp",
+               values_to = "deficit") %>% 
+  mutate(rcp = as.character(str_extract_all(rcp, RCPs))) %>% 
+  mutate(rcp = case_when(.$rcp == "45" ~ "RCP 4.5",
+                         TRUE ~ "RCP 8.5")) %>%
+  group_by(time, model, rcp, year) %>%
+  summarize(deficit_total = sum(deficit, na.rm = TRUE)) %>% 
+  summarize(avg_deficit = mean(deficit_total, na.rm = TRUE),
+            time = unique(time)) %>% 
+  ungroup(time, model, rcp)
+
+
+aet_future <- read_csv(here::here("sites", 
+                               site, 
+                               "raw_data", 
+                               paste("lat",lat,"lon",lon, sep = "_"), 
+                               "future_aet_d.csv")) %>% 
+  select(!c(deficit_monthly_45,deficit_monthly_85)) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "future") %>%  
+  pivot_longer(aet_monthly_45:aet_monthly_85,
+               names_to = "rcp",
+               values_to = "aet") %>% 
+  mutate(rcp = as.character(str_extract_all(rcp, RCPs))) %>% 
+  mutate(rcp = case_when(.$rcp == "45" ~ "RCP 4.5",
+                         TRUE ~ "RCP 8.5")) %>% 
+  group_by(time, model, rcp, year) %>% 
+  summarize(aet_total = sum(aet, na.rm = TRUE)) %>% 
+  summarize(avg_aet = mean(aet_total, na.rm = TRUE),
+            time = unique(time)) %>% 
+  ungroup(time, model, rcp)
+
+
+aet_d_future <- aet_future %>% 
+  inner_join(d_future)
+
+aet_d <- aet_d_future %>% 
+  full_join(aet_d_past) 
+
+aet_d_difference <- aet_d  %>% 
+  fill(aet_past, deficit_past, .direction = "up") %>% 
+  mutate(aet_diff = avg_aet - aet_past,
+         deficit_diff = avg_deficit - deficit_past) %>% 
+  mutate(aet_percent_change = (((avg_aet - aet_past) / aet_past) * 100),
+         deficit_percent_change = (((avg_deficit - deficit_past) / deficit_past) * 100)) %>% 
+  mutate(model_rcp = paste(model, rcp)) 
+
+#%>% # work to do something here with setting the quantiles like amber did in her data
+#  mutate(climate_future = case_when())
+
+
+ggplot(data = aet_d_difference, aes(x = deficit_diff, y = aet_diff)) +
+  geom_point() +
+  geom_label_repel(aes(label = model_rcp), max.overlaps = 24)
+
+ggplot(data = aet_d_difference, aes(x = deficit_percent_change, y = aet_percent_change)) +
+  geom_point() +
+  geom_text_repel(aes(label = model_rcp))
+
+
+```
+```{r}
+tvp <- c("Model,X_RCP45(in),Y_RCP45(F),X_RCP85(in),Y_RCP85(F)",
+"bcc-csm1-1, 1.377, 4.372, 2.613, 5.725",
+"bcc-csm1-1-m, 0.119, 3.444, 2.274, 5.280",
+"BNU-ESM, 2.560, 4.565, 3.521, 6.656",
+"CanESM2, 4.477, 5.512, 7.878, 7.251",
+"CCSM4, 1.162, 4.375, 1.524, 5.782",
+"CNRM-CM5, 2.028, 3.720, 3.962, 4.969",
+"CSIRO-Mk3-6-0, -0.109, 5.491, 0.831, 6.252",
+"GFDL-ESM2M, 1.856, 2.105, 0.670, 3.646",
+"GFDL-ESM2G, 1.711, 3.985, 2.898, 4.292",
+"HadGEM2-CC365, 2.071, 5.023, 0.876, 7.492",
+"HadGEM2-ES365, 1.712, 5.435, 0.971, 7.535",
+"inmcm4, 1.752, 2.257, 1.865, 4.373",
+"IPSL-CM5A-LR, -0.152, 4.670, -0.287, 6.414",
+"IPSL-CM5A-MR, 0.458, 5.401, 1.346, 7.286",
+"IPSL-CM5B-LR, 1.160, 3.361, 1.330, 4.718",
+"MIROC5, 3.345, 6.068, 5.369, 7.057",
+"MIROC-ESM, 4.665, 6.684, 3.982, 8.286",
+"MIROC-ESM-CHEM, 6.018, 6.599, 7.009, 8.647",
+"MRI-CGCM3, 1.794, 1.606, 3.449, 2.843",
+"NorESM1-M, 3.992, 4.821, 3.687, 6.276",
+"CMIP5ModelMean, 2.100, 4.474, 2.788, 6.039")
+
+tvp_df <- as.data.frame(data.table::fread(paste(tvp, collapse = "\n"))) %>% 
+  clean_names()
+```
+
+t_v_p 

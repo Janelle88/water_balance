@@ -1,16 +1,11 @@
 ---
-author: "Janelle Christensen, Mike Tercek, David Thoma, John Gross"
-date: "8/3/2020"
-output: "pdf_document"
+author: "Janelle Christensen, David Thoma, Mike Tercek, John Gross"
+date: '`r format(Sys.time(), "%d %B, %Y")`'
+output: "html_document"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
-```
-
-```{r, include=FALSE}
-options(tinytex.verbose = TRUE)
-
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
 ```
 
 ```{r}
@@ -19,30 +14,37 @@ options(tinytex.verbose = TRUE)
 # all of this should be changed before the code is run for a new site
 # ------------
 # 
-# site = "Crystal_bench"
+site = "Crystal_bench"
+  
+#"little_saddle_mtn"
+
+#"Crystal_bench"
   
   #"quitobaquito" 
   
-  #"little_saddle_mtn"
+  #
 
-# lat = 44.9051022
+lat = 44.9051022
+# # crystal: 44.9051022
 # #   
-# #   # quito: 31.942809
+# # quito: 31.942809
 # #   
-# #   #lsm: 44.702
+# # lsm: 44.702
 # # 
-#  lon = -110.2873649
+lon = -110.2873649
+
+## crystal: -110.2873649
 
 
-  #quito:-113.020708
+#quito:-113.020708
 
   #lsm: -110.018
 
-# model_bc = "inmcm4" # "best case"
+model_bc = "inmcm4" # "best case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-# model_bc_rcp = "rcp45"
+model_bc_rcp = "rcp45"
 
 # options: "rcp45", "rcp85" 
 
@@ -53,11 +55,11 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
 
-# model_wc = "HadGEM2-CC365" # "worst case"
+ model_wc = "HadGEM2-CC365" # "worst case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-# model_wc_rcp = "rcp85"
+ model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" 
 
@@ -67,14 +69,14 @@ model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
   paste("RCP 8.5")
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
-# past_data = "gridMET"
+ past_data = "gridMET"
 # 
 # # past_data options: "gridMET", "Daymet"
 # # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 # 
-# dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+ dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
 # 
-# wet_year = 2007 # particulary wet year for people to reference
+ wet_year = 2007 # particulary wet year for people to reference
 
 
 # -------------
@@ -101,7 +103,6 @@ library(data.table)
 library(ggbeeswarm)
 library(gghalves)
 library(directlabels)
-library(ggrepel)
 library(splines)
 library(magrittr)
 library(janitor)
@@ -110,6 +111,8 @@ library(cft)
 library(ggrepel)
 library(sp)
 library(sf)
+
+
 
 ```
 
@@ -1030,7 +1033,7 @@ max_y <- max_y_2*1.15
                                "Potential Evapotranspiration Seasonality",
                                model_bc,model_bc_rcp_name), 30),
                            .y == "deficit_daily" ~ 
-                             wrap_sentence(paste("Deficit Seasonality",
+                             <- wrap_sentence(paste("Deficit Seasonality",
                                    model_bc, model_bc_rcp_name), 30),
                            TRUE ~ 
                              wrap_sentence(paste(
@@ -1595,10 +1598,13 @@ website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatolog
 
 This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
-## Selection of the Models
+\newpage
+
+# Model Selection
 
 The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the model selection was based off of the latitude and longitude for each park centroid, plotted on the scatterplot visualization of future projections from the [MACA website.](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot).
 
+\nextpage
 
 ## Annual values through time
 
@@ -1634,17 +1640,32 @@ ggplot() +
 
 ```
 
-## Deficit v. Actual Evapotranspiration (AET)
+\newpage
+
+# Deficit v. Actual Evapotranspiration (AET)
 
 Deficit (D) and actual evapotranspiration (AET) represent unmet water needs of vegetation and vegetation water use.  They are good predictors of vegetation type, and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Stephenson) shows how AET v. D differs across bioregions in the U.S. 
-```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Stephenson (1998)", fig.align="center"}
 
-knitr::include_graphics(here::here("figures", "aet_v_d.png"))
+```{r}
+figure_lon_east = lon > -100
+
+figure_lon_west = lon <= -100
 
 ```
 
+```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Figure 2. Ecoregions in the Eastern United states based on AET and Deficit (CWD). (Tercek et al., 2021)", fig.align="center", eval=figure_lon_east}
 
-```{r, out.width="50%", fig.cap= paste("Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points encircle the climate space for ", model_bc, " ", model_bc_rcp, " and ", model_wc, " ", model_wc_rcp, ".", sep = ""), fig.show="hold"}
+knitr::include_graphics(here::here("figures", "eastern_CONUS.png"))
+
+```
+```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Ecoregions in the Western United states based on AET and Deficit (CWD). (Tercek et al., 2021)", fig.align="center", eval=figure_lon_west}
+
+knitr::include_graphics(here::here("figures", "western_CONUS.png"))
+```
+
+
+
+```{r, out.width = "50%", fig.cap= paste("Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points encircle the climate space for ", model_bc, " ", model_bc_rcp, " and ", model_wc, " ", model_wc_rcp, ".", sep = ""), fig.show="hold"}
 
 #----------
 # Deficit v. AET
@@ -1736,7 +1757,9 @@ ggplot(deficit_aet_wc) +
   
 
 ```
+\newpage
 
+# Water Balance Graphs
 
 ## Soil Water
 
@@ -1746,6 +1769,8 @@ plot_annual("Soil Water")
 plot_jitter("Soil Water")
 ```
 
+\newpage
+
 ## Runoff
 
 ```{r, out.width="50%"}
@@ -1753,6 +1778,8 @@ plot_decades_smooth("runoff_daily")
 plot_annual("Runoff")
 plot_jitter("Runoff")
 ```
+
+\newpage
 
 ## Rain
 
@@ -1762,6 +1789,8 @@ plot_annual("Rain")
 plot_jitter("Rain")
 ```
 
+\newpage
+
 ## Accumulated Snow Water Equivalent (SWE)
 
 ```{r, out.width="50%"}
@@ -1770,12 +1799,17 @@ plot_annual("Accumulated SWE")
 plot_jitter("Accumulated SWE")
 ```
 
+\newpage
+
 ## Potential Evapotranspiration (PET)
 
 ```{r, out.width="50%"}
 plot_decades_smooth("pet_daily")
 plot_annual("PET")
+plot_jitter("PET")
 ```
+
+\newpage
 
 ## Actual Evapotranspiration (AET)
 
@@ -1785,6 +1819,8 @@ plot_annual("AET")
 plot_jitter("AET")
 
 ```
+
+\newpage
 
 ## Deficit
 
@@ -1807,14 +1843,6 @@ plot_jitter("Deficit")
 
 ```
 
-
-```{r}
-
-#save this rmd as a file based on the site name in the site folder
-
-# tinytex::pdflatex(paste("water_balance_graphs_for_", site, ".tex", sep=""))
-
-```
 
 ## Works Cited
 

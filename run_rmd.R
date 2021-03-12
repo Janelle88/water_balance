@@ -3,11 +3,12 @@ library(knitr)
 library(markdown)
 library(rmarkdown)
 library(here)
+library(pagedown)
 
 # for each type of car in the data create a report
 # these reports are saved in output_dir with the name specified by output_file
 
-centroids <- read_csv(here::here("pisp.csv")) #NCPN_centroids
+centroids <- read_csv(here::here("NCPN_centroids1.csv")) #NCPN_centroids
 
 # for(row in 1:nrow(centroids)) {
 #   sites <- centroids[row, "Park"]
@@ -69,8 +70,14 @@ for(row in 1:nrow(centroids)) {
     wet_year <-  2016 # particularly wet year for people to reference
   
 rmarkdown::render(here::here("water_balance_graphs.Rmd"),  # file 2
-                  output_file =  paste("water_balance_graphs_for_", site, ".pdf", sep=""), 
+                  output_file =  paste("water_balance_graphs_for_", site, ".html", sep=""), 
                   output_dir = here::here("sites", site))
+
+chrome_print(here::here("sites",
+                        site,
+                        paste("water_balance_graphs_for_", site, ".html", sep="")),
+             timeout = 60)
 }
+
   
 
