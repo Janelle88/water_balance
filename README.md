@@ -18,6 +18,8 @@ The values that need to be defined are at the tope of each rmd file. They are:
 
 This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
+When opening and running the project for always make sure to open the .Rproj file, otherwise your code may tell you that it cannot find the file, causing the code to abort. 
+
 
 ## To update R:
 
@@ -46,6 +48,10 @@ R may tell you to open RGui
 [More information about RGui here](https://www.dummies.com/programming/r/how-to-navigate-rgui/)
 
 You can run this code on a newer version of R but still have access to your older version if needed. This can be done by going to tools -> global options and changing the version of R to run this code. [This website](https://support.rstudio.com/hc/en-us/articles/212364537-Multiple-Versions-of-R-in-RStudio-Server-Pro) gives a bit more information about doing this, and [this website](https://cran.r-project.org/bin/windows/base/old/) gives access to all the previous and most recent version of R.
+
+### How to have (and switch between) multiple versions of R on RStudio
+
+
 
 
 ### Run the scripts in the following order:
