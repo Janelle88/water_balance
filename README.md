@@ -51,7 +51,7 @@ You can run this code on a newer version of R but still have access to your olde
 
 ### How to have (and switch between) multiple versions of R on RStudio
 
-
+Oftentimes, people need to work in older versions of R for certain packages. Because this code runs on the most recent version of R, this can cause challenges. Fortunately, RStudio can support more than one version, allowing you to switch between them easily. [This website](http://derekogle.com/IFAR/supplements/installations/InstallRStudioWin.html) gives detail instructions on how to switch between Rstudo versions.
 
 
 ### Run the scripts in the following order:
