@@ -8,6 +8,7 @@ output: "html_document"
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
 ```
 
+
 ```{r}
 # ------------
 # set variables for the data and code
@@ -36,7 +37,7 @@ lon = -110.2873649
 ## crystal: -110.2873649
 
 
-#quito:-113.020708
+## quito:-113.020708
 
   #lsm: -110.018
 
@@ -1033,7 +1034,7 @@ max_y <- max_y_2*1.15
                                "Potential Evapotranspiration Seasonality",
                                model_bc,model_bc_rcp_name), 30),
                            .y == "deficit_daily" ~ 
-                             <- wrap_sentence(paste("Deficit Seasonality",
+                             wrap_sentence(paste("Deficit Seasonality",
                                    model_bc, model_bc_rcp_name), 30),
                            TRUE ~ 
                              wrap_sentence(paste(
