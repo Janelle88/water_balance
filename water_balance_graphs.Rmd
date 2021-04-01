@@ -5,7 +5,7 @@ output: "html_document"
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 
@@ -113,11 +113,9 @@ library(ggrepel)
 library(sp)
 library(sf)
 
-
-
 ```
 
-
+#### Location: (`r round(lat, 3)`, `r round(lon, 3)`)
 ```{r}
 
 # ---------
@@ -1584,7 +1582,8 @@ print(jitter_wc)
 
 ```
 
-Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and water holding capacity of different soil types. Water balance represents the modification of regional weather and climate to represent the biophysical conditions at local scales.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation.
+Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Water balance represents the modification of regional weather and climate due to site characteristics (slope, aspect, soil properties) to represent the biophysical conditions at local scales that plants and animals “feel”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
+understanding of natural resources response to climate change can be found [here](https://www.nps.gov/subjects/climatechange/waterbalance.htm).
 
 ```{r mccabe, echo=FALSE, fig.align="center", out.width="60%"}
 
@@ -1603,15 +1602,15 @@ This report is created from temperature and precipitation data that is input to 
 
 # Model Selection
 
-The models used in this analysis were chosen based upon which two climate futures best bracket the range of possibilities. For this region, the model selection was based off of the latitude and longitude for each park centroid, plotted on the scatterplot visualization of future projections from the [MACA website.](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot).
+The models used in this analysis were chosen based on two climate futures that best bracket the range of plausible future climate conditions. For this report, the model selection was based on the latitude and longitude above, plotted on the scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity.
 
 \nextpage
 
 ## Annual values through time
 
-The variables of runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) shows the max value for the year regardless of the month it occurs in. Accumulated growing degree days (AGDD) starts accumulating on October 1 of the previous year, and the max value is taken at its highest point. Soil water shows the mean value for the year.
+The variables of runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) is the max value for the year regardless of the month it occurs in. Soil water shows the mean annual water content in the soil profile.
 
-The reason for the different summary statistics is because hydrologist use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapostranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. For the variables that are accumulated, we take the max of the variable because it is already a summation of the total through the year. 
+The reason for the different summary statistics is because hydrologist use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapostranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow volume and reservoir storage needs.
 
 ```{r, fig.align="center", fig.cap= paste("Figure 1. Annual averages over time. The gray line represents historical data modeled from", past_data, "climate data, the turquoise line represents", model_bc, model_bc_rcp, "and the yellow line represents", model_wc, model_wc_rcp)}
 
