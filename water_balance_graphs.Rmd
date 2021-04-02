@@ -1,7 +1,8 @@
 ---
 author: "Janelle Christensen, David Thoma, Mike Tercek, John Gross"
 date: '`r format(Sys.time(), "%d %B, %Y")`'
-output: "html_document"
+output: html_document
+
 ---
 
 ```{r setup, include=FALSE}
@@ -1012,32 +1013,29 @@ max_y <- max_y_2*1.15
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
-                             wrap_sentence(paste("Soil Water Seasonality",
-                                   model_bc, model_bc_rcp_name), 30), #title based on variable
+                             paste("Soil Water Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
-                             wrap_sentence(paste("Runoff Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
+                             paste("Runoff Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
                            .y == "rain_daily" ~  
-                             wrap_sentence(paste("Rain Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
+                             paste("Rain Seasonality","\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
                            .y == "agdd_daily" ~ 
-                             wrap_sentence(paste("AGDD Seasonality",
-                                   model_bc,model_bc_rcp_name), 30),
-                           .y == "accumswe_daily"~ 
-                            wrap_sentence(paste(
-                              "Accumulated SWE Seasonality",
-                                   model_bc,model_bc_rcp_name), 30),
-                           .y == "pet_daily" ~ 
-                             wrap_sentence(paste(
-                               "Potential Evapotranspiration Seasonality",
-                               model_bc,model_bc_rcp_name), 30),
+                             paste("AGDD Seasonality","\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                           .y == "accumswe_daily"~ paste(
+                              "SWE Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                           .y == "pet_daily" ~ paste(
+                               "PET Seasonality", "\n",
+                               model_bc, " ",model_bc_rcp_name, sep = ""),
                            .y == "deficit_daily" ~ 
-                             wrap_sentence(paste("Deficit Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
-                           TRUE ~ 
-                             wrap_sentence(paste(
-                               "Actual Evapotranspiration Seasonality",
-                                   model_bc, model_bc_rcp_name), 30))) + 
+                             paste("Deficit Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                           TRUE ~ paste(
+                               "AET Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
     ylim(0, max_y) +
@@ -1102,32 +1100,32 @@ max_y <- max_y_2*1.15
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
-                             wrap_sentence(paste("Soil Water Seasonality",
-                                   model_wc, model_wc_rcp_name), 30), #title based on variable
+                             paste("Soil Water Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
-                             wrap_sentence(paste("Runoff Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Runoff Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            .y == "rain_daily" ~  
-                             wrap_sentence(paste("Rain Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Rain Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            .y == "agdd_daily" ~ 
-                             wrap_sentence(paste("AGDD Seasonality",
-                                   model_wc,model_wc_rcp_name), 30),
+                             paste("AGDD Seasonality", "\n",
+                                   model_wc,model_wc_rcp_name),
                            .y == "accumswe_daily"~ 
-                            wrap_sentence(paste(
-                              "Accumulated SWE Seasonality",
-                                   model_wc,model_wc_rcp_name), 30),
+                            paste(
+                              "SWE Seasonality", "\n",
+                                   model_wc,model_wc_rcp_name),
                            .y == "pet_daily" ~ 
-                             wrap_sentence(paste(
-                               "Potential Evapotranspiration Seasonality",
-                               model_wc,model_wc_rcp_name), 30),
+                             paste(
+                               "Potential Evapotranspiration Seasonality", "\n",
+                               model_wc,model_wc_rcp_name),
                            .y == "deficit_daily" ~ 
-                             wrap_sentence(paste("Deficit Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Deficit Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            TRUE ~ 
-                             wrap_sentence(paste(
-                               "Actual Evapotranspiration Seasonality",
-                                   model_wc, model_wc_rcp_name), 30))) +
+                             paste(
+                               "Actual Evapotranspiration Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(0, max_y)+
@@ -1204,32 +1202,32 @@ max_y <- max_y_2*1.15
          # purrr is much more useful than a for loop here
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
-                             wrap_sentence(paste("Soil Water Seasonality",
-                                   model_bc, model_bc_rcp_name), 30), #title based on variable
+                             paste("Soil Water Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
-                             wrap_sentence(paste("Runoff Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
+                             paste("Runoff Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
                            .y == "rain_daily" ~  
-                             wrap_sentence(paste("Rain Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
+                             paste("Rain Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
                            .y == "agdd_daily" ~ 
-                             wrap_sentence(paste("AGDD Seasonality",
-                                   model_bc,model_bc_rcp_name), 30),
+                             paste("AGDD Seasonality", "\n",
+                                   model_bc,model_bc_rcp_name),
                            .y == "accumswe_daily"~ 
-                            wrap_sentence(paste(
-                              "Accumulated SWE Seasonality",
-                                   model_bc,model_bc_rcp_name), 30),
+                            paste(
+                              "Accumulated SWE Seasonality", "\n",
+                                   model_bc,model_bc_rcp_name),
                            .y == "pet_daily" ~ 
-                             wrap_sentence(paste(
-                               "Potential Evapotranspiration Seasonality",
-                               model_bc,model_bc_rcp_name), 30),
+                             paste(
+                               "Potential Evapotranspiration Seasonality", "\n",
+                               model_bc,model_bc_rcp_name),
                            .y == "deficit_daily" ~ 
-                             wrap_sentence(paste("Deficit Seasonality",
-                                   model_bc, model_bc_rcp_name), 30),
+                             paste("Deficit Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""),
                            TRUE ~ 
-                             wrap_sentence(paste(
-                               "Actual Evapotranspiration Seasonality",
-                                   model_bc, model_bc_rcp_name), 30))) +
+                             paste(
+                               "Actual Evapotranspiration Seasonality", "\n",
+                                   model_bc, " ",model_bc_rcp_name, sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(NA, max_y) +
@@ -1267,32 +1265,32 @@ max_y <- max_y_2*1.15
          # the ifelse or case_when goes after the command you want to change
          #.y is useful because it prevents R from confusing it with something else
          title = case_when(.y ==  "soil_water_daily" ~ 
-                             wrap_sentence(paste("Soil Water Seasonality",
-                                   model_wc, model_wc_rcp_name), 30), #title based on variable
+                             paste("Soil Water Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
-                             wrap_sentence(paste("Runoff Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Runoff Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            .y == "rain_daily" ~  
-                             wrap_sentence(paste("Rain Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Rain Seasonality",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            .y == "agdd_daily" ~ 
-                             wrap_sentence(paste("AGDD Seasonality",
-                                   model_wc,model_wc_rcp_name), 30),
+                             paste("AGDD Seasonality", "\n",
+                                   model_wc,model_wc_rcp_name),
                            .y == "accumswe_daily"~ 
-                            wrap_sentence(paste(
-                              "Accumulated SWE Seasonality",
-                                   model_wc,model_wc_rcp_name), 30),
+                            paste(
+                              "Accumulated SWE Seasonality", "\n",
+                                   model_wc,model_wc_rcp_name),
                            .y == "pet_daily" ~ 
-                             wrap_sentence(paste(
-                               "Potential Evapotranspiration Seasonality",
-                               model_wc,model_wc_rcp_name), 30),
+                             paste(
+                               "Potential Evapotranspiration Seasonality", "\n",
+                               model_wc,model_wc_rcp_name),
                            .y == "deficit_daily" ~ 
-                             wrap_sentence(paste("Deficit Seasonality",
-                                   model_wc, model_wc_rcp_name), 30),
+                             paste("Deficit Seasonality", "\n",
+                                   model_wc, " ",model_wc_rcp_name, sep = ""),
                            TRUE ~ 
-                             wrap_sentence(paste(
+                             paste(
                                "Actual Evapotranspiration Seasonality",
-                                   model_wc, model_wc_rcp_name), 30))) +
+                                   model_wc, " ",model_wc_rcp_name, sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", #turquoise
                                   "#EBC944", #green
@@ -1385,7 +1383,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = wrap_sentence(paste("Annual", .y, model_bc, model_bc_rcp_name),30),
+  labs(title = paste("Annual", .y, "\n", model_bc, " ",model_bc_rcp_name, sep = ""),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
@@ -1436,7 +1434,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = wrap_sentence(paste("Annual",.y, model_wc, model_wc_rcp_name), 30),
+  labs(title = paste("Annual ", .y, "\n", model_wc, " ", model_wc_rcp_name, sep = ""),
        y = ifelse(.y == "ADGG", "Growing Degree Days (C)",
                     "Water (mm)")) +
     geom_text(data = point_low,
@@ -1513,7 +1511,7 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "DA621E")) +
   labs(y = "Water(mm)",
-       title = wrap_sentence(paste(.y, model_bc, model_bc_rcp_name), 30)) +
+       title = paste("Annual ", .y, "\n", model_bc, " ", model_bc_rcp_name, sep = "")) +
   guides(color = guide_legend(override.aes = list(size=5, #changes size of legend dots
                                                   alpha = 0.5)))+
   theme(legend.title = element_blank()) +
@@ -1552,7 +1550,7 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
   scale_fill_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                      values = c("#A3B86C", "#EBC944", "#1496BB")) +
   labs(y = "Water(mm)",
-       title = wrap_sentence(paste(.y, model_wc, model_wc_rcp_name), 30)) +
+       title = paste("Annual ",.y, "\n", model_wc, " ", model_wc_rcp_name, sep = "")) +
   guides(color = guide_legend(override.aes = list(size=5,
                                                   alpha = 0.5)))+
   theme(legend.title = element_blank()) +
@@ -1602,7 +1600,118 @@ This report is created from temperature and precipitation data that is input to 
 
 # Model Selection
 
-The models used in this analysis were chosen based on two climate futures that best bracket the range of plausible future climate conditions. For this report, the model selection was based on the latitude and longitude above, plotted on the scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity.
+The models used in this analysis were chosen based on two climate futures that best bracket the range of plausible future climate conditions.  There are two methods by which models can be selected: the traditional temperature v. precipitation scatterplot, or a scatterplot using actual evapotranspiration and deficit.
+
+For this report, the preferred method is using the data from [Mike Tercek's thredds server](http://www.yellowstone.solutions/thredds/catalog.html). This data can be downloaded to select models based on actual evapotranspiration and deficit. The models selected are typically chosen from the upper left hand corner and the upper right hand corner. The graph below displays a scatterplot of these models. In order for the graph to display, the `aet_d.Rmd` code must have been run and the models should have been selected for this report *prior* to running this final report.
+
+```{r}
+aet_d_true <- file.exists(here::here("sites",
+                          site,
+                          "raw_data",
+                          paste("lat",lat,"lon",lon, sep = "_"),
+                          "future_aet_d.csv"))
+```
+
+
+```{r, eval = aet_d_true}
+
+aet_d_past <- read_csv(here::here("sites",
+                               site,
+                               "raw_data",
+                               paste("lat",lat,"lon",lon, sep = "_"),
+                               "historical_aet_d.csv")) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "past",
+         rcp = "past",
+         model = "gridMET") %>% 
+  group_by(year) %>% 
+  summarize(deficit_past_total = unique(sum(deficit_monthly)),
+         aet_past_total = unique(sum(aet_monthly)),
+         time = unique(time),
+         rcp = unique(rcp),
+         model = unique(model)) %>% 
+  summarize(deficit_past = mean(deficit_past_total),
+            aet_past = mean(aet_past_total),
+            time = unique(time),
+            rcp = unique(rcp),
+            model = unique(model))
+
+
+RCPs <- as.character(c(45, 85))
+
+d_future <- read_csv(here::here("sites", 
+                               site, 
+                               "raw_data", 
+                               paste("lat",lat,"lon",lon, sep = "_"), 
+                               "future_aet_d.csv")) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "future") %>% 
+  select(!c(aet_monthly_45,aet_monthly_85)) %>% 
+  pivot_longer(c(deficit_monthly_45, deficit_monthly_85),
+               names_to = "rcp",
+               values_to = "deficit") %>% 
+  mutate(rcp = as.character(str_extract_all(rcp, RCPs))) %>% 
+  mutate(rcp = case_when(.$rcp == "45" ~ "RCP 4.5",
+                         TRUE ~ "RCP 8.5")) %>%
+  group_by(time, model, rcp, year) %>%
+  summarize(deficit_total = sum(deficit, na.rm = TRUE)) %>% 
+  summarize(avg_deficit = mean(deficit_total, na.rm = TRUE),
+            time = unique(time)) %>% 
+  ungroup(time, model, rcp)
+
+
+aet_future <- read_csv(here::here("sites", 
+                               site, 
+                               "raw_data", 
+                               paste("lat",lat,"lon",lon, sep = "_"), 
+                               "future_aet_d.csv")) %>% 
+  select(!c(deficit_monthly_45,deficit_monthly_85)) %>% 
+  mutate(year = year(date)) %>% 
+  mutate(time = "future") %>%  
+  pivot_longer(aet_monthly_45:aet_monthly_85,
+               names_to = "rcp",
+               values_to = "aet") %>% 
+  mutate(rcp = as.character(str_extract_all(rcp, RCPs))) %>% 
+  mutate(rcp = case_when(.$rcp == "45" ~ "RCP 4.5",
+                         TRUE ~ "RCP 8.5")) %>% 
+  group_by(time, model, rcp, year) %>% 
+  summarize(aet_total = sum(aet, na.rm = TRUE)) %>% 
+  summarize(avg_aet = mean(aet_total, na.rm = TRUE),
+            time = unique(time)) %>% 
+  ungroup(time, model, rcp)
+
+
+aet_d_future <- aet_future %>% 
+  inner_join(d_future)
+
+aet_d <- aet_d_future %>% 
+  full_join(aet_d_past) 
+
+aet_d_difference <- aet_d  %>% 
+  fill(aet_past, deficit_past, .direction = "up") %>% 
+  mutate(aet_diff = avg_aet - aet_past,
+         deficit_diff = avg_deficit - deficit_past) %>% 
+  mutate(aet_percent_change = (((avg_aet - aet_past) / aet_past) * 100),
+         deficit_percent_change = (((avg_deficit - deficit_past) / deficit_past) * 100)) %>% 
+  mutate(model_rcp = paste(model, rcp)) 
+
+#%>% # work to do something here with setting the quantiles like amber did in her data
+#  mutate(climate_future = case_when())
+
+
+ggplot(data = aet_d_difference, aes(x = deficit_diff, y = aet_diff)) +
+  geom_point() +
+  geom_label_repel(aes(label = model_rcp), max.overlaps = 24)
+
+ggplot(data = aet_d_difference, aes(x = deficit_percent_change, y = aet_percent_change)) +
+  geom_point() +
+  geom_text_repel(aes(label = model_rcp))
+
+```
+
+Alternativey, models can be chosen based on the latitude and longitude of the site, plotted on the scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity. 
+
+To create the graph, select "Mid 21st Century (2040-2069)" in the "Choose a Future Time Period:" box. The x-axis variable is "mean-temperature" and the season is "Jan-Dec." The y-axis is "Precipitation - Absolute Change" and the season is "Jan-Dec." Finally, enter the latitude `r lat` into BOTH latitude boxes and the longitude `r lon` into BOTH longitude boxes.
 
 \nextpage
 
@@ -1642,9 +1751,9 @@ ggplot() +
 
 \newpage
 
-# Deficit v. Actual Evapotranspiration (AET)
+# Deficit v. Actual Evapotranspiration
 
-Deficit (D) and actual evapotranspiration (AET) represent unmet water needs of vegetation and vegetation water use.  They are good predictors of vegetation type, and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and deficit change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Stephenson) shows how AET v. D differs across bioregions in the U.S. 
+Actual evapotranspiration (AET) is an estimate of soil water used by plants and deficit (D) is an estimate of unmet water need.  That is, it represents the amount of water vegetation would use if the water was available and hence is an estimate of vegetation drought stress.  Collectively, AET and D have been shown to be good predictors of vegetation type and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and D change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Tercek et al., 2021) shows how AET v. D, calculated using the water balance model used for this report, differs across bioregions in the U.S.
 
 ```{r}
 figure_lon_east = lon > -100
@@ -1653,7 +1762,7 @@ figure_lon_west = lon <= -100
 
 ```
 
-```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Figure 2. Ecoregions in the Eastern United states based on AET and Deficit (CWD). (Tercek et al., 2021)", fig.align="center", eval=figure_lon_east}
+```{r, echo=FALSE, out.width="70%", fig.cap="AET and Deficit climate space of vegetation ecoregions in the Western United states from  (Tercek et al., 2021).", fig.align="center", eval=figure_lon_east}
 
 knitr::include_graphics(here::here("figures", "eastern_CONUS.png"))
 
@@ -1665,7 +1774,7 @@ knitr::include_graphics(here::here("figures", "western_CONUS.png"))
 
 
 
-```{r, out.width = "50%", fig.cap= paste("Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points encircle the climate space for ", model_bc, " ", model_bc_rcp, " and ", model_wc, " ", model_wc_rcp, ".", sep = ""), fig.show="hold"}
+```{r, fig.cap= "Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points deliniate shifts in climate space over time.", out.width = "50%", fig.show='hold'}
 
 #----------
 # Deficit v. AET
@@ -1712,7 +1821,7 @@ ggplot(deficit_aet_bc) +
   geom_encircle(aes(x = deficit, y = aet, color = decades),
                 show.legend = FALSE,
                 size = 2) +
-  labs(title = wrap_sentence(paste("Deficit v. AET", model_bc, model_bc_rcp_name), 30),
+  labs(title = paste("Deficit v. AET", "\n", model_bc, " ", model_bc_rcp_name, sep = ""),
        x = "Deficit",
        y = "AET") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
@@ -1728,9 +1837,12 @@ ggplot(deficit_aet_bc) +
 #                     paste("lat",lat,"lon",lon, sep = "_"),
 #                     paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
 
+
+
 # ------------
 # D v. AET worst case
 # ------------
+
 
 ggplot(deficit_aet_wc) +
   geom_point(aes(x = deficit, y = aet, color = decades),
@@ -1739,7 +1851,7 @@ ggplot(deficit_aet_wc) +
   geom_encircle(aes(x = deficit, y = aet, color = decades),
                 show.legend = FALSE,
                 size = 2) +
-  labs(title = wrap_sentence(paste("Deficit v. AET", model_wc, model_wc_rcp_name), 30),
+  labs(title = paste("Deficit v. AET", "\n", model_wc, " ", model_wc_rcp_name, sep=""),
        x = "Deficit",
        y = "AET") +
   scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
@@ -1759,13 +1871,26 @@ ggplot(deficit_aet_wc) +
 ```
 \newpage
 
-# Water Balance Graphs
+# Water Balance Projections
 
 ## Soil Water
 
 ```{r, out.width="50%"}
 plot_decades_smooth("soil_water_daily")
+```
+<br>
+<br>
+
+
+
+```{r, out.width="50%"}
 plot_annual("Soil Water")
+```
+<br>
+<br>
+
+
+```{r, out.width="50%"}
 plot_jitter("Soil Water")
 ```
 
@@ -1775,7 +1900,17 @@ plot_jitter("Soil Water")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("runoff_daily")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_annual("Runoff")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("Runoff")
 ```
 
@@ -1785,7 +1920,17 @@ plot_jitter("Runoff")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("rain_daily")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_annual("Rain")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("Rain")
 ```
 
@@ -1795,7 +1940,17 @@ plot_jitter("Rain")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("accumswe_daily")
+```
+
+
+```{r, out.width="50%"}
 plot_annual("Accumulated SWE")
+```
+
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("Accumulated SWE")
 ```
 
@@ -1805,7 +1960,17 @@ plot_jitter("Accumulated SWE")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("pet_daily")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_annual("PET")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("PET")
 ```
 
@@ -1815,7 +1980,17 @@ plot_jitter("PET")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("aet_daily")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_annual("AET")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("AET")
 
 ```
@@ -1826,7 +2001,17 @@ plot_jitter("AET")
 
 ```{r, out.width="50%"}
 plot_decades_smooth("deficit_daily")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_annual("Deficit")
+```
+<br>
+<br>
+
+```{r, out.width="50%"}
 plot_jitter("Deficit")
 ```
 
@@ -1844,6 +2029,10 @@ plot_jitter("Deficit")
 ```
 
 
+
+
 ## Works Cited
 
 Stephenson, N. (1998). Actual evapotranspiration and deficit: biologically meaningful correlates of vegetation distribution across spatial scales. Journal of biogeography, 25(5), 855-870.
+
+Tercek, M., Thoma, D., Sherrill, K., Kagone, S., Senay, G., Gross, J. 2021 Historical changes in plant water use and need in the continental United States.  In review.
