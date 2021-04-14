@@ -1,7 +1,7 @@
 ---
 author: "Janelle Christensen, David Thoma, Mike Tercek, John Gross"
 date: '`r format(Sys.time(), "%d %B, %Y")`'
-output: html_document
+output: "html_document"
 
 ---
 
@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # all of this should be changed before the code is run for a new site
 # ------------
 # 
-site = "Crystal_bench"
+ site = "Crystal_bench"
   
 #"little_saddle_mtn"
 
@@ -26,14 +26,14 @@ site = "Crystal_bench"
   
   #
 
-lat = 44.9051022
+ lat = 44.9051022
 # # crystal: 44.9051022
 # #   
 # # quito: 31.942809
 # #   
 # # lsm: 44.702
 # # 
-lon = -110.2873649
+ lon = -110.2873649
 
 ## crystal: -110.2873649
 
@@ -42,7 +42,7 @@ lon = -110.2873649
 
   #lsm: -110.018
 
-model_bc = "inmcm4" # "best case"
+ model_bc = "inmcm4" # "best case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
@@ -57,7 +57,7 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
 
- model_wc = "HadGEM2-CC365" # "worst case"
+model_wc = "HadGEM2-CC365" # "worst case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
@@ -1580,7 +1580,7 @@ print(jitter_wc)
 
 ```
 
-Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Water balance represents the modification of regional weather and climate due to site characteristics (slope, aspect, soil properties) to represent the biophysical conditions at local scales that plants and animals “feel”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
+Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Water balance represents the modification of regional weather and climate due to site characteristics (slope, aspect, soil properties) to represent the biophysical conditions at local scales that plants and animals “experience”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
 understanding of natural resources response to climate change can be found [here](https://www.nps.gov/subjects/climatechange/waterbalance.htm).
 
 ```{r mccabe, echo=FALSE, fig.align="center", out.width="60%"}
@@ -1594,15 +1594,17 @@ website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatolog
 
 ```
 
-This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, used in this report are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
 \newpage
 
-# Model Selection
+# Future Model Selection
 
 The models used in this analysis were chosen based on two climate futures that best bracket the range of plausible future climate conditions.  There are two methods by which models can be selected: the traditional temperature v. precipitation scatterplot, or a scatterplot using actual evapotranspiration and deficit.
 
-For this report, the preferred method is using the data from [Mike Tercek's thredds server](http://www.yellowstone.solutions/thredds/catalog.html). This data can be downloaded to select models based on actual evapotranspiration and deficit. The models selected are typically chosen from the upper left hand corner and the upper right hand corner. The graph below displays a scatterplot of these models. In order for the graph to display, the `aet_d.Rmd` code must have been run and the models should have been selected for this report *prior* to running this final report.
+#### Acutal Evapotranspiration v. Deficit
+
+The preferred method is using the data from [Mike Tercek's thredds server](http://www.yellowstone.solutions/thredds/catalog.html). Data can be downloaded to select models based on a range of actual evapotranspiration and deficit conditions. The models selected are typically chosen from the upper left hand corner and the upper right hand corner of the scatterplot. The graph below displays a scatterplot of these models. In order for the graph to display, the `aet_d.Rmd` code must have been run and the models should have been selected for this report *prior* to running this final report.
 
 ```{r}
 aet_d_true <- file.exists(here::here("sites",
@@ -1610,6 +1612,12 @@ aet_d_true <- file.exists(here::here("sites",
                           "raw_data",
                           paste("lat",lat,"lon",lon, sep = "_"),
                           "future_aet_d.csv"))
+temp_precip_alt <- !file.exists(here::here("sites",
+                          site,
+                          "raw_data",
+                          paste("lat",lat,"lon",lon, sep = "_"),
+                          "future_aet_d.csv"))
+
 ```
 
 
@@ -1703,23 +1711,92 @@ ggplot(data = aet_d_difference, aes(x = deficit_diff, y = aet_diff)) +
   geom_point() +
   geom_label_repel(aes(label = model_rcp), max.overlaps = 24)
 
+
 ggplot(data = aet_d_difference, aes(x = deficit_percent_change, y = aet_percent_change)) +
   geom_point() +
   geom_text_repel(aes(label = model_rcp))
 
 ```
 
-Alternativey, models can be chosen based on the latitude and longitude of the site, plotted on the scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models were selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity. 
+```{r, eval = temp_precip_alt}
 
-To create the graph, select "Mid 21st Century (2040-2069)" in the "Choose a Future Time Period:" box. The x-axis variable is "mean-temperature" and the season is "Jan-Dec." The y-axis is "Precipitation - Absolute Change" and the season is "Jan-Dec." Finally, enter the latitude `r lat` into BOTH latitude boxes and the longitude `r lon` into BOTH longitude boxes.
+FM <- read_csv(here::here("sites",
+                          site,
+                          "raw_data",
+                          paste("lat",lat,"lon",lon, sep = "_"),
+                          paste(site, "_t_v_p.csv", sep = "")), col_names = TRUE) %>% 
+  clean_names() %>% 
+  rename(t_rcp45_f = x_rcp45_u_fffd_f, t_rcp85_f = x_rcp85_u_fffd_f, p_rcp45_in = y_rcp45_in, p_rcp85_in = y_rcp85_in) 
 
-\nextpage
+temp <- FM %>% 
+  select(model, t_rcp45_f,t_rcp85_f) %>%
+  pivot_longer(col = c(t_rcp45_f,t_rcp85_f),
+               names_to = "rcp",
+               values_to = "temp") %>% 
+  mutate(model = case_when(rcp == "t_rcp45_f" ~ paste(model, "RCP 4.5"),
+                           TRUE ~ paste(model, "RCP 8.5"))) %>% 
+  select(model, temp)
 
-## Annual values through time
+precip <- FM %>% 
+  select(model, p_rcp45_in,p_rcp85_in) %>% 
+  pivot_longer(col = c(p_rcp45_in, p_rcp85_in),
+               names_to = "rcp",
+               values_to = "precip") %>% 
+  mutate(model = case_when(rcp == "p_rcp45_in" ~ paste(model, "RCP 4.5"),
+                           TRUE ~ paste(model, "RCP 8.5"))) %>% 
+  select(model, precip)
+
+t_v_p <- temp %>% 
+  full_join(precip)
+
+
+
+
+ggplot(t_v_p, aes(x = temp, y = precip)) +
+  geom_point(size=4,
+             colour="black") +
+  geom_text_repel(aes(label = model),
+                  box.padding = 0.5,
+                  point.padding = 1.5) +
+  theme(axis.text=element_text(size=18),
+        axis.title.x=element_text(size=18,vjust=-0.2),
+        axis.title.y=element_text(size=18,vjust=0.2),
+        plot.title=element_text(size=20,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20), legend.title=element_text(size=20)) +
+  ###
+  labs(title ="Changes in climate means centered on 2040 relative to historical period (1950-2000) by GCM", 
+       x = "Change in Temperature (F)",
+       y = "Change in Precipitation (in)") 
+  
+
+ggsave(here::here("sites",
+                  site, 
+                  "figures",
+                  paste("lat_", lat, "_lon_", lon, sep = ""), 
+                  paste(site, "Scatter BY SCENARIO.png",sep="")),
+       width = 15, height = 9)
+
+```
+
+
+#### Temperature v. Precipitation
+
+Alternatively, models can be chosen based on the scatter in projected temperature and precipitation in the future. The latitude and longitude of the site is used to buid a scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models from the scatterplot are selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity. 
+
+See Appendix for information on how to manually recreate the Temperature v. Precipitation graph.
+
+```{r}
+
+```
+
+
+\newpage
+
+## Change in annual values through time
 
 The variables of runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) is the max value for the year regardless of the month it occurs in. Soil water shows the mean annual water content in the soil profile.
 
-The reason for the different summary statistics is because hydrologist use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapostranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow volume and reservoir storage needs.
+The reason for the different summary statistics is because scientists use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapotranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity, so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow volume and reservoir storage needs.
 
 ```{r, fig.align="center", fig.cap= paste("Figure 1. Annual averages over time. The gray line represents historical data modeled from", past_data, "climate data, the turquoise line represents", model_bc, model_bc_rcp, "and the yellow line represents", model_wc, model_wc_rcp)}
 
@@ -1774,7 +1851,7 @@ knitr::include_graphics(here::here("figures", "western_CONUS.png"))
 
 
 
-```{r, fig.cap= "Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points deliniate shifts in climate space over time.", out.width = "50%", fig.show='hold'}
+```{r, fig.cap= "Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points delineate shifts in climate space over time.", out.width = "50%", fig.show='hold'}
 
 #----------
 # Deficit v. AET
@@ -2030,7 +2107,14 @@ plot_jitter("Deficit")
 
 
 
+\newpage
 
+## Appendix
+
+To create the temperature v. precipitation scatterplot, go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), select "Mid 21st Century (2040-2069)" in the "Choose a Future Time Period:" box. The x-axis variable is "mean-temperature" and the season is "Jan-Dec." The y-axis is "Precipitation - Absolute Change" and the season is "Jan-Dec." Finally, enter the latitude `r lat` into BOTH latitude boxes and the longitude `r lon` into BOTH longitude boxes.
+
+<br>
+<br>
 ## Works Cited
 
 Stephenson, N. (1998). Actual evapotranspiration and deficit: biologically meaningful correlates of vegetation distribution across spatial scales. Journal of biogeography, 25(5), 855-870.

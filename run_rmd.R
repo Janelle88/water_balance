@@ -20,7 +20,7 @@ centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids
 #   model_wc_rcps <- centroids[row, "model_wc_rcp"]
 #   
 #   
-#   site <- pull(sites, Park)
+#  site <- pull(sites, Park)
 #   lat <- pull(lats, Lat)
 #   lon <- pull(lons, Long)
 #   model_bc <- pull(model_bcs, model_bc)
@@ -75,9 +75,7 @@ rmarkdown::render(here::here("water_balance_graphs.Rmd"),  # file 2
 
 chrome_print(here::here("sites",
                         site,
-                        paste("water_balance_graphs_for_", site, ".html", sep="")),
-             timeout = 60)
-}
+                        paste("water_balance_graphs_for_", site, ".html", sep="")), format = "pdf")
 
-  
+}
 
