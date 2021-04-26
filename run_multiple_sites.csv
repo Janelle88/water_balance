@@ -1,1 +1,5 @@
 Park,Lat,Long,model_bc,model_bc_rcp,model_wc,model_wc_rcp,wet_year,dry_year
+Buffalo Ck high,45.023145,-110.2968457,MRI-CGCM3,rcp85,HadGEM2-CC365,rcp85,1997,1988
+Blacktail Ponds,44.96,-111.6,MRI-CGCM3,rcp85,HadGEM2-CC365,rcp85,2011,2007
+Swan Creek 1,45.343107,-111.049458,MRI-CGCM3,rcp45,HadGEM2-CC365,rcp85,1997,1988
+Storm Castle 4,45.444013,-111.106537,MRI-CGCM3,rcp45,HadGEM2-CC365,rcp85,1997,1988

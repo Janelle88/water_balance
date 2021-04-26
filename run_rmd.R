@@ -8,7 +8,7 @@ library(pagedown)
 # for each type of car in the data create a report
 # these reports are saved in output_dir with the name specified by output_file
 
-centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids
+centroids <- read_csv(here::here("run_multiple_sites.csv")) #NCPN_centroids
 
 # for(row in 1:nrow(centroids)) {
 #   sites <- centroids[row, "Park"]
@@ -18,8 +18,8 @@ centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids
 #   model_bc_rcps <- centroids[row, "model_bc_rcp"]
 #   model_wcs <- centroids[row, "model_wc"]
 #   model_wc_rcps <- centroids[row, "model_wc_rcp"]
-#   
-#   
+# 
+# 
 #  site <- pull(sites, Park)
 #   lat <- pull(lats, Lat)
 #   lon <- pull(lons, Long)
@@ -28,34 +28,34 @@ centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids
 #   model_wc <- pull(model_wcs, model_wc)
 #   model_wc_rcp <- pull(model_wc_rcps, model_wc_rcp)
 #   past_data <-  "gridMET"
-#   
+# 
 #   # past_data options: "gridMET", "Daymet"
 #   # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
-#   
-#   dry_year <-  2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
-#   
-#   wet_year <-  2016 # particularly wet year for people to reference
-#   
+# 
+# 
 #   if(file.exists(here::here(site, paste("water_balance_data_for_", site, ".html", sep="")))){
 #     next
 #   }
-#   
+# 
 #   rmarkdown::render(here::here("water_balance_data.Rmd"),  # file 2
-#                     output_file =  paste("water_balance_data_for_", site, ".html", sep=""), 
+#                     output_file =  paste("water_balance_data_for_", site, ".html", sep=""),
 #                     output_dir = here::here("sites", site))
-#   
+
 # } #close data download loop
 
 for(row in 1:nrow(centroids)) {
   sites <- centroids[row, "Park"]
+  
   lats <- centroids[row, "Lat"]
   lons <- centroids[row, "Long"]
   model_bcs <- centroids[row, "model_bc"]
   model_bc_rcps <- centroids[row, "model_bc_rcp"]
   model_wcs <- centroids[row, "model_wc"]
   model_wc_rcps <- centroids[row, "model_wc_rcp"]
-  
-  
+  dry_years <- centroids[row, "dry_year"]
+  wet_years <- centroids[row, "wet_year"]
+
+
   site <- pull(sites, Park)
   lat <- pull(lats, Lat)
   lon <- pull(lons, Long)
@@ -64,13 +64,15 @@ for(row in 1:nrow(centroids)) {
   model_wc <- pull(model_wcs, model_wc)
   model_wc_rcp <- pull(model_wc_rcps, model_wc_rcp)
   past_data <-  "gridMET"
-  
-    dry_year <-  2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+  dry_year <- pull(dry_years, dry_year)
+  wet_year <- pull(wet_years, wet_year)
 
-    wet_year <-  2016 # particularly wet year for people to reference
-  
+  #  dry_year <-  2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+
+ #   wet_year <-  2016 # particularly wet year for people to reference
+
 rmarkdown::render(here::here("water_balance_graphs.Rmd"),  # file 2
-                  output_file =  paste("water_balance_graphs_for_", site, ".html", sep=""), 
+                  output_file =  paste("water_balance_graphs_for_", site, ".html", sep=""),
                   output_dir = here::here("sites", site))
 
 chrome_print(here::here("sites",
