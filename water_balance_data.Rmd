@@ -296,7 +296,8 @@ if(past_data == "gridMET"){
            lon = as.character(lon)) %>% 
     mutate_if(is.numeric, divide.by.10)
   
-  write_csv(mydat4, here::here(site,
+  write_csv(mydat4, here::here("sites",
+                               site,
                              "raw_data",
                              paste("lat",lat,"lon",lon, sep = "_"),
                              "historical_daily",
@@ -457,7 +458,8 @@ if(past_data == "gridMET"){
            lon = as.character(lon)) %>% 
     mutate_if(is.numeric, divide.by.10)
   
-  write_csv(mydat4, here::here(site,
+  write_csv(mydat4, here::here("sites",
+                               site,
                                "raw_data",
                                paste("lat",lat,"lon",lon, sep = "_"),
                                "historical_monthly",
