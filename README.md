@@ -1,4 +1,4 @@
-# water_balance
+# Water Balance Projections
 
 This project is meant to download information from the [thredds server](http://www.yellowstone.solutions/thredds/catalog.html) for water balance projections  using a few specified values.
 The values that need to be defined are at the tope of each rmd file. They are:
@@ -63,5 +63,5 @@ Oftentimes, people need to work in older versions of R for certain packages. Bec
 3. water_balance_graphs.Rmd
     + this is the final report, which displays the data in graphical form
     
-#### run_rmd
-If you have a csv that has column headers as displayed in the ncpn_centroids file, you should be able to use the run_rmd to run the report from that csv. This is especially useful if you have a number of latitudes and longitudes you would like to look at, it will essentially loop through the data download and the report generation for each latitude and longitude
+#### Run multiple sites at once using run_rmd
+If you have a csv that has column headers as displayed in the run_multiple_sites.csv file, you should be able to use the run_rmd to run the report from that csv. This is especially useful if you have a number of latitudes and longitudes you would like to look at, it will essentially loop through the data download and the report generation for each latitude and longitude
