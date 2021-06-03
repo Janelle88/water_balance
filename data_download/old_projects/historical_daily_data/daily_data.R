@@ -20,11 +20,11 @@ yr = 1980
 
 #initialize with time range of inerest and location, these don't get overwritten in loops 
 
-site = "little_saddle_mtn" 
+site = "ashland" 
 
-lat = 44.702
+lat = 42.194342
 
-lon = -110.018
+lon =  -122.703127
 
 start = 1980 
 
@@ -46,7 +46,7 @@ mydat3<-NULL
 
 #This is the loop that runs across all the climate variables you want to download 
 
-for(climvar in c("soil_water", "runoff", "rain", "agdd","accumswe", "PET", "Deficit", "AET")){ 
+for(climvar in c("agdd")){ 
   
   
   
@@ -148,7 +148,7 @@ beep(4)
 
 mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
 
-colnames(mydat3)[]<-c("date", "lat","lon","soil_water_daily", "runoff_daily", "rain_daily", "agdd_daily", "accumswe_daily", "pet_daily", "deficit_daily", "aet_daily") 
+colnames(mydat3)[]<-c("date", "lat","lon", "agdd_daily") 
 
 head(mydat3) 
 
@@ -179,4 +179,4 @@ head(mydat3)
 # mydat4<-cbind(year,month,doy,mydat3[,c(2:11)]);head(mydat4)#drop bogus dates and add year and month
 
 
-write_csv(mydat3, here::here("raw_data", paste(site,"lat",lat,"lon",lon,"daily_historical.csv", sep = "_"))) #default is a space, sep = "" removes space
+write_csv(mydat3, here::here(paste(site,"lat",lat,"lon",lon,"daily_historical.csv", sep = "_"))) #default is a space, sep = "" removes space

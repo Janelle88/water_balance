@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # all of this should be changed before the code is run for a new site
 # ------------
 # 
- site = "Crystal_bench"
+# site = "Crystal_bench"
   
 #"little_saddle_mtn"
 
@@ -26,14 +26,14 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
   
   #
 
- lat = 44.9051022
+# lat = 44.9051022
 # # crystal: 44.9051022
 # #   
 # # quito: 31.942809
 # #   
 # # lsm: 44.702
 # # 
- lon = -110.2873649
+# lon = -110.2873649
 
 ## crystal: -110.2873649
 
@@ -42,11 +42,11 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
   #lsm: -110.018
 
- model_bc = "inmcm4" # "best case"
+# model_bc = "inmcm4" # "best case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-model_bc_rcp = "rcp45"
+# model_bc_rcp = "rcp45"
 
 # options: "rcp45", "rcp85" 
 
@@ -57,11 +57,11 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
 
-model_wc = "HadGEM2-CC365" # "worst case"
+# model_wc = "HadGEM2-CC365" # "worst case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
- model_wc_rcp = "rcp85"
+# model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" 
 
@@ -71,14 +71,14 @@ model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
   paste("RCP 8.5")
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
- past_data = "gridMET"
+# past_data = "gridMET"
 # 
 # # past_data options: "gridMET", "Daymet"
 # # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 # 
- dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+# dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
 # 
- wet_year = 2007 # particulary wet year for people to reference
+# wet_year = 2007 # particulary wet year for people to reference
 
 
 # -------------
@@ -1215,7 +1215,7 @@ max_y <- max_y_2*1.15
                                    model_bc,model_bc_rcp_name),
                            .y == "accumswe_daily"~ 
                             paste(
-                              "Accumulated SWE Seasonality", "\n",
+                              "Peak SWE Seasonality", "\n",
                                    model_bc,model_bc_rcp_name),
                            .y == "pet_daily" ~ 
                              paste(
@@ -1278,7 +1278,7 @@ max_y <- max_y_2*1.15
                                    model_wc,model_wc_rcp_name),
                            .y == "accumswe_daily"~ 
                             paste(
-                              "Accumulated SWE Seasonality", "\n",
+                              "Peak SWE Seasonality", "\n",
                                    model_wc,model_wc_rcp_name),
                            .y == "pet_daily" ~ 
                              paste(
@@ -1387,19 +1387,20 @@ plot_annual = function(.y) {
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
-              aes(x = 1973, 
+              aes(x = 1967, 
                   y = annual_value,
-                  label = year, 
+                  label = paste("Dry year:", year), 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#DA621E") +
     geom_text(data = point_high, # labels the line
-              aes(x = 1973, 
+              aes(x = 1967, 
                   y = annual_value,
-                  label = year, 
+                  label = paste("Wet year:", year), 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
     scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) + # colors is a named vector, see top of function
- ylim(NA, max_y)
+ ylim(NA, max_y) +
+      xlim(1960.5, NA)
   
   # ggsave(here::here("sites",
   #                   site, #site subfolder
@@ -1437,20 +1438,21 @@ plot_annual = function(.y) {
   labs(title = paste("Annual ", .y, "\n", model_wc, " ", model_wc_rcp_name, sep = ""),
        y = ifelse(.y == "ADGG", "Growing Degree Days (C)",
                     "Water (mm)")) +
-    geom_text(data = point_low,
-              aes(x = 1973, 
+    geom_text(data = point_low, # labels the line
+              aes(x = 1967, 
                   y = annual_value,
-                  label = year, 
-                  vjust = -0.35),
+                  label = paste("Dry year:", year), 
+                  vjust = -0.35), # -0.x moves the text up above the line
               color = "#DA621E") +
     geom_text(data = point_high, # labels the line
-              aes(x = 1973, 
+              aes(x = 1967, 
                   y = annual_value,
-                  label = year, 
+                  label = paste("Wet year:", year), 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
     scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) + # colors is a named vector, see top of function
-  ylim(NA, max_y)
+  ylim(NA, max_y) +
+    xlim(1960.5, NA)
   
   # ggsave(here::here("sites",
   #                   site, #site subfolder
@@ -1465,6 +1467,7 @@ plot_annual = function(.y) {
   print(annual_graph_wc)
   
 }
+
 
 ```
 
@@ -1580,8 +1583,8 @@ print(jitter_wc)
 
 ```
 
-Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Water balance integrates the interactions of temperature and precipitation to estimate water availability, movement to streams and ground water and use by plants. Water balance accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Water balance represents the modification of regional weather and climate due to site characteristics (slope, aspect, soil properties) to represent the biophysical conditions at local scales that plants and animals “experience”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
-understanding of natural resources response to climate change can be found [here](https://www.nps.gov/subjects/climatechange/waterbalance.htm).
+Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Through integrating the interactions of temperature and precipitation, it allows us to estimate water availability, movement to streams, and ground water and use by plants. It also accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Local site characteristics such as slope, aspect, soil properties are represented by the modification of regional weather and climate and depict the biophysical conditions at local scales that plants and animals “experience”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
+understanding of natural resources response to climate change can be found [here](https://www.nps.gov/subjects/climatechange/waterbalance.htm). The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
 ```{r mccabe, echo=FALSE, fig.align="center", out.width="60%"}
 
@@ -1594,17 +1597,13 @@ website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatolog
 
 ```
 
-This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, used in this report are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products an be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
+This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, used in this report are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  
 
 \newpage
 
 # Future Model Selection
 
-The models used in this analysis were chosen based on two climate futures that best bracket the range of plausible future climate conditions.  There are two methods by which models can be selected: the traditional temperature v. precipitation scatterplot, or a scatterplot using actual evapotranspiration and deficit.
-
-#### Acutal Evapotranspiration v. Deficit
-
-The preferred method is using the data from [Mike Tercek's thredds server](http://www.yellowstone.solutions/thredds/catalog.html). Data can be downloaded to select models based on a range of actual evapotranspiration and deficit conditions. The models selected are typically chosen from the upper left hand corner and the upper right hand corner of the scatterplot. The graph below displays a scatterplot of these models. In order for the graph to display, the `aet_d.Rmd` code must have been run and the models should have been selected for this report *prior* to running this final report.
+The models used in this analysis were chosen based on two climate futures that bracket a wide range of plausible future climate conditions represented by the Global Circulation Models (GCM) in the CMIP5 experiments. The experiments include the effects of anthropogenic warming caused by changes in carbon dioxide concentration in the atmosphere.  Representative Concentration Pathways (RCP) describe scenarios of carbon dioxide emission, where RCP 8.5 is the high-emission scenario and RCP 4.5 is a lower emission scenario.  Model selection for this report is based on a temperature v. precipitation scatterplot of future climate models and scenarios at mid-century. Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity.
 
 ```{r}
 aet_d_true <- file.exists(here::here("sites",
@@ -1620,6 +1619,12 @@ temp_precip_alt <- !file.exists(here::here("sites",
 
 ```
 
+`r if(aet_d_true){"The preferred method is using AET and D because they are more representative of conditions experienced by plants and animals. Data can be downloaded to select models based on a range of actual evapotranspiration and deficit conditions. The models are selected from corners of the scatter plot to bracket a wide range of possible future conditions. In the western U.S. futures are selected from the scatter plot lower right quadrant representing hotter and drier future conditions or upper left representing warmer and wetter future conditions. The graph below displays a scatterplot of these models."}`
+
+`r if(temp_precip_alt){"Projected water balance conditions presented in this report were selected based on the scatter in projected temperature and precipitation in the future. The latitude and longitude of the site is used to buid a scatterplot visualization of future projections from the MACA website of all modeled future conditions of temperature and precipitation. Models from the scatterplot are selected to represent a drier and hotter climate future (the bottom right of the scatterplot) and a wetter and hotter climate future (the upper left of the scatterplot)."}` 
+
+<br>
+<br>
 
 ```{r, eval = aet_d_true}
 
@@ -1718,7 +1723,8 @@ ggplot(data = aet_d_difference, aes(x = deficit_percent_change, y = aet_percent_
 
 ```
 
-```{r, eval = temp_precip_alt}
+
+```{r, eval = temp_precip_alt, include=FALSE}
 
 FM <- read_csv(here::here("sites",
                           site,
@@ -1747,20 +1753,33 @@ precip <- FM %>%
   select(model, precip)
 
 t_v_p <- temp %>% 
-  full_join(precip)
+  full_join(precip) 
+
+t_v_p_filtered <- t_v_p %>% 
+   filter(!model %in% c(paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))
+
+highlight <- t_v_p %>% 
+  filter(model %in% c(paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))
 
 
+set.seed(1234)
 
-
-ggplot(t_v_p, aes(x = temp, y = precip)) +
+ggplot(t_v_p_filtered, aes(x = temp, y = precip)) +
   geom_point(size=4,
              colour="black") +
   geom_text_repel(aes(label = model),
                   box.padding = 0.5,
                   point.padding = 1.5) +
-  theme(axis.text=element_text(size=18),
-        axis.title.x=element_text(size=18,vjust=-0.2),
-        axis.title.y=element_text(size=18,vjust=0.2),
+  geom_point(data = highlight, aes(x = temp, y = precip),
+             size = 6,
+             color = "red") +
+   geom_text_repel(data = highlight, aes(label = model),
+                  box.padding = 0.5,
+                  point.padding = 1.5,
+                  color = "red") +
+  theme(axis.text=element_text(size=20, face = "bold"),
+        axis.title.x=element_text(size=20,vjust=-0.2),
+        axis.title.y=element_text(size=20,vjust=0.2),
         plot.title=element_text(size=20,face="bold",vjust=2,hjust=0.5),
         legend.text=element_text(size=20), legend.title=element_text(size=20)) +
   ###
@@ -1779,26 +1798,27 @@ ggsave(here::here("sites",
 ```
 
 
-#### Temperature v. Precipitation
+```{r t_v_p, echo=FALSE, fig.align="center"}
 
-Alternatively, models can be chosen based on the scatter in projected temperature and precipitation in the future. The latitude and longitude of the site is used to buid a scatterplot visualization of future projections from the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Models from the scatterplot are selected to represent a "drier and hotter" climate future (the bottom right of the scatterplot) and a "wetter and hotter" climate future (the upper left of the scatterplot). Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity. 
-
-See Appendix for information on how to manually recreate the Temperature v. Precipitation graph.
-
-```{r}
+knitr::include_graphics(here::here("sites",
+                  site, 
+                  "figures",
+                  paste("lat_", lat, "_lon_", lon, sep = ""), 
+                  paste(site, "Scatter BY SCENARIO.png",sep="")))
 
 ```
+
 
 
 \newpage
 
 ## Change in annual values through time
 
-The variables of runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) is the max value for the year regardless of the month it occurs in. Soil water shows the mean annual water content in the soil profile.
+Runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Peak snow water equivalent (SWE) is the max value for the year regardless of the month in which it occurs. Soil water is the mean annual water content in the top meter soil profile. Additionally, it is important to note that precipitation includes rain plus snow, whereas rain is only liquid precipitation. Rain is specifically precipitation that does not fall as snow. If total precipitation stayed the same but temperatures increased, the data here would display that as an increase in rain.
 
-The reason for the different summary statistics is because scientists use these variables in different ways.  Water variables that don’t have an upper limit like rain, runoff, evapotranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity, so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow volume and reservoir storage needs.
+The reason for the different summary statistics is because water variables that don’t have an upper limit like rain, runoff, evapotranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity, so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow rate and reservoir storage needs.
 
-```{r, fig.align="center", fig.cap= paste("Figure 1. Annual averages over time. The gray line represents historical data modeled from", past_data, "climate data, the turquoise line represents", model_bc, model_bc_rcp, "and the yellow line represents", model_wc, model_wc_rcp)}
+```{r, fig.align="center", fig.cap= paste("Figure 1. Annual values over time. The gray line represents historical data modeled from ", past_data, ", the turquoise line represents ", model_bc, " ", model_bc_rcp, " ", "and the yellow line represents ", model_wc," ", model_wc_rcp, ".", sep = "")}
 
 
 
@@ -1830,7 +1850,7 @@ ggplot() +
 
 # Deficit v. Actual Evapotranspiration
 
-Actual evapotranspiration (AET) is an estimate of soil water used by plants and deficit (D) is an estimate of unmet water need.  That is, it represents the amount of water vegetation would use if the water was available and hence is an estimate of vegetation drought stress.  Collectively, AET and D have been shown to be good predictors of vegetation type and are useful variables in understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and D change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (from Tercek et al., 2021) shows how AET v. D, calculated using the water balance model used for this report, differs across bioregions in the U.S.
+Actual evapotranspiration (AET) is an estimate of soil water used by plants plus evaporation.  Deficit (D) is an estimate of unmet water need.  That is, it represents the amount of water vegetation would use if the water was available and hence is an estimate of vegetation drought stress.  Together, AET and D are good predictors of vegetation condition and are useful variables for understanding climate stress on vegetation and how vegetation may transition in the future (Stephenson, 1998). If the clustering of AET and D change in climate space, vegetation assemblages will respond and changes in assemblages will eventually reflect the new climate space. The figure below (Tercek et al., 2021) shows how AET v. D, calculated using the water balance model used for this report, differs across bioregions in the U.S.
 
 ```{r}
 figure_lon_east = lon > -100
@@ -1839,16 +1859,16 @@ figure_lon_west = lon <= -100
 
 ```
 
-```{r, echo=FALSE, out.width="70%", fig.cap="AET and Deficit climate space of vegetation ecoregions in the Western United states from  (Tercek et al., 2021).", fig.align="center", eval=figure_lon_east}
+```{r, echo=FALSE, out.width="45%", fig.cap="AET and Deficit climate space of vegetation ecoregions in the Western United states from  (Tercek et al., 2021).", fig.align="center", eval=figure_lon_east}
 
 knitr::include_graphics(here::here("figures", "eastern_CONUS.png"))
 
 ```
-```{r, echo=FALSE, out.width="50%", fig.cap="Figure 2. Ecoregions in the Western United states based on AET and Deficit (CWD). (Tercek et al., 2021)", fig.align="center", eval=figure_lon_west}
+```{r, echo=FALSE, out.width="45%", fig.cap="Figure 2. Ecoregions in the Western United states based on AET and Deficit (CWD). (Tercek et al., 2021)", fig.align="center", eval=figure_lon_west}
 
 knitr::include_graphics(here::here("figures", "western_CONUS.png"))
 ```
-
+<br>
 
 
 ```{r, fig.cap= "Figure 3. Modeled Deficit vs. AET. The points are annual sums of daily observations in each year. The green points represent 1980-2019; the yellow points 2020-2059; and the turquoise points 2060-2099. The contours around each set of points delineate shifts in climate space over time.", out.width = "50%", fig.show='hold'}
@@ -2013,7 +2033,7 @@ plot_jitter("Rain")
 
 \newpage
 
-## Accumulated Snow Water Equivalent (SWE)
+## Peak Snow Water Equivalent (SWE)
 
 ```{r, out.width="50%"}
 plot_decades_smooth("accumswe_daily")
@@ -2109,12 +2129,21 @@ plot_jitter("Deficit")
 
 \newpage
 
+```{r, include=FALSE}
+
 ## Appendix
 
-To create the temperature v. precipitation scatterplot, go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), select "Mid 21st Century (2040-2069)" in the "Choose a Future Time Period:" box. The x-axis variable is "mean-temperature" and the season is "Jan-Dec." The y-axis is "Precipitation - Absolute Change" and the season is "Jan-Dec." Finally, enter the latitude `r lat` into BOTH latitude boxes and the longitude `r lon` into BOTH longitude boxes.
+# To create the temperature v. precipitation scatterplot, go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), select "Mid 21st Century (2040-2069)" in the "Choose a Future Time Period:" box. The x-axis variable is "mean-temperature" and the season is "Jan-Dec." The y-axis is "Precipitation - Absolute Change" and the season is "Jan-Dec." Finally, enter the latitude `r lat` into BOTH latitude boxes and the longitude `r lon` into BOTH longitude boxes.
+# 
+# In order for the AET v. D graph to display, the `aet_d.Rmd` code must have been run and the models should have been selected for this report *prior* to running this final report.
+# 
+# <br>
+# <br>
 
-<br>
-<br>
+```
+
+
+
 ## Works Cited
 
 Stephenson, N. (1998). Actual evapotranspiration and deficit: biologically meaningful correlates of vegetation distribution across spatial scales. Journal of biogeography, 25(5), 855-870.

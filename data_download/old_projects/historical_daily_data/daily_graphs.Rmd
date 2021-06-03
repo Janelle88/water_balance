@@ -29,11 +29,11 @@ library(gghalves)
 # set variables for the data
 # ------------
 
-site = "little_saddle_mtn" 
+site = "ashland" 
 
-lat = 44.702
+lat = 42.194342
 
-lon = -110.018
+lon =  -122.703127
 
 start = 1980 
 
@@ -47,7 +47,7 @@ end = 2019
 # clean data for graphing
 # ------------
 
-site_df <- read_csv(here::here("raw_data", paste(site,"lat",lat,"lon",lon,"daily_historical.csv", sep = "_")))%>% 
+site_df <- read_csv(here::here(paste(site,"lat",lat,"lon",lon,"daily_historical.csv", sep = "_")))%>% 
   select(-lat, -lon)  %>%
   mutate(year = lubridate::year(date), 
                 month = lubridate::month(date,
@@ -116,11 +116,7 @@ plot_year = function(.y, .x, .z) {
     scale_color_manual(breaks = c(.x, .z),
                        values = c("turquoise4", "darkolivegreen3"))
 
-  ggsave(here::here("figures", #top folder in wd
-                    paste(site,lat,lon, sep = ""), #subfolder of figures
-                    "year", #sub folder of above
-                    paste(.x,.z, sep = "_"), #sub folder of year
-                    paste(site,lat,lon, .y, .x, .z, ".png", sep = ""))) #file name (r will do this)
+  ggsave(here::here(paste(site,lat,lon, .y, .x, .z, ".png", sep = ""))) #file name (r will do this)
   
   print(.x_.z_plot)
 }
@@ -158,14 +154,14 @@ plot_year = function(.y, .x, .z) {
 ## A dry year, 1988, and a wet year, 2011
 
 ```{r, fig.show="hold", out.width="25%"}
-plot_year("runoff_daily", "1988", "2011")
+#plot_year("runoff_daily", "1988", "2011")
 plot_year("agdd_daily", "1988", "2011")
-plot_year("soil_water_daily", "1988", "2011")
-plot_year("rain_daily", "1988", "2011")
-plot_year("accumswe_daily", "1988", "2011")
-plot_year("pet_daily", "1988", "2011")
-plot_year("deficit_daily", "1988", "2011")
-plot_year("aet_daily", "1988", "2011")
+# plot_year("soil_water_daily", "1988", "2011")
+# plot_year("rain_daily", "1988", "2011")
+# plot_year("accumswe_daily", "1988", "2011")
+# plot_year("pet_daily", "1988", "2011")
+# plot_year("deficit_daily", "1988", "2011")
+# plot_year("aet_daily", "1988", "2011")
 
 ```
  
@@ -180,53 +176,57 @@ plot_year("aet_daily", "1988", "2011")
 site_1980s <- site_df %>% 
   dplyr::group_by(doy) %>% 
   filter(year %in% c(1980:1989)) %>% 
-  summarize(soil_water_daily = mean(soil_water_daily), #average by decade
-            runoff_daily = mean(runoff_daily),
-            rain_daily = mean(rain_daily),
-            agdd_daily = mean(agdd_daily),
-            accumswe_daily = mean(accumswe_daily),
-            pet_daily = mean(pet_daily),
-            deficit_daily = mean(deficit_daily),
-            aet_daily = mean(aet_daily)) %>% 
+  summarize(agdd_daily = max(agdd_daily)) %>% 
+  # summarize(soil_water_daily = mean(soil_water_daily), #average by decade
+  #           runoff_daily = mean(runoff_daily),
+  #           rain_daily = mean(rain_daily),
+  #           agdd_daily = mean(agdd_daily),
+  #           accumswe_daily = mean(accumswe_daily),
+  #           pet_daily = mean(pet_daily),
+  #           deficit_daily = mean(deficit_daily),
+  #           aet_daily = mean(aet_daily)) %>% 
   mutate(decade = "1980s")
 
 site_1990s <- site_df %>% 
   dplyr::group_by(doy) %>% 
   filter(year %in% c(1990:1999)) %>% 
-  summarize(soil_water_daily = mean(soil_water_daily),
-            runoff_daily = mean(runoff_daily),
-            rain_daily = mean(rain_daily),
-            agdd_daily = mean(agdd_daily),
-            accumswe_daily = mean(accumswe_daily),
-            pet_daily = mean(pet_daily),
-            deficit_daily = mean(deficit_daily),
-            aet_daily = mean(aet_daily)) %>% 
+  summarize(agdd_daily = max(agdd_daily)) %>% 
+  # summarize(soil_water_daily = mean(soil_water_daily),
+  #           runoff_daily = mean(runoff_daily),
+  #           rain_daily = mean(rain_daily),
+  #           agdd_daily = mean(agdd_daily),
+  #           accumswe_daily = mean(accumswe_daily),
+  #           pet_daily = mean(pet_daily),
+  #           deficit_daily = mean(deficit_daily),
+  #           aet_daily = mean(aet_daily)) %>% 
   mutate(decade = "1990s")
 
 site_2000s <- site_df %>% 
   dplyr::group_by(doy) %>% 
   filter(year %in% c(2000:2009)) %>% 
-  summarize(soil_water_daily = mean(soil_water_daily),
-            runoff_daily = mean(runoff_daily),
-            rain_daily = mean(rain_daily),
-            agdd_daily = mean(agdd_daily),
-            accumswe_daily = mean(accumswe_daily),
-            pet_daily = mean(pet_daily),
-            deficit_daily = mean(deficit_daily),
-            aet_daily = mean(aet_daily)) %>% 
+  summarize(agdd_daily = max(agdd_daily)) %>% 
+  # summarize(soil_water_daily = mean(soil_water_daily),
+  #           runoff_daily = mean(runoff_daily),
+  #           rain_daily = mean(rain_daily),
+  #           agdd_daily = mean(agdd_daily),
+  #           accumswe_daily = mean(accumswe_daily),
+  #           pet_daily = mean(pet_daily),
+  #           deficit_daily = mean(deficit_daily),
+  #           aet_daily = mean(aet_daily)) %>% 
   mutate(decade = "2000s")
 
 site_2010s <- site_df %>% 
   dplyr::group_by(doy) %>% 
   filter(year %in% c(2010:2018)) %>%
-  summarize(soil_water_daily = mean(soil_water_daily),
-            runoff_daily = mean(runoff_daily),
-            rain_daily = mean(rain_daily),
-            agdd_daily = mean(agdd_daily),
-            accumswe_daily = mean(accumswe_daily),
-            pet_daily = mean(pet_daily),
-            deficit_daily = mean(deficit_daily),
-            aet_daily = mean(aet_daily)) %>%
+  summarize(agdd_daily = max(agdd_daily)) %>% 
+    # soil_water_daily = mean(soil_water_daily),
+    #         runoff_daily = mean(runoff_daily),
+    #         rain_daily = mean(rain_daily),
+    #         ,
+    #         accumswe_daily = mean(accumswe_daily),
+    #         pet_daily = mean(pet_daily),
+    #         deficit_daily = mean(deficit_daily),
+    #         aet_daily = mean(aet_daily)) %>%
   mutate(decade = "2010s")
 
 site_decade <- site_1980s %>% #recombine them into one df
@@ -248,9 +248,22 @@ plot_decades = function(.y, .x, .z) {
              group = decade,
              color = decade, 
              y = .data[[.y]]),#.y is a character vector, so need .data surrounding .y
-         ) +
-    geom_smooth(size = 1.1,
-                se = FALSE) +
+         ) + geom_line(aes(x = as.Date.numeric(doy, origin = "1980-01-01"),
+                   y = .data[[.y]],
+                   color = decade),
+               size = 0.7,
+               alpha = 0.4) +
+    stat_smooth(size = 1.5,
+                se = FALSE,
+                aes(x = as.Date.numeric(doy, origin = "1980-01-01"),#allows for month on xaxis
+                    y = .data[[.y]],
+                    # calling my variable, which I'll name later in the command
+                    group = decade,
+                    color = decade),
+                method = glm,
+                family = quasipoisson,
+                formula = y ~ ns(x, 16)) +
+    theme(legend.title = element_blank())+
     theme_classic() +
     labs(x = "Day of Year",
          color = "Year",
@@ -286,13 +299,14 @@ plot_decades = function(.y, .x, .z) {
           axis.text.x = element_text(size = 9),
           legend.position = "top") +
     scale_color_manual(breaks = c(.x, .z),
-                       values = c("turquoise4", "darkolivegreen3"))
+                       values = c("turquoise4", "darkolivegreen3"))+
+    scale_x_date(as.Date.numeric(site_.x_.z$doy, origin = "1980-01-01"),
+                 breaks = seq(as.Date("1980-01-15"), 
+                            as.Date("1980-12-15"),#plots dates midmonth
+                            by = "1 month"),
+                 date_labels = "%b")#%b is abbreviated %B is full month name
   
-  ggsave(here::here("figures", # top folder
-                    paste(site,lat,lon, sep = ""), #sub folder
-                    "decade", # sub folder
-                    paste(.x, .z, sep = "_"), # sub folder
-                    paste(site,lat,lon, .y, .x, .z , ".png", sep = ""))) # file name (r will do this)
+  ggsave(here::here(paste(site,lat,lon, .y, .x, .z , ".png", sep = ""))) # file name (r will do this)
   
   print(.x_.z_plot)
 }
@@ -318,14 +332,14 @@ plot_decades = function(.y, .x, .z) {
 ######
 
 
-plot_decades("runoff_daily", "1980s", "2010s")
+#plot_decades("runoff_daily", "1980s", "2010s")
 plot_decades("agdd_daily", "1980s", "2010s")
-plot_decades("soil_water_daily", "1980s", "2010s")
-plot_decades("rain_daily", "1980s", "2010s")
-plot_decades("accumswe_daily", "1980s", "2010s")
-plot_decades("pet_daily", "1980s", "2010s")
-plot_decades("deficit_daily", "1980s", "2010s")
-plot_decades("aet_daily", "1980s", "2010s")
+# plot_decades("soil_water_daily", "1980s", "2010s")
+# plot_decades("rain_daily", "1980s", "2010s")
+# plot_decades("accumswe_daily", "1980s", "2010s")
+# plot_decades("pet_daily", "1980s", "2010s")
+# plot_decades("deficit_daily", "1980s", "2010s")
+# plot_decades("aet_daily", "1980s", "2010s")
 
 
 ```

@@ -1,0 +1,314 @@
+---
+title: "Individual Variable, all models"
+author: "Janelle Christensen"
+date: "6/2/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+# ------------------------
+# attach packages
+# ------------------------
+
+library(tidyverse)
+library(data.table)
+library(here)
+library(lubridate)
+library(beepr)
+library(httr)
+library(directlabels)
+library(ggrepel)
+library(janitor)
+```
+
+```{r}
+# initialize variables
+
+site = "yellowstone" 
+
+lat = 44.59644457
+
+lon = -110.5471962
+ 
+start_past = 1980
+
+end_past = 2019
+
+start_future = 2020
+
+end_future = 2099
+```
+
+# Historical Data
+
+```{r}
+holder<-NULL 
+
+mydat<-NULL 
+
+mydat2<-NULL 
+
+mydat3<-NULL 
+
+
+
+#This is the loop that runs across all the climate variables you want to download 
+
+# "agdd", fix this - return when AGDD is fixed on the website
+## make sure the order in colnames at end of loop matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+
+# "soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET"
+
+for(climvar in c("accumswe")){ 
+  
+  print(paste("downloading",climvar, "daily historical"))#this is a progress update as the loop runs 
+  
+  
+  for(yr in c(start_past:end_past)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+    
+    #Specify URL where are stored on cloud 
+    
+    #access daily data
+    
+    # 1980 has only 30 days in December, all other years have 31
+
+     
+     leap <- lubridate::leap_year(yr) #gridMET data treats leap years differently
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+          
+          data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/v2_historical/gridmet_v_1_5_historical/V_1_5_",yr,"_gridmet_historical_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+
+    
+    
+    holder <-data.frame(fread(data_url, verbose = FALSE, showProgress = FALSE))#temporary holder for subsets downloaded from cloud 
+    
+    mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+    
+  }#end loop across years 
+  
+  
+  mydat2<-cbind(mydat2, mydat[,4])#append just the water balance data from each downloaded chunk
+  
+  date <- mydat$time
+  
+  mydat<-NULL#reset this variable so it can accodomate a new column name given the new water balance variable it's extracting at each loop cycle
+  
+  
+}#end loop across climate variables 
+
+beep(10)
+
+
+mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadat including date, lat, long 
+
+# "agdd_daily", fix this - return when agdd is back on the website
+## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+
+### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+
+colnames(mydat3)[]<-c("date", "lat","lon", paste(climvar, "_daily", sep = "")) 
+
+
+  
+   divide.by.10 <- function(x, na.rm = FALSE) {
+    x/10
+   }
+   
+  mydat4 <- mydat3 %>% 
+    mutate(lat = as.character(lat),
+           lon = as.character(lon)) %>% 
+    mutate_if(is.numeric, divide.by.10)
+  
+
+
+  write_csv(mydat4, paste("historical_", climvar, ".csv", sep = ""))
+  
+beep(3)
+
+```
+
+
+```{r}
+
+start = start_future
+
+end = end_future 
+
+model_wc <- "IPSL-CM5A-LR"
+
+model_wc_rcp <- "rcp85"
+
+model_bc <- "MRI-CGCM3"
+
+model_bc_rcp <- "rcp85"
+
+  
+  holder <- NULL 
+  
+  mydat <- NULL 
+  
+  mydat2 <- NULL 
+  
+  mydat3 <- NULL 
+  
+  #This is the loop that runs across all the climate variables you want to download for worst case scenario
+  
+  #"agdd", fix this not a part of the website 8-20-20
+  
+  #soil_water", "runoff", "rain","accumswe", "PET", "Deficit", "AET"
+  
+  for(climvar in c("accumswe")){ #start loop for 8.5
+    
+    
+    
+    print(paste("downloading",climvar, "daily", model_wc, model_wc_rcp))#this is a progress update as the loop runs 
+    
+    
+    for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data 
+      
+      
+      #Specify URL where are stored on cloud 
+      # leap years have end date set at yr + 1 01-01
+      # set if else for future data
+      
+      leap <- lubridate::leap_year(yr) 
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+      
+      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_wc_rcp,"/",model_wc,"/V_1_5_",yr,"_",model_wc,"_",model_wc_rcp,"_",climvar,".nc4?var=",climvar,"&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="") 
+      
+      # http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/rcp85/inmcm4/V_1_5_2099_inmcm4_rcp85_soil_water_monthly.nc4?var=soil_water&latitude=45&longitude=-111&time_start=2099-01-16T05%3A14%3A31.916Z&time_end=2099-12-17T00%3A34%3A14.059Z&accept=csv_file
+      
+      holder <-data.frame(fread(data_url, 
+                                verbose=FALSE, 
+                                showProgress = FALSE,
+      ))#temporary holder for subsets downloaded from cloud 
+      colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
+      mydat<-rbind(mydat, holder)#file that grows by adding each chunk downloaded from cloud 
+      
+      date <- mydat$time # dates don't download correctly without this
+      
+    }#end loop across years for rcp 8.5
+    
+    mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk 
+    
+    mydat<-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it's extracting at each loop cycle 
+    
+  }#end loop across climate variables for 8.5
+  
+  
+  
+  mydat3<-cbind(date,holder[,2:3],mydat2)#join the data with metadata including date, lat, long 
+  
+  head(mydat3) 
+
+  # ----------
+  # Create loop for downloading the data rcp 4.5
+  # ----------
+
+  #initialize some variables to hold data
+
+  holder <- NULL
+
+  mydat <- NULL
+
+  mydat2 <- NULL
+
+  mydat4 <- NULL
+  
+  
+  
+  #This is the loop that runs across all the climate variables you want to download 
+  
+  #"agdd", fix this - return when agdd is back on the website
+  
+  ### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+  
+  # "soil_water", "runoff", "rain", "accumswe", "PET", "Deficit", "AET"
+
+  for(climvar in c("accumswe")){ #start loop for RCP 4.5
+
+
+
+    print(paste("downloading",climvar, "daily", model_bc, model_bc_rcp))#this is a progress update as the loop runs
+
+
+    for(yr in c(start:end)){# for each climate variable loop across the year.  allows users to select range if not interested in all data
+
+
+      #Specify URL where are stored on cloud
+      #leap years are written differently in the future data
+      #ifelse for future data
+
+      leap <- lubridate::leap_year(yr)
+      if(leap == TRUE){
+        enddate <- paste(yr,"12-31", sep = "-")
+      } else {
+        enddate <- paste(yr + 1, "01-01", sep = "-")
+      }
+
+      data_url<-paste("http://www.yellowstone.solutions/thredds/ncss/daily_or_monthly/gcm/",model_bc_rcp,"/",model_bc,"/V_1_5_",yr,"_",model_bc,"_",model_bc_rcp,"_", climvar, ".nc4?var=", climvar, "&latitude=",lat,"&longitude=",lon,"&time_start=",yr,"-01-01T12%3A00%3A00Z&time_end=",enddate,"T12%3A00%3A00Z&accept=csv_file",sep ="")
+
+      holder <-data.frame(fread(data_url,
+                                verbose=FALSE,
+                                showProgress = FALSE,
+      )) #temporary holder for subsets downloaded from cloud
+      colnames(holder) <- c("time", "latitude", "longitude", paste(climvar))
+
+      mydat<-rbind(mydat, holder) #file that grows by adding each chunk downloaded from cloud
+
+
+      date <- mydat$time
+
+    }#end loop across years for 4.5
+
+    mydat2<-cbind(mydat2,mydat[,4])#append just the water balance data from each downloaded chunk
+
+    mydat<-NULL#reset this variable so it can accommodate a new column name given the new water balance variable it's extracting at each loop cycle
+
+  }#end loop across climate variables for 4.5
+
+  mydat4<-cbind(mydat3,mydat2) #join the data with metadata including date, lat, long
+  
+  # "agdd_daily_wc", "agdd_daily_bc", - fix this, return when agdd is back on the website
+  # make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+  
+  # ### make sure to put agdd BEFORE AET - will mess up code if agdd is last
+  
+  #"soil_water_daily_wc", "runoff_daily_wc", "rain_daily_wc",  "accumswe_daily_wc", "pet_daily_wc", "deficit_daily_wc", "aet_daily_wc", "soil_water_daily_bc", "runoff_daily_bc", "rain_daily_bc",  "accumswe_daily_bc", "pet_daily_bc", "deficit_daily_bc", "aet_daily_bc"
+  colnames(mydat4)[]<-c("date", "lat","lon","accumswe_daily_wc", "accumswe_daily_bc")
+
+  
+  # "agdd_daily_wc", fix this - not a part of the website 8-20-20
+  ## make sure the order matches where it was placed in the download order (i.e. if it downloads after rain, it should be placed here in the colnames after rain)
+  
+  
+# columns are multiplied by 10, need to fix this before writing csv
+  
+  divide.by.10 <- function(x, na.rm = FALSE) {
+    x/10
+  }
+  
+  mydat5 <- mydat4 %>% 
+    mutate(lat = as.character(lat),
+           lon = as.character(lon)) %>% 
+    mutate_if(is.numeric, divide.by.10)
+  
+  write_csv(mydat5, here::here(paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, climvar, ".csv", sep = "_"))) #default is a space, sep = "" removes space
+
+beep(10)
+
+```
+
