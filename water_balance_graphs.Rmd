@@ -16,7 +16,9 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # all of this should be changed before the code is run for a new site
 # ------------
 # 
-# site = "Crystal_bench"
+save_images = FALSE # do you want to save individual .png files of all plots generated in the report? if so, change to TRUE
+
+#site = "Blacktail Ponds"
   
 #"little_saddle_mtn"
 
@@ -26,14 +28,15 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
   
   #
 
-# lat = 44.9051022
+#lat = 44.96
+
 # # crystal: 44.9051022
 # #   
 # # quito: 31.942809
 # #   
 # # lsm: 44.702
 # # 
-# lon = -110.2873649
+#lon = -111.6
 
 ## crystal: -110.2873649
 
@@ -42,11 +45,11 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
   #lsm: -110.018
 
-# model_bc = "inmcm4" # "best case"
+#model_bc = "MRI-CGCM3" # "best case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-# model_bc_rcp = "rcp45"
+#model_bc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" 
 
@@ -57,11 +60,11 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
 
-# model_wc = "HadGEM2-CC365" # "worst case"
+#model_wc = "HadGEM2-CC365" # "worst case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-# model_wc_rcp = "rcp85"
+#model_wc_rcp = "rcp85"
 
 # options: "rcp45", "rcp85" 
 
@@ -208,6 +211,8 @@ here::here(dir.create(paste("sites",
                             paste("lat",lat,"lon",lon,sep = "_"), 
                             sep = "/")))
 
+if(save_images == TRUE){
+
 here::here(dir.create(paste("sites",
                             site,
                             "figures",
@@ -215,6 +220,7 @@ here::here(dir.create(paste("sites",
                             "40_yr_graphs",
                             sep = "/")))
 
+}
 ```
 
 ```{r}
@@ -1054,14 +1060,14 @@ max_y <- max_y_2*1.15
 #  
 #   .y_plot_bc <- .y_plot_bc + geom_vline(aes(xintercept = xintercept), data = vline_data_bc)
   
-  
-  # ggsave(here::here("sites",
-  #                   site, # site subfolder
-  #                   "figures", #sub folder
-  #                   paste("lat",lat,"lon",lon, sep = "_"),
-  #                   "40_yr_graphs", # subfolder
-  #                   paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
-  # 
+  if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr", model_bc_rcp, ".png", sep = "_"))) #file name
+}
   print(.y_plot_bc)
   
   } #end if statement for Best case
@@ -1143,12 +1149,14 @@ max_y <- max_y_2*1.15
   # 
   # .y_plot_wc <- .y_plot_wc + geom_vline(aes(xintercept = xintercept), data = vline_data_wc)
   
-  # ggsave(here::here("sites",
-  #                   site, #site subfolder
-  #                   "figures", #top folder
-  #                   paste("lat",lat,"lon",lon, sep = "_"),
-  #                   "40_yr_graphs", # subfolder
-  #                   paste(.y, "40_yr", model_wc_rcp, ".png", sep = "_"))) #file name
+  if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, #site subfolder
+                    "figures", #top folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr", model_wc_rcp, ".png", sep = "_"))) #file name
+  }
   
   print(.y_plot_wc)
   
@@ -1237,13 +1245,15 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")# %b gives abbreviated %B gives full month name
   
-  # ggsave(here::here("sites",
-  #                   site, # site subfolder
-  #                   "figures", #sub folder
-  #                   paste("lat",lat,"lon",lon, sep = "_"),
-  #                   "40_yr_graphs", # subfolder
-  #                   paste(.y, "40_yr_line",model_bc_rcp, ".png", sep = "_"))) #file name
+if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_line",model_bc_rcp, ".png", sep = "_"))) #file name
   print(.y_plot_bc)
+}
   
   } # end if statement rcp bc
   
@@ -1302,12 +1312,14 @@ max_y <- max_y_2*1.15
                             by = "1 month"),
                  date_labels = "%b")
   
-  # ggsave(here::here("sites",
-  #                   site, #site subfolder
-  #                   "figures", #top folder
-  #                   paste("lat",lat,"lon",lon, sep = "_"),
-  #                   "40_yr_graphs", # subfolder
-  #                   paste(.y, "40_yr_line",model_wc_rcp, ".png", sep = "_"))) #file name
+  if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, #site subfolder
+                    "figures", #top folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    "40_yr_graphs", # subfolder
+                    paste(.y, "40_yr_line",model_wc_rcp, ".png", sep = "_"))) #file name
+  }
   
   print(.y_plot_wc)
   
@@ -1402,12 +1414,13 @@ plot_annual = function(.y) {
  ylim(NA, max_y) +
       xlim(1960.5, NA)
   
-  # ggsave(here::here("sites",
-  #                   site, #site subfolder
-  #                   "figures", #subfolder
-  #                   paste("lat",lat,"lon",lon,sep = "_"),
-  #                   paste(.y, "annual_graph_bc.png", sep = "_"))) #file name
-  
+    if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, #site subfolder
+                    "figures", #subfolder
+                    paste("lat",lat,"lon",lon,sep = "_"),
+                    paste(.y, "annual_graph_bc.png", sep = "_"))) #file name
+    }
   
   annual_graph_wc <- ggplot() +
     geom_line(data = annual_values %>% 
@@ -1454,11 +1467,13 @@ plot_annual = function(.y) {
   ylim(NA, max_y) +
     xlim(1960.5, NA)
   
-  # ggsave(here::here("sites",
-  #                   site, #site subfolder
-  #                   "figures", #subfolder
-  #                   paste("lat",lat,"lon",lon, sep = "_"),
-  #                   paste(.y, "annual_graph_wc.png", sep = "_"))) #filename
+  if(save_images == TRUE){
+  ggsave(here::here("sites",
+                    site, #site subfolder
+                    "figures", #subfolder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste(.y, "annual_graph_wc.png", sep = "_"))) #filename
+  }
   
   # return(annual_graph_bc)
   # return(annual_graph_wc) with these two it only prints the 4.5 graph
@@ -1520,11 +1535,13 @@ jitter_bc <- ggplot(data =  month_join_bc %>%
   theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
-# ggsave(here::here("sites",
-#                   site, #site subfolder
-#                   "figures", #subfolder
-#                   paste("lat",lat,"lon",lon, sep = "_"),
-#                   paste("jitter_bc_",.y,".png", sep = ""))) # file name
+if(save_images == TRUE){
+ggsave(here::here("sites",
+                  site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_bc_",.y,".png", sep = ""))) # file name
+}
 
 # ----------
 # Jitter worst case
@@ -1559,11 +1576,13 @@ jitter_wc <- ggplot(data =  month_join_wc %>%
   theme(legend.title = element_blank()) +
   ylim(NA, max_y)
 
-# ggsave(here::here("sites",
-#                   site, #site subfolder
-#                   "figures", #subfolder
-#                   paste("lat",lat,"lon",lon, sep = "_"),
-#                   paste("jitter_wc_", .y,".png", sep = "_"))) # file name
+if(save_images == TRUE){
+ggsave(here::here("sites",
+                  site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  paste("jitter_wc_", .y,".png", sep = "_"))) # file name
+}
 
 print(jitter_bc)
 print(jitter_wc)
@@ -1730,9 +1749,10 @@ FM <- read_csv(here::here("sites",
                           site,
                           "raw_data",
                           paste("lat",lat,"lon",lon, sep = "_"),
-                          paste(site, "_t_v_p.csv", sep = "")), col_names = TRUE) %>% 
-  clean_names() %>% 
-  rename(t_rcp45_f = x_rcp45_u_fffd_f, t_rcp85_f = x_rcp85_u_fffd_f, p_rcp45_in = y_rcp45_in, p_rcp85_in = y_rcp85_in) 
+                          paste(site, "_t_v_p.txt", sep = "")),
+               skip = 7)
+
+  colnames(FM) <- c("model", "t_rcp45_f", "p_rcp45_in", "t_rcp85_f", "p_rcp85_in")
 
 temp <- FM %>% 
   select(model, t_rcp45_f,t_rcp85_f) %>%
@@ -1837,12 +1857,13 @@ ggplot() +
   labs(x ="",
        y = "Water (mm)")
   
-
-# ggsave(here::here("sites",
-#                   site, #site subfolder
-#                   "figures", #subfolder
-#                   paste("lat",lat,"lon",lon, sep = "_"),
-#                   "annual_facet.png")) #file name
+if(save_images == TRUE){
+ggsave(here::here("sites",
+                  site, #site subfolder
+                  "figures", #subfolder
+                  paste("lat",lat,"lon",lon, sep = "_"),
+                  "annual_facet.png")) #file name
+}
 
 ```
 
@@ -1928,11 +1949,13 @@ ggplot(deficit_aet_bc) +
   xlim(NA, max_x_d_aet) +
   theme(axis.title.x = element_text(size = 15))
 
-# ggsave(here::here("sites",
-#                   site, # site subfolder
-#                     "figures", #sub folder
-#                     paste("lat",lat,"lon",lon, sep = "_"),
-#                     paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
+if(save_images == TRUE){
+ggsave(here::here("sites",
+                  site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste("d_v_aet", model_bc_rcp, ".png", sep = "_"))) #file name)
+}
 
 
 
@@ -1958,12 +1981,13 @@ ggplot(deficit_aet_wc) +
   xlim(NA, max_x_d_aet) +
   theme(axis.title.x = element_text(size = 15))
 
-# ggsave(here::here("sites",
-#                    site, # site subfolder
-#                     "figures", #sub folder
-#                     paste("lat",lat,"lon",lon, sep = "_"),
-#                     paste("d_v_aet", model_wc_rcp, ".png", sep = "_"))) #file name)
-  
+if(save_images == TRUE){
+ggsave(here::here("sites",
+                   site, # site subfolder
+                    "figures", #sub folder
+                    paste("lat",lat,"lon",lon, sep = "_"),
+                    paste("d_v_aet", model_wc_rcp, ".png", sep = "_"))) #file name)
+}
 
 ```
 \newpage

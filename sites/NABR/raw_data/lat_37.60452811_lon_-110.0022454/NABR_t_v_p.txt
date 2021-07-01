@@ -1,0 +1,29 @@
+Projected Climate (2040 - 2069)
+Average over [37.6045 to 37.6045] N x [-110.0022 to -110.0022] E
+X: Change in Jan-Dec Mean Temperature(°F) from Climate (MACAv2-METDATA)
+Y: Change in Jan-Dec Precipitation(in) from Climate (MACAv2-METDATA)
+RCP45: RCP 4.5 Future Scenario
+RCP85: RCP 8.5 Future Scenario
+===========================
+Model,X_RCP45(°F),Y_RCP45(in),X_RCP85(°F),Y_RCP85(in)
+bcc-csm1-1, 4.039, -0.580, 5.482, -0.396
+bcc-csm1-1-m, 3.634, -1.139, 5.254, 0.026
+BNU-ESM, 5.053, 0.466, 7.080, 0.617
+CanESM2, 5.285, 1.665, 7.061, 2.042
+CCSM4, 4.076, -0.472, 5.539, -0.047
+CNRM-CM5, 4.176, 0.645, 5.951, 2.305
+CSIRO-Mk3-6-0, 5.368, 1.822, 6.189, 1.979
+GFDL-ESM2M, 3.102, 0.983, 4.348, 1.761
+GFDL-ESM2G, 3.806, 0.612, 5.249, 1.173
+HadGEM2-CC365, 5.764, 1.040, 7.536, 1.775
+HadGEM2-ES365, 5.530, -0.666, 7.667, -1.582
+inmcm4, 2.163, 1.306, 4.083, 0.209
+IPSL-CM5A-LR, 4.925, -0.266, 6.560, 0.614
+IPSL-CM5A-MR, 5.343, -0.361, 7.414, -1.800
+IPSL-CM5B-LR, 3.456, 0.288, 4.732, 0.852
+MIROC5, 6.165, 0.552, 7.425, -0.064
+MIROC-ESM, 6.770, 1.021, 8.764, 0.571
+MIROC-ESM-CHEM, 7.074, 1.080, 9.913, 0.834
+MRI-CGCM3, 2.279, 0.567, 3.826, 1.236
+NorESM1-M, 4.588, -0.059, 5.976, -0.225
+20CMIP5ModelMean, 4.629, 0.425, 6.302, 0.594
