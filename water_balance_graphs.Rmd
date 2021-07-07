@@ -1776,36 +1776,54 @@ t_v_p <- temp %>%
   full_join(precip) 
 
 t_v_p_filtered <- t_v_p %>% 
-   filter(!model %in% c(paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))
+   filter(!model %in% c("CCSM4 RCP 4.5", "CCSM4 RCP 8.5", "inmcm4 RCP 4.5", "inmcm4 RCP 8.5", "NorESM1-M RCP 4.5", "NorESM1-M RCP 8.5", "MRI-CGCM3 RCP 4.5", "MRI-CGCM3 RCP 8.5", "MIROC5 RCP 4.5", "MIROC5 RCP 8.5", "IPSL-CM5A-LR RCP 4.5", "IPSL-CM5A-LR RCP 8.5",  "HadGEM2-CC365 RCP 4.5", "HadGEM2-CC365 RCP 8.5", "GFDL-ESM2G RCP 4.5", "GFDL-ESM2G RCP 8.5", "CanESM2 RCP 4.5", "CanESM2 RCP 8.5", "CSIRO-Mk3-6-0 RCP 4.5", "CSIRO-Mk3-6-0 RCP 8.5", "CNRM-CM5 RCP 4.5", "CNRM-CM5 RCP 8.5", "BNU-ESM RCP 4.5", "BNU-ESM RCP 8.5"))
 
 highlight <- t_v_p %>% 
   filter(model %in% c(paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))
 
+t_v_p_mike_server_highlight <- t_v_p %>% 
+  filter(model %in% c("CCSM4 RCP 4.5", "CCSM4 RCP 8.5", "inmcm4 RCP 4.5", "inmcm4 RCP 8.5", "NorESM1-M RCP 4.5", "NorESM1-M RCP 8.5", "MRI-CGCM3 RCP 4.5", "MRI-CGCM3 RCP 8.5", "MIROC5 RCP 4.5", "MIROC5 RCP 8.5", "IPSL-CM5A-LR RCP 4.5", "IPSL-CM5A-LR RCP 8.5",  "HadGEM2-CC365 RCP 4.5", "HadGEM2-CC365 RCP 8.5", "GFDL-ESM2G RCP 4.5", "GFDL-ESM2G RCP 8.5", "CanESM2 RCP 4.5", "CanESM2 RCP 8.5", "CSIRO-Mk3-6-0 RCP 4.5", "CSIRO-Mk3-6-0 RCP 8.5", "CNRM-CM5 RCP 4.5", "CNRM-CM5 RCP 8.5", "BNU-ESM RCP 4.5", "BNU-ESM RCP 8.5")) %>% 
+  filter(!model %in% c(paste(model_bc, model_bc_rcp_name), paste(model_wc, model_wc_rcp_name)))
+  
+
 
 set.seed(1234)
 
+colors <- c("Models avialable on thredds server" = "black", "Models not available on thredds server" = "gray50", "Models selected for this report" = "red")
+
 ggplot(t_v_p_filtered, aes(x = temp, y = precip)) +
-  geom_point(size=4,
-             colour="black") +
-  geom_text_repel(aes(label = model),
+  geom_point(size = 4,
+             aes(colour = "Models not available on thredds server")) +
+  geom_text_repel(aes(label = model, color = "Models not available on thredds server"),
                   box.padding = 0.5,
                   point.padding = 1.5) +
-  geom_point(data = highlight, aes(x = temp, y = precip),
-             size = 6,
-             color = "red") +
-   geom_text_repel(data = highlight, aes(label = model),
+  geom_point(data = highlight, aes(x = temp, y = precip, 
+                                   color = "Models selected for this report"),
+             size = 6) +
+   geom_text_repel(data = highlight, aes(label = model, 
+                                         color = "Models selected for this report"),
                   box.padding = 0.5,
-                  point.padding = 1.5,
-                  color = "red") +
+                  point.padding = 1.5) +
+  geom_point(data = t_v_p_mike_server_highlight, aes(x = temp, y = precip, color = "Models avialable on thredds server"),
+             size = 6) +
+   geom_text_repel(data = t_v_p_mike_server_highlight, aes(label = model, color = "Models avialable on thredds server"),
+                  box.padding = 0.5,
+                  point.padding = 1.5) +
   theme(axis.text=element_text(size=20, face = "bold"),
         axis.title.x=element_text(size=20,vjust=-0.2),
         axis.title.y=element_text(size=20,vjust=0.2),
-        plot.title=element_text(size=20,face="bold",vjust=2,hjust=0.5),
-        legend.text=element_text(size=20), legend.title=element_text(size=20)) +
+        plot.title=element_text(size=26,face="bold",vjust=2,hjust=0.5),
+        legend.text=element_text(size=20), legend.title=element_text(size=20),
+        legend.position = "top",
+        panel.background = element_rect(fill = "gray95",
+                                colour = "gray95",
+                                size = 0.5, linetype = "solid")) +
   ###
-  labs(title ="Changes in climate means centered on 2040 relative to historical period (1950-2000) by GCM", 
+  labs(title ="Changes in climate means centered on 2040\n relative to historical period (1950-2000) by GCM\n", 
        x = "Change in Temperature (F)",
-       y = "Change in Precipitation (in)") 
+       y = "Change in Precipitation (in)",
+       color = "") +
+  scale_color_manual(values = colors)
   
 
 ggsave(here::here("sites",

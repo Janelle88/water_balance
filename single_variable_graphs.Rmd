@@ -94,7 +94,7 @@ model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
 # # past_data options: "gridMET", "Daymet"
 # # if you want to use data that will work with the future models, gridMET is a better choice. It doesn't require adjusting for any biases
 # 
- dry_year = 2013 # a particularly dry year, maybe with lots of fire activity? something for people to reference
+ dry_year = 2011 # a particularly dry year, maybe with lots of fire activity? something for people to reference
 # 
 wet_year = 1997 # particulary wet year for people to reference
 
@@ -186,7 +186,9 @@ wrap_sentence <- function(string, width) {
 # daily future data
 # ------------
 
-future_day_1 <- read_csv(here::here(paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, climvar, ".csv", sep = "_")),
+future_day_1 <- read_csv(here::here("sites",
+                                    site,
+                                    paste(site,model_wc,model_wc_rcp, model_bc,model_bc_rcp, climvar, ".csv", sep = "_")),
                     na = c("-3276.7"))
 
 date_fd <- future_day_1$date
@@ -211,7 +213,9 @@ future_day <- future_day_1 %>%
 # daily past
 # ------------
 
-past_day_1 <- read_csv(here::here(paste("historical_", climvar, ".csv", sep = "")),
+past_day_1 <- read_csv(here::here("sites",
+                                    site,
+                                  paste("historical_", climvar, ".csv", sep = "")),
                            na = c("-3276.7")) 
 
 date_pd <- past_day_1$date# this is a work around
@@ -227,7 +231,8 @@ past_day <- past_day_1 %>%
                                   label = TRUE,
                                   abbr = TRUE),
          day = lubridate::day(date),
-         doy = yday(date)) 
+         doy = yday(date)) %>% 
+  rename(deficit_daily = Deficit_daily) 
 
 
 ```
@@ -969,11 +974,11 @@ plot_annual = function(.y) {
                   label = paste("Wet year:", year), 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c(paste(past_data), paste(model_bc, model_bc_rcp_name)))) + # colors is a named vector, see top of function
+    scale_color_manual(name = "", values = c("gray60","#A3B86C"), labels = (c("Historical", paste(model_bc, model_bc_rcp_name)))) + # colors is a named vector, see top of function
  ylim(NA, max_y) +
       xlim(1960.5, NA)
   
-  ggsave(here::here(paste(site, climvar, model_bc_rcp, model_bc, "annual.png", sep = "_")), width = 6, height = 4) #file name
+  ggsave(here::here(paste(site, climvar, model_bc_rcp, model_bc, "annual.png", sep = "_")), width = 7.5, height = 5) #file name
   
   
   annual_graph_wc <- ggplot() +
@@ -1017,11 +1022,11 @@ plot_annual = function(.y) {
                   label = paste("Wet year:", year), 
                   vjust = -0.35), # -0.x moves the text up above the line
               color = "#1287A8") +
-    scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c(paste(past_data), paste(model_wc, model_wc_rcp_name)))) + # colors is a named vector, see top of function
+    scale_color_manual(name = "", values = c("gray60", "#EBC944"), labels = (c("Historical", paste(model_wc, model_wc_rcp_name)))) + # colors is a named vector, see top of function
   ylim(NA, max_y) +
     xlim(1960.5, NA)
   
-  ggsave(here::here(paste(site, climvar, model_wc_rcp, model_wc, "annual_graph_wc.png", sep = "_")), width = 6, height = 4) #filename
+  ggsave(here::here(paste(site, climvar, model_wc_rcp, model_wc, "annual_graph_wc.png", sep = "_")), width = 7.5, height = 5) #filename
   
   # return(annual_graph_bc)
   # return(annual_graph_wc) with these two it only prints the 4.5 graph
@@ -1041,5 +1046,5 @@ plot_decades_smooth("deficit_daily")
 
 
 ```{r, out.width="50%"}
-plot_annual("Accumulated SWE")
+plot_annual("Deficit")
 ```

@@ -5,10 +5,21 @@ library(rmarkdown)
 library(here)
 library(pagedown)
 
-# for each type of car in the data create a report
-# these reports are saved in output_dir with the name specified by output_file
 
 centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids, run_multiple_sites
+
+save_images = FALSE # do you want to save individual .png files of all plots generated in the report? if so, change to TRUE
+
+############ there is also a line of code that reiterates this in the `water_balance_graphs.Rmd` file
+#make sure if running from this R script that it either matches what you want or that it is commented out
+
+#----------------------------------
+#
+# DATA LOOP
+#
+#----------------------------------
+
+# for each park in the csv file listed, this runs the `water_balance_data.Rmd`
 
 # for(row in 1:nrow(centroids)) {
 #   sites <- centroids[row, "Park"]
@@ -43,9 +54,16 @@ centroids <- read_csv(here::here("NCPN_centroids.csv")) #NCPN_centroids, run_mul
 
 # } #close data download loop
 
+#-------------------------------
+#
+# GRAPH LOOP
+#
+#-------------------------------
+
+# for each park in the csv file listed, this runs the `water_balance_graphs.Rmd`
+
 for(row in 1:nrow(centroids)) {
   sites <- centroids[row, "Park"]
-  
   lats <- centroids[row, "Lat"]
   lons <- centroids[row, "Long"]
   model_bcs <- centroids[row, "model_bc"]
