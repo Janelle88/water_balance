@@ -17,63 +17,36 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 # ------------
 # 
 save_images = FALSE # do you want to save individual .png files of all plots generated in the report? if so, change to TRUE
-
-#site = "Blacktail Ponds"
-  
-#"little_saddle_mtn"
-
-#"Crystal_bench"
-  
-  #"quitobaquito" 
-  
-  #
-
-#lat = 44.96
-
-# # crystal: 44.9051022
-# #   
-# # quito: 31.942809
-# #   
-# # lsm: 44.702
-# # 
-#lon = -111.6
-
-## crystal: -110.2873649
-
-
-## quito:-113.020708
-
-  #lsm: -110.018
-
-#model_bc = "MRI-CGCM3" # "best case"
+#
+# ------------
+# uncomment the following section for running the .Rmd for a single site.
+# if running a batch based off of run_rmd.R, leave these commented out
+# to uncomment all, highlight from site to wet_year and press ctrl + shift + c on windows
+# or command + shift + c on a mac
+# ------------
+#
+# site = "Blacktail Ponds"
+# 
+# lat = 44.96
+# 
+# lon = -111.6
+# 
+# model_bc = "MRI-CGCM3" # "best case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-#model_bc_rcp = "rcp85"
-
-# options: "rcp45", "rcp85" 
-
-model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
-  paste("RCP 4.5")
-} else {
-  paste("RCP 8.5")
-} #automatically makes a more "readable" version of the rcp for graph titles and such
-
-
-#model_wc = "HadGEM2-CC365" # "worst case"
+# model_bc_rcp = "rcp85"
+# 
+# #options: "rcp45", "rcp85"
+# 
+# model_wc = "HadGEM2-CC365" # "worst case"
 # 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
 # 
-#model_wc_rcp = "rcp85"
-
-# options: "rcp45", "rcp85" 
-
-model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
-  paste("RCP 4.5")
-} else {
-  paste("RCP 8.5")
-} #automatically makes a more "readable" version of the rcp for graph titles and such
-
+# model_wc_rcp = "rcp85"
+# 
+# #options: "rcp45", "rcp85"
+# 
 # past_data = "gridMET"
 # 
 # # past_data options: "gridMET", "Daymet"
@@ -82,6 +55,20 @@ model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
 # dry_year = 2012 # a particularly dry year, maybe with lots of fire activity? something for people to reference
 # 
 # wet_year = 2007 # particulary wet year for people to reference
+
+model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
+  paste("RCP 4.5")
+} else {
+  paste("RCP 8.5")
+} #automatically makes a more "readable" version of the rcp for graph titles and such
+
+model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
+  paste("RCP 4.5")
+} else {
+  paste("RCP 8.5")
+} #automatically makes a more "readable" version of the rcp for graph titles and such
+
+
 
 
 # -------------
