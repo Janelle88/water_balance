@@ -16,7 +16,7 @@ The values that need to be defined are at the tope of each rmd file. They are:
 - dry_year = What is a historically dry year in the latitude and longitude you are looking at? Possibly a year with a lot of fire?
 - wet_year = what is a historically wet year in the latitude and logitude you are looking at? Possibly a year with flooding?
 
-This code runs off the most recent version of R. Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
+This code runs has been run off of 4.1, but it still works with earlier versions (I have not tested to see how far back it will work). Additionally, this code requires use of project directories and a basic understanding of the `here` package. File organization is key here, there are many articles on how to best organize your files, why projects (rather than using setwd()) are crucial to reproducible data, and why we should all be using them. I won't go into that here, but [this blog](https://martinctc.github.io/blog/rstudio-projects-and-working-directories-a-beginner's-guide/) has a good summary. If you need help understanding how to set up a directory in R, [this website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects) explains it pretty well.
 
 When opening and running the project for always make sure to open the .Rproj file, otherwise your code may tell you that it cannot find the file, causing the code to abort. 
 
@@ -51,7 +51,7 @@ You can run this code on a newer version of R but still have access to your olde
 
 ### How to have (and switch between) multiple versions of R on RStudio
 
-Oftentimes, people need to work in older versions of R for certain packages. Because this code runs on the most recent version of R, this can cause challenges. Fortunately, RStudio can support more than one version, allowing you to switch between them easily. [This website](http://derekogle.com/IFAR/supplements/installations/InstallRStudioWin.html) gives detail instructions on how to switch between Rstudo versions.
+Oftentimes, people need to work in older versions of R for certain packages. Fortunately, RStudio can support more than one version, allowing you to switch between them easily. [This website](http://derekogle.com/IFAR/supplements/installations/InstallRStudioWin.html) gives detail instructions on how to switch between Rstudo versions.
 
 
 ### Run the scripts in the following order:
