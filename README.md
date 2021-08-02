@@ -57,10 +57,11 @@ Oftentimes, people need to work in older versions of R for certain packages. For
 ### Run the scripts in the following order:
 
 1. Create model scatterplot and select models to be used. This can be done one of two ways:
-    + Go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), and enter in your latitude and longitude, change the x axis to mean temperature and Jan-Dec, change the y axis to precipitation - absolute change and Jan-Dec, and press get visualization.
+    + 1. Go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), and enter in your latitude and longitude, change the x axis to mean temperature and Jan-Dec, change the y axis to precipitation - absolute change and Jan-Dec, and press get visualization.
     ![MACA screenshot](https://github.com/Janelle88/water_balance/blob/master/figures/Screenshot%20(98).png)
     + copy the data (inclding the headers) from the data tab into your notepad and save it as a .txt file labeled Sitename_t_v_p.txt (sitename should be changed to the EXACT way it will be written in the code, i.e. if you are writing site = "YELL", this file should be named YELL_t_v_p.txt) and save it in the raw_data file of your site folder. You can create the folder structure by running the directory create code chunk from the water_balance_data.Rmd file (lines 148 - 176).
-    + model_selection_graph.R OR select your models using the scatterplot on the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php). Keep in mind that model selection isn't always intuitive, but using the scatterplot, you can select for what type of future you would like to see. There are some models that do not represent certain parts of the country well, so be aware of that as well.
+    + 2. run the model_selection_graph.R (this takes MUCH longer) and choose your models. You will have to edit the code in the water_balance_graphs.Rmd to add the image to the report. If you don't do this, the report won't run. I obviously prefer the first option. 
+    + Keep in mind that model selection isn't always intuitive, but using the scatterplot, you can select for what type of future you would like to see. There are some models that do not represent certain parts of the country well, so be aware of that as well.
     + this allows you to select which models you believe will best bracket your climate futures. Once you have run this code, you must select two models from the graph along with their RCPs (either 4.5 or 8.5) which will be input into the following two steps
 2. water_balance_data.Rmd
     + this downloads all the data required to run the graphs script. I recommend running it over night, as the data can take quite some time to download.
