@@ -60,6 +60,9 @@ Oftentimes, people need to work in older versions of R for certain packages. For
     + 1. Go to the [MACA website](https://climate.northwestknowledge.net/MACA/vis_scatterplot.php), and enter in your latitude and longitude, change the x axis to mean temperature and Jan-Dec, change the y axis to precipitation - absolute change and Jan-Dec, and press get visualization.
     ![MACA screenshot](https://github.com/Janelle88/water_balance/blob/master/figures/Screenshot%20(98).png)
     + copy the data (inclding the headers) from the data tab into your notepad and save it as a .txt file labeled Sitename_t_v_p.txt (sitename should be changed to the EXACT way it will be written in the code, i.e. if you are writing site = "YELL", this file should be named YELL_t_v_p.txt) and save it in the raw_data file of your site folder. You can create the folder structure by running the directory create code chunk from the water_balance_data.Rmd file (lines 148 - 176).
+    ![MACA screenshot](https://github.com/Janelle88/water_balance/blob/master/figures/Screenshot%20(99).png)
+    ![MACA screenshot](https://github.com/Janelle88/water_balance/blob/master/figures/Screenshot%20(100).png)
+
     + 2. run the model_selection_graph.R (this takes MUCH longer) and choose your models. You will have to edit the code in the water_balance_graphs.Rmd to add the image to the report. If you don't do this, the report won't run. I obviously prefer the first option. 
     + Keep in mind that model selection isn't always intuitive, but using the scatterplot, you can select for what type of future you would like to see. There are some models that do not represent certain parts of the country well, so be aware of that as well.
     + this allows you to select which models you believe will best bracket your climate futures. Once you have run this code, you must select two models from the graph along with their RCPs (either 4.5 or 8.5) which will be input into the following two steps
