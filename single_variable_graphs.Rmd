@@ -16,57 +16,40 @@ knitr::opts_chunk$set(echo = TRUE)
 # ------------
 # 
 
-climvar = "deficit"
+climvar = "accumswe"
 
-site = "bandelier"
+# site = "bandelier"
 
-# site = "yellowstone"
+# lat = 35.75758546
+
+# lon = -106.3054344
+
+# model_bc = "inmcm4" # "best case"
+
+# model_bc_rcp = "rcp45"
+
+# model_wc = "NorESM1-M" # "worst case"
+
+# model_wc_rcp = "rcp85"
+
+site = "yellowstone"
 # 
-# lat = 44.59644457
-# 
-# lon = -110.5471962
-# 
-# model_wc <- "IPSL-CM5A-LR"
-# 
-# model_wc_rcp <- "rcp85"
-# 
-# model_bc <- "MRI-CGCM3"
-# 
-# model_bc_rcp <- "rcp85"
+lat = 44.59644457
 
-  
-#"little_saddle_mtn"
+lon = -110.5471962
 
-#"Crystal_bench"
-  
-  #"quitobaquito" 
-  
-  #
+model_wc <- "IPSL-CM5A-LR"
 
- lat = 35.75758546
+model_wc_rcp <- "rcp85"
 
-# # crystal: 44.9051022
-# #   
-# # quito: 31.942809
-# #   
-# # lsm: 44.702
-# # 
- lon = -106.3054344
+model_bc <- "MRI-CGCM3"
 
-## crystal: -110.2873649
+model_bc_rcp <- "rcp85"
 
 
-## quito:-113.020708
-
-  #lsm: -110.018
-
- model_bc = "inmcm4" # "best case"
-# 
 # # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
-# 
- model_bc_rcp = "rcp45"
 
-# options: "rcp45", "rcp85" 
+# RCP options: "rcp45", "rcp85" 
 
 model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
   paste("RCP 4.5")
@@ -74,14 +57,6 @@ model_bc_rcp_name = if(model_bc_rcp == "rcp45"){
   paste("RCP 8.5")
 } #automatically makes a more "readable" version of the rcp for graph titles and such
 
-
- model_wc = "NorESM1-M" # "worst case"
-# 
-# # model options: CCSM4, inmcm4, NorESM1-M, MRI-CGCM3, MIROC5, IPSL-CM5A-LR,  HadGEM2-CC365, GFDL-ESM2G, CanESM2, CSIRO-Mk3-6-0, CNRM-CM5, BNU-ESM
-# 
- model_wc_rcp = "rcp85"
-
-# options: "rcp45", "rcp85" 
 
 model_wc_rcp_name = if(model_wc_rcp == "rcp45"){
   paste("RCP 4.5")
@@ -231,8 +206,9 @@ past_day <- past_day_1 %>%
                                   label = TRUE,
                                   abbr = TRUE),
          day = lubridate::day(date),
-         doy = yday(date)) %>% 
-  rename(deficit_daily = Deficit_daily) 
+         doy = yday(date)) 
+# %>% 
+#   rename(deficit_daily = Deficit_daily) 
 
 
 ```
@@ -249,7 +225,7 @@ past_day <- past_day_1 %>%
 annual_past <- past_day %>% 
   group_by(year) %>% 
   filter(!year == 2020) %>% 
-  summarize(annual_deficit = sum(deficit_daily, na.rm = TRUE) 
+  summarize(annual_accumswe = sum(accumswe_daily, na.rm = TRUE) 
             #annual_agdd = max(agdd_daily, na.rm = TRUE), 
             #put this back in when agdd is working
             )
@@ -270,10 +246,10 @@ annual_past <- past_day %>%
 # -------------
 
 wc_annual_future <- future_day %>%
-  select(deficit_daily_wc, date:doy) %>% # soil_water_daily_wc:aet_daily_wc, selecting for variables for 8.5 only
+  select(accumswe_daily_wc, date:doy) %>% # soil_water_daily_wc:aet_daily_wc, selecting for variables for 8.5 only
   filter(!year == 2100) %>% 
   group_by(year) %>% 
-    summarize(annual_deficit_wc = sum(deficit_daily_wc, na.rm = TRUE))
+    summarize(annual_accumswe_wc = sum(accumswe_daily_wc, na.rm = TRUE))
 
 # annual_soil_water_wc = mean(soil_water_daily_wc, na.rm = TRUE),
 #               annual_runoff_wc = sum(runoff_daily_wc, na.rm = TRUE),
@@ -290,10 +266,10 @@ wc_annual_future <- future_day %>%
 # ------------
   
 bc_annual_future <- future_day %>% 
-  select(deficit_daily_bc, date:doy) %>% #soil_water_daily_bc:aet_daily_bc,selecting for 4.5 only
+  select(accumswe_daily_bc, date:doy) %>% #soil_water_daily_bc:aet_daily_bc,selecting for 4.5 only
   filter(!year == 2100) %>% 
   group_by(year) %>% 
-    summarize(annual_deficit_bc = sum(deficit_daily_bc, na.rm = TRUE))
+    summarize(annual_accumswe_bc = sum(accumswe_daily_bc, na.rm = TRUE))
 
 # annual_soil_water_bc = mean(soil_water_daily_bc, na.rm = TRUE),
 #               annual_runoff_bc = sum(runoff_daily_bc, na.rm = TRUE),
@@ -315,7 +291,7 @@ bc_annual_future <- future_day %>%
 
 bc_annual_values <- annual_past %>%
   full_join(bc_annual_future) %>% 
-  pivot_longer(`annual_deficit`:`annual_deficit_bc`,#`annual_soil_water`:`annual_aet_bc`, # The columns I'm gathering together
+  pivot_longer(`annual_accumswe`:`annual_accumswe_bc`,#`annual_soil_water`:`annual_aet_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "annual_value") %>% 
   na.omit(annual_values) %>% # new column name to store values
@@ -360,7 +336,7 @@ bc_annual_values <- annual_past %>%
 
 wc_annual_values <- annual_past %>% 
   full_join(wc_annual_future) %>%
-  pivot_longer(`annual_deficit`:`annual_deficit_wc`,#`annual_soil_water`:`annual_aet_wc`, # The columns I'm gathering together
+  pivot_longer(`annual_accumswe`:`annual_accumswe_wc`,#`annual_soil_water`:`annual_aet_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "annual_value") %>% 
   na.omit(annual_values) %>% # new column name to store values
@@ -421,7 +397,7 @@ annual_values <- bc_annual_values %>%
 
 doy_avg_1980_2019 <-  past_day %>% 
   filter(year %in% c(1980:2019)) %>%
-  pivot_longer(deficit_daily,
+  pivot_longer(accumswe_daily,
     #`soil_water_daily`:`aet_daily`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>%  # new column name to store values) 
@@ -439,8 +415,8 @@ doy_avg_1980_2019 <-  past_day %>%
 
 doy_avg_2020_2059_bc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
-  select(deficit_daily_bc:doy) %>% 
-  pivot_longer(deficit_daily_bc,
+  select(accumswe_daily_bc:doy) %>% 
+  pivot_longer(accumswe_daily_bc,
     #`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>% # new column name to store values)
@@ -462,9 +438,9 @@ doy_avg_2020_2059_bc <- future_day %>%
 
 doy_avg_2060_2099_bc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
-  select(deficit_daily_bc:doy) %>% 
+  select(accumswe_daily_bc:doy) %>% 
 #soil_water_daily_bc:doy) %>%
-  pivot_longer(`deficit_daily_bc`,#`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
+  pivot_longer(`accumswe_daily_bc`,#`soil_water_daily_bc`:`aet_daily_bc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>%  # new column name to store values) 
   mutate(variable = case_when(.$variable == "aet_daily_bc" ~ "aet_daily",
@@ -501,8 +477,8 @@ doy_avg_bc <- doy_avg_1980_2019 %>%
 
 doy_avg_2020_2059_wc <- future_day %>% 
   filter(year %in% c(2020:2059)) %>%
-  select(deficit_daily_wc, date:doy) %>% #soil_water_daily_wc:doy) %>% 
-  pivot_longer(`deficit_daily_wc`,#`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
+  select(accumswe_daily_wc, date:doy) %>% #soil_water_daily_wc:doy) %>% 
+  pivot_longer(`accumswe_daily_wc`,#`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>% # new column name to store values)
   mutate(variable = case_when(.$variable == "aet_daily_wc" ~ "aet_daily",
@@ -523,8 +499,8 @@ doy_avg_2020_2059_wc <- future_day %>%
 
 doy_avg_2060_2099_wc <-  future_day %>% 
   filter(year %in% c(2060:2099)) %>%
-  select(deficit_daily_wc, date:doy) %>% #soil_water_daily_wc:doy) %>%
-  pivot_longer(`deficit_daily_wc`,#`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
+  select(accumswe_daily_wc, date:doy) %>% #soil_water_daily_wc:doy) %>%
+  pivot_longer(`accumswe_daily_wc`,#`soil_water_daily_wc`:`aet_daily_wc`, # The columns I'm gathering together
                names_to = "variable", # new column name for existing names
                values_to = "value") %>%  # new column name to store values) 
   mutate(variable = case_when(.$variable == "aet_daily_wc" ~ "aet_daily",
@@ -609,28 +585,28 @@ max_y <- max_y_2*1.15
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
                              paste("Soil Water Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""), #title based on variable
+                                   "Hotter and wetter", sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
                              paste("Runoff Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "rain_daily" ~  
                              paste("Rain Seasonality","\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "agdd_daily" ~ 
                              paste("AGDD Seasonality","\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "accumswe_daily"~ paste(
                               "SWE Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "pet_daily" ~ paste(
                                "PET Seasonality", "\n",
-                               model_bc, " ",model_bc_rcp_name, sep = ""),
+                               "Hotter and wetter", sep = ""),
                            .y == "deficit_daily" ~ 
                              paste("Deficit Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            TRUE ~ paste(
                                "AET Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""))) + 
+                                   "Hotter and wetter", sep = ""))) + 
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
     ylim(0, max_y) +
@@ -651,7 +627,7 @@ max_y <- max_y_2*1.15
 #   .y_plot_bc <- .y_plot_bc + geom_vline(aes(xintercept = xintercept), data = vline_data_bc)
   
   
-  ggsave(here::here(paste(site, climvar, "40_yr",model_bc_rcp, model_bc, ".png", sep = "_")), width = 6, height = 4) #file name
+  ggsave(here::here(paste(site, climvar, "40_yr",model_bc_rcp, model_bc, ".png", sep = "_")), width = 7, height = 5) #file name
 
   print(.y_plot_bc)
   
@@ -692,31 +668,31 @@ max_y <- max_y_2*1.15
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
                              paste("Soil Water Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""), #title based on variable
+                                   "Hotter and drier", sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
                              paste("Runoff Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            .y == "rain_daily" ~  
                              paste("Rain Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            .y == "agdd_daily" ~ 
                              paste("AGDD Seasonality", "\n",
-                                   model_wc,model_wc_rcp_name),
+                                   "Hotter and drier", sep = ""),
                            .y == "accumswe_daily"~ 
                             paste(
                               "SWE Seasonality", "\n",
-                                   model_wc,model_wc_rcp_name),
+                                   "Hotter and drier", sep = ""),
                            .y == "pet_daily" ~ 
                              paste(
                                "Potential Evapotranspiration Seasonality", "\n",
-                               model_wc,model_wc_rcp_name),
+                               "Hotter and drier", sep = ""),
                            .y == "deficit_daily" ~ 
                              paste("Deficit Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            TRUE ~ 
                              paste(
                                "Actual Evapotranspiration Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""))) +
+                                   "Hotter and drier", sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(0, max_y)+
@@ -734,7 +710,7 @@ max_y <- max_y_2*1.15
   # 
   # .y_plot_wc <- .y_plot_wc + geom_vline(aes(xintercept = xintercept), data = vline_data_wc)
   
-  ggsave(here::here(paste(site, climvar, "40_yr",model_wc_rcp, model_wc, ".png", sep = "_")), width = 6, height = 4) #file name
+  ggsave(here::here(paste(site, climvar, "40_yr",model_wc_rcp, model_wc, ".png", sep = "_")), width = 7, height = 5) #file name
   
   print(.y_plot_wc)
   
@@ -789,31 +765,31 @@ max_y <- max_y_2*1.15
          # if {} else{} and if_else() both didn't work, but I don't know why
          title = case_when(.y ==  "soil_water_daily" ~ 
                              paste("Soil Water Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""), #title based on variable
+                                   "Hotter and wetter", sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
                              paste("Runoff Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "rain_daily" ~  
                              paste("Rain Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            .y == "agdd_daily" ~ 
                              paste("AGDD Seasonality", "\n",
-                                   model_bc,model_bc_rcp_name),
+                                   "Hotter and wetter", sep = ""),
                            .y == "accumswe_daily"~ 
                             paste(
                               "Peak SWE Seasonality", "\n",
-                                   model_bc,model_bc_rcp_name),
+                                   "Hotter and wetter", sep = ""),
                            .y == "pet_daily" ~ 
                              paste(
                                "Potential Evapotranspiration Seasonality", "\n",
-                               model_bc,model_bc_rcp_name),
+                               "Hotter and wetter", sep = ""),
                            .y == "deficit_daily" ~ 
                              paste("Deficit Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""),
+                                   "Hotter and wetter", sep = ""),
                            TRUE ~ 
                              paste(
                                "Actual Evapotranspiration Seasonality", "\n",
-                                   model_bc, " ",model_bc_rcp_name, sep = ""))) +
+                                   "Hotter and wetter", sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", "#EBC944", "#1496BB")) +
   ylim(NA, max_y) +
@@ -847,31 +823,31 @@ max_y <- max_y_2*1.15
          #.y is useful because it prevents R from confusing it with something else
          title = case_when(.y ==  "soil_water_daily" ~ 
                              paste("Soil Water Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""), #title based on variable
+                                   "Hotter and drier", sep = ""), #title based on variable
                            .y == "runoff_daily" ~ 
                              paste("Runoff Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            .y == "rain_daily" ~  
                              paste("Rain Seasonality",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            .y == "agdd_daily" ~ 
                              paste("AGDD Seasonality", "\n",
-                                   model_wc,model_wc_rcp_name),
+                                   "Hotter and drier", sep = ""),
                            .y == "accumswe_daily"~ 
                             paste(
                               "Peak SWE Seasonality", "\n",
-                                   model_wc,model_wc_rcp_name),
+                                   "Hotter and drier", sep = ""),
                            .y == "pet_daily" ~ 
                              paste(
                                "Potential Evapotranspiration Seasonality", "\n",
-                               model_wc,model_wc_rcp_name),
+                               "Hotter and drier", sep = ""),
                            .y == "deficit_daily" ~ 
                              paste("Deficit Seasonality", "\n",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""),
+                                   "Hotter and drier", sep = ""),
                            TRUE ~ 
                              paste(
                                "Actual Evapotranspiration Seasonality",
-                                   model_wc, " ",model_wc_rcp_name, sep = ""))) +
+                                   "Hotter and drier", sep = ""))) +
     scale_color_manual(breaks = c("1980-2019", "2020-2059", "2060-2099"),
                        values = c("#A3B86C", #turquoise
                                   "#EBC944", #green
@@ -959,7 +935,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual", .y, "\n", model_bc, " ",model_bc_rcp_name, sep = ""),
+  labs(title = paste("Annual", .y, "\n", "Hotter and wetter", sep = ""),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
@@ -1038,7 +1014,7 @@ plot_annual = function(.y) {
 ```
 
 ```{r, out.width="50%"}
-plot_decades_smooth("deficit_daily")
+plot_decades_smooth("accumswe_daily")
 ```
 <br>
 <br>
@@ -1046,5 +1022,5 @@ plot_decades_smooth("deficit_daily")
 
 
 ```{r, out.width="50%"}
-plot_annual("Deficit")
+plot_annual("Accumulated SWE")
 ```
