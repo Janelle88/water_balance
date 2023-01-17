@@ -1382,7 +1382,7 @@ plot_annual = function(.y) {
                color = "#1287A8",
                alpha =  0.25,
                size = 4) +
-  labs(title = paste("Annual", .y, "\n", model_bc, " ",model_bc_rcp_name, sep = ""),
+  labs(title = paste("Annual ", .y, "\n", model_bc, " ",model_bc_rcp_name, sep = ""),
        y = ifelse(.y == "agdd_daily", "Growing Degree Days (C)",
                     "Water (mm)")) +
       geom_text(data = point_low, # labels the line
@@ -1589,7 +1589,7 @@ print(jitter_wc)
 
 ```
 
-Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Through integrating the interactions of temperature and precipitation, it allows us to estimate water availability, movement to streams, and ground water and use by plants. It also accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Local site characteristics such as slope, aspect, soil properties are represented by the modification of regional weather and climate and depict the biophysical conditions at local scales that plants and animals “experience”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
+Water balance is the mathematical accounting of water input and movement through the environment.  It accounts for water storage in different phases (ice, liquid) and loss to the atmosphere (gas) via evapotranspiration.  Through integrating the interactions of temperature and precipitation, it allows us to estimate water availability, movement to streams and ground water, and use by plants. It also accounts for heat load on different aspects and slopes in complex terrain, as well as water holding capacity of different soil types. Local site characteristics such as slope, aspect, and soil properties are represented by the modification of regional weather and climate and depict the biophysical conditions at local scales that plants and animals “experience”.  For these reasons, water balance is usually more strongly correlated with natural resource response (plant growth, stream flow, fire danger) than temperature or precipitation. More information about water balance and links to studies that have used water balance to improve
 understanding of natural resources response to climate change can be found [here](https://www.nps.gov/subjects/climatechange/waterbalance.htm). The water balance model is maintained by the National Park Service (Mike Tercek, David Thoma and John Gross).  Collectively this report summarizes historical and projected biophysical environmental conditions from 1980-2100 at the single grid cell level (`r past_data` = 4km; projections = 1km).   A link to the NPS water balance gridded products can be found [here](http://www.yellowstone.solutions/thredds/catalog.html).
 
 ```{r mccabe, echo=FALSE, fig.align="center", out.width="60%"}
@@ -1603,13 +1603,13 @@ website <- ifelse(past_data == "gridMET", print("[gridMET](http://www.climatolog
 
 ```
 
-This report is created from temperature and precipitation data that is input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, used in this report are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  
+This report is created from temperature and precipitation data that are input to a water balance model.  The historical temperature and precipitation data are from `r website`. The future climate projections, `r model_bc` `r model_bc_rcp_name` and `r model_wc` `r model_wc_rcp_name`, used in this report are from the [CMIP5 experiments](https://www.wcrp-climate.org/wgcm-cmip/wgcm-cmip5) .  
 
 \newpage
 
 # Future Model Selection
 
-The models used in this analysis were chosen based on two climate futures that bracket a wide range of plausible future climate conditions represented by the Global Circulation Models (GCM) in the CMIP5 experiments. The experiments include the effects of anthropogenic warming caused by changes in carbon dioxide concentration in the atmosphere.  Representative Concentration Pathways (RCP) describe scenarios of carbon dioxide emission, where RCP 8.5 is the high-emission scenario and RCP 4.5 is a lower emission scenario.  Model selection for this report is based on a temperature v. precipitation scatterplot of future climate models and scenarios at mid-century. Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity, and high variation in soil water holding capacity.
+The models used in this analysis were chosen based on two climate futures that bracket a wide range of plausible future climate conditions represented by the Global Circulation Models (GCM) in the CMIP5 experiments. The experiments include the effects of anthropogenic warming caused by changes in carbon dioxide concentration in the atmosphere.  Representative Concentration Pathways (RCP) describe scenarios of carbon dioxide emission, where RCP 8.5 is the high-emission scenario and RCP 4.5 is a lower emission scenario.  Model selection for this report is based on a temperature v. precipitation scatterplot of future climate models and scenarios at mid-century. Users are cautioned that the two models presented in this report are intended to represent a range of conditions, but other projections are available and may need to be considered for a full accounting of possible futures. The spatial resolution of climate data used in the water balance model may not be representative of site-specific conditions, especially in areas of high relief or high topographic complexity and high variation in soil water holding capacity.
 
 ```{r}
 aet_d_true <- file.exists(here::here("sites",
@@ -1839,9 +1839,9 @@ knitr::include_graphics(here::here("sites",
 
 ## Change in annual values through time
 
-Runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Peak snow water equivalent (SWE) is the max value for the year regardless of the month in which it occurs. Soil water is the mean annual water content in the top meter soil profile. Additionally, it is important to note that precipitation includes rain plus snow, whereas rain is only liquid precipitation. Rain is specifically precipitation that does not fall as snow. If total precipitation stayed the same but temperatures increased, the data here would display that as an increase in rain.
+Runoff, rain, potential evapotranspiration (PET), actual evapotranspiration (AET), and deficit are summed to show annual values through time. Accumulated snow water equivalent (SWE) is the max value for the year regardless of the month in which it occurs. Soil water is the mean annual water content in the top meter of the soil profile. Additionally, it is important to note that precipitation includes rain plus snow, whereas rain is only liquid precipitation. Rain is specifically precipitation that does not fall as snow. If total precipitation stayed the same but temperatures increased, the data here would display that as an increase in rain.
 
-The reason for the different summary statistics is because water variables that don’t have an upper limit like rain, runoff, evapotranspiration and deficit can accumulate indefinitely within a calendar year, whereas soil moisture is limited by the soil water holding capacity, so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow rate and reservoir storage needs.
+The reason for the different summary statistics is because water variables that don’t have an upper limit like rain, runoff, evapotranspiration, and deficit can accumulate indefinitely within a calendar year, whereas soil water is limited by the soil water holding capacity, so it is averaged on an annual basis.  Temperature variables are averaged by convention and growing degree days are summed to account for the seasonal accumulation of heat that controls biological metabolism and thus growth rates and phenology when water is available. Accumulated snow water equivalent is reported as a maximum value because snow accumulates during winter and the maximum water content of the snowpack is useful for predicting stream flow rates and reservoir storage needs.
 
 ```{r, fig.align="center", fig.cap= paste("Figure 1. Annual values over time. The gray line represents historical data modeled from ", past_data, ", the turquoise line represents ", model_bc, " ", model_bc_rcp, " ", "and the yellow line represents ", model_wc," ", model_wc_rcp, ".", sep = "")}
 
@@ -2062,7 +2062,7 @@ plot_jitter("Rain")
 
 \newpage
 
-## Peak Snow Water Equivalent (SWE)
+## Accumulaed Snow Water Equivalent (SWE)
 
 ```{r, out.width="50%"}
 plot_decades_smooth("accumswe_daily")
